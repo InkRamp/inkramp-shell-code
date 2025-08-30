@@ -1,7 +1,7 @@
 import { initFederation } from '@angular-architects/module-federation';
 
 initFederation({
-  pokemon: 'http://localhost:3000/angular/remoteEntry.js',
+  pokemon: 'https://opensourcekd.github.io/ng-mfe-pokemon/remoteEntry.js',
 }).then(() => {
   // only bootstrap Angular after federation initialized
   import('./bootstrap').then(m => m.bootstrap());

@@ -2,10 +2,11 @@ const { shareAll, withModuleFederationPlugin } = require('@angular-architects/mo
 
 module.exports = withModuleFederationPlugin({
   name:"shell",
-  remotes: {
-    //"mfe1": "http://localhost:3000/remoteEntry.js",    
-    pokemon: "@http://localhost:3000/angular/remoteEntry.js",
-  },
+  // Commenting as dynamic federation in place
+  // remotes: {
+  //   //"mfe1": "http://localhost:3000/remoteEntry.js",    
+  //   pokemon: "@http://localhost:3000/angular/remoteEntry.js",
+  // },
 
   shared: {
     //...shareAll({ singleton: true, strictVersion: true, requiredVersion: 'auto' }),
