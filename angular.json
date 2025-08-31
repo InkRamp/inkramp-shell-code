@@ -3,7 +3,7 @@
 	"version": 1,
 	"newProjectRoot": "projects",
 	"projects": {
-		"shell-module": {
+		"shell": {
 			"projectType": "application",
 			"schematics": {
 				"@schematics/angular:component": {
@@ -17,7 +17,7 @@
 				"build": {
 					"builder": "ngx-build-plus:browser",
 					"options": {
-						"outputPath": "dist/shell-module",
+						"outputPath": "dist/shell",
 						"index": "src/index.html",
 						"polyfills": [
 							"zone.js"
@@ -65,11 +65,11 @@
 					"builder": "ngx-build-plus:dev-server",
 					"configurations": {
 						"production": {
-							"buildTarget": "shell-module:build:production",
+							"buildTarget": "shell:build:production",
 							"extraWebpackConfig": "webpack.prod.config.js"
 						},
 						"development": {
-							"buildTarget": "shell-module:build:development"
+							"buildTarget": "shell:build:development"
 						}
 					},
 					"defaultConfiguration": "development",
@@ -82,7 +82,7 @@
 				"extract-i18n": {
 					"builder": "ngx-build-plus:extract-i18n",
 					"options": {
-						"buildTarget": "shell-module:build",
+						"buildTarget": "shell:build",
 						"extraWebpackConfig": "webpack.config.js"
 					}
 				},
@@ -106,6 +106,39 @@
 					}
 				}
 			}
-		}
+    },
+    "core-services": {
+      "projectType": "library",
+      "root": "projects/core-services",
+      "sourceRoot": "projects/core-services/src",
+      "prefix": "org",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/core-services/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/core-services/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/core-services/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "tsConfig": "projects/core-services/tsconfig.spec.json",
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ]
+          }
+        }
+      }
+    }
 	}
 }

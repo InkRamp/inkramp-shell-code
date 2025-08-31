@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - develop
+      - feat/*
 
 jobs:
   deploy:
@@ -36,7 +37,7 @@ jobs:
         personal_token: ${{ secrets.PAT_TOKEN }}
         external_repository: OpensourceKD/ng-shell
         publish_branch: main
-        publish_dir: ./dist/shell-module
+        publish_dir: ./dist/shell
 
 
     # - name: Build and Deploy Shell App
