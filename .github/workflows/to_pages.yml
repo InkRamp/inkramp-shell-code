@@ -24,7 +24,7 @@ jobs:
       run: |
             npm i
             # ng-shell is the name of other repo where these static assets are deployed
-            npm run build -- --configuration production --base-href "/ng-shell/"
+            npm run build -- --configuration production --base-href "/shell/"
             #npm run build -- --output-path=dist/angular-poc-shell/browser
 
     - name: Debug dist
