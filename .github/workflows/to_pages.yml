@@ -6,9 +6,20 @@ on:
       - main
       - develop
       - feat/*
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment (main, develop, or feature)"
+        required: false
+        default: "main"
 
 jobs:
-  deploy:
+  Build_Deploy:
+    if: |
+      !contains(github.event.head_commit.message, '[skip ci]') &&
+      !contains(github.event.head_commit.message, '[ci skip]') &&
+      !contains(github.event.head_commit.message, '[skip-ci]') &&
+      !contains(github.event.head_commit.message, '[ci-skip]')
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Repository
@@ -24,11 +35,18 @@ jobs:
       run: |
             npm i
             # ng-shell is the name of other repo where these static assets are deployed
-            npm run build -- --configuration production --base-href "/shell/"
+            # npm run build -- --configuration production --base-href "https://opensourcekd.github.io/shell/"
+            npm run build -- --configuration production
             #npm run build -- --output-path=dist/angular-poc-shell/browser
 
-    - name: Debug dist
-      run: ls -R dist
+    - name: 404 hack
+      run: |
+            # echo 'Lets see what we have moko'
+            # ls -l --ignore=node_modules
+            cp dist/shell/index.html dist/shell/404.html
+
+    # - name: Debug dist
+    #   run: ls -R dist
 
 
     - name: Deploy to GitHub Pages

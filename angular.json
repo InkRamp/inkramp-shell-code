@@ -34,7 +34,8 @@
 						"scripts": [],
 						"main": "src/main.ts",
 						"extraWebpackConfig": "webpack.config.js",
-						"commonChunk": false
+						"commonChunk": false,
+						"baseHref": "https://opensourcekd.github.io/shell/"
 					},
 					"configurations": {
 						"production": {
