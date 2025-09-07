@@ -1,32 +1,44 @@
-import { Component, ViewChild, ViewContainerRef, AfterViewInit } from '@angular/core';
-import { loadRemoteModule } from '@angular-architects/module-federation-runtime';
-import { RouterOutlet } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '@org/core-services'; 
+import { AuthenticationService , UserProfile } from './services/authentication.service';
+import { CommonModule } from '@angular/common';
+import { MfeWrapperComponent } from './components/mfe-wrapper/mfe-wrapper.component';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, CommonModule, RouterLink, RouterLinkActive, MfeWrapperComponent],
   standalone:true,
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements AfterViewInit {
+export class AppComponent implements OnInit {
   title = 'shell-module';
-
-  constructor(private auth:AuthService){
-    console.log("In constructor of shell",this.auth.id)
+  user: UserProfile | null = null;
+  mfe1:string = "pokemon";
+  constructor(
+    public auth: AuthenticationService, 
+    private k:AuthService
+  ){
+    //console.log("In constructor of shell",this.auth.id)
   }
 
-  @ViewChild('remoteContainer', { read: ViewContainerRef, static: true })
-  remoteContainer!: ViewContainerRef;
+  ngOnInit() {
+    this.fetchUser();
+  }
 
-  async ngAfterViewInit() {
-    const remote = await loadRemoteModule({
-      remoteName: 'pokemon',
-      exposedModule: './Component',   // component exposed directly
+  login() {
+    this.auth.login();
+  }
+
+  logout() {
+    this.auth.logout();
+  }
+
+  fetchUser() {
+    this.auth.getUserProfile().subscribe(profile => {
+      //console.log("MAKA",profile)
+      return this.user = profile
     });
-
-    const componentType = remote.AppComponent;
-    this.remoteContainer.createComponent(componentType);
   }
 }

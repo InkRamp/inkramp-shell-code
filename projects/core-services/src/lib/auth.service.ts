@@ -8,7 +8,7 @@ export class AuthService {
   id = 'auth of shellsa';
 
   constructor(){
-    console.log("In constructor of auth service in shell")
+    console.log("This is coming from the shared auth service of SHELL")
   }
 
   login(user: string) {
