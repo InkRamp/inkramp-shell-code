@@ -9,9 +9,9 @@ export class SseControlService {
 
   start(url: string): Observable<string> {
     this.eventSource = new EventSource(url);
-const es = this.eventSource;
+    const es = this.eventSource;
 
-return new Observable<string>(observer => {
+    return new Observable<string>(observer => {
       const sub = fromEvent<MessageEvent>(es, 'message').subscribe(event => {
         this.zone.run(() => observer.next(event.data));
       });
