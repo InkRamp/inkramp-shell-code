@@ -8,11 +8,11 @@ import { FunnyComponent } from './components/funny/funny.component';
 export const routes: Routes = [
     {
         path: 'lazy',
-        //loadChildren: () => import('./components/lazyload/lazyload.component').then(m => m.LazyloadComponent),
+        //loadComponent: () => import('./components/lazyload/lazyload.component').then(m => m.LazyloadComponent),
         component: LazyloadComponent
     },
     {
-        path: '',
+        path: 'funny',
         component: FunnyComponent
     },
     // {

@@ -1,4 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, DestroyRef } from '@angular/core';
+import { EventBusService } from '../../services/event-bus.service';
+import { filter } from 'rxjs';
+import { EventType } from 'mitt';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-funny',
@@ -8,5 +12,13 @@ import { Component } from '@angular/core';
   styleUrl: './funny.component.scss'
 })
 export class FunnyComponent {
-
+    constructor(
+      private eventBus: EventBusService,
+      private destroyRef:DestroyRef
+    ){
+      this.eventBus.onePlusNEvents.pipe(takeUntilDestroyed(this.destroyRef),filter(e=> (e === 'JOJO'))).subscribe(this.catchJojo)
+    }
+    catchJojo(e:EventType){
+      console.log("PUTIN!!")
+    }
 }
