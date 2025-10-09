@@ -17,7 +17,7 @@
 				"build": {
 					"builder": "ngx-build-plus:browser",
 					"options": {
-						"outputPath": "dist/shell",
+						"outputPath": "dist/i17e",
 						"index": "src/index.html",
 						"polyfills": [
 							"zone.js"
@@ -35,7 +35,7 @@
 						"main": "src/main.ts",
 						"extraWebpackConfig": "webpack.config.js",
 						"commonChunk": false,
-						"baseHref": "https://opensourcekd.github.io/shell/"
+						"baseHref": "https://opensourcekd.github.io/i17e/"
 					},
 					"configurations": {
 						"production": {
