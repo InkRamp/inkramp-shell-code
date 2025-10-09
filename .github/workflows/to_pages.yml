@@ -34,8 +34,8 @@ jobs:
     - name: Build Angular app
       run: |
             npm i
-            #npm run build -- --configuration production
-            npm run build -- --configuration production --base-href "/i17e/"
+            npm run build -- --configuration production
+            #npm run build -- --configuration production --base-href "/i17e/"
 
     - name: 404 hack
       run: |
