@@ -1,4 +1,4 @@
-name: Deploy to ng-shell repository within this same org
+name: Deploy to i17e repository within this same org
 
 on:
   push:
