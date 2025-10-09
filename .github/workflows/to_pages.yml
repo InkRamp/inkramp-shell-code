@@ -1,4 +1,4 @@
-name: Deploy to ng-shell repository within this same org
+name: Deploy to i17e repository within this same org
 
 on:
   push:
@@ -34,16 +34,13 @@ jobs:
     - name: Build Angular app
       run: |
             npm i
-            # ng-shell is the name of other repo where these static assets are deployed
-            # npm run build -- --configuration production --base-href "https://opensourcekd.github.io/shell/"
             npm run build -- --configuration production
-            #npm run build -- --output-path=dist/angular-poc-shell/browser
 
     - name: 404 hack
       run: |
             # echo 'Lets see what we have moko'
             # ls -l --ignore=node_modules
-            cp dist/shell/index.html dist/shell/404.html
+            cp dist/i17e/index.html dist/i17e/404.html
 
     # - name: Debug dist
     #   run: ls -R dist
@@ -53,32 +50,6 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         personal_token: ${{ secrets.PAT_TOKEN }}
-        external_repository: OpensourceKD/shell
+        external_repository: OpensourceKD/i17e
         publish_branch: main
-        publish_dir: ./dist/shell
-
-
-    # - name: Build and Deploy Shell App
-    #   run: |
-    #     npm install  # If you're using a build tool like npm
-    #     npm run build  # If your project requires a build step
-    #     echo 'check root folder'
-    #     ls -l
-    #     echo 'check dist folder'
-    #     cd dist
-    #     ls -l
-
-    # - name: Deploy to GitHub Pages
-    #   uses: peaceiris/actions-gh-pages@v3
-    #   with:
-    #     personal_token: ${{ secrets.GITHUB_TOKEN }}
-    #     publish_dir: ./dist/angular-poc-shell/browser  # Deploy only the contents of the 'build' directory
-    #     external_repository: OpensourceKD/ng-shell
-        
-
-    # - name: Deploy to GitHub Pages
-    #   uses: JamesIves/github-pages-deploy-action@4.1.4
-    #   with:
-    #     token: ${{ secrets.GH_TOKEN }}
-    #     BRANCH: gh-pages
-    #     FOLDER: build
+        publish_dir: ./dist/i17e
