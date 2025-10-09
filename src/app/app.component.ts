@@ -16,29 +16,43 @@ export class AppComponent implements OnInit {
   title = 'shell-module';
   user: UserProfile | null = null;
   mfe1:string = "pokemon";
+
+  isAuthenticated = false;
+  userInfo: any = null;
   constructor(
-    public auth: AuthenticationService, 
-    private k:AuthService
+    public auth2: AuthenticationService, 
+    private auth:AuthService
   ){
     //console.log("In constructor of shell",this.auth.id)
   }
 
-  ngOnInit() {
-    this.fetchUser();
+  ngOnInit(): void {
+    console.log("IN ngOnInit of i17e");
+    this.isAuthenticated = this.auth.isAuthenticated();
+    this.userInfo = this.auth.getUser();
+    
+    // Subscribe to user changes
+    this.auth.user$.subscribe(user => {
+      this.userInfo = user;
+      this.isAuthenticated = !!user;
+    });
   }
+  // ngOnInit() {
+  //   this.fetchUser();
+  // }
 
   login() {
-    this.auth.login();
+    //this.auth.login();
   }
 
   logout() {
-    this.auth.logout();
+    //this.auth.logout();
   }
 
   fetchUser() {
-    this.auth.getUserProfile().subscribe(profile => {
-      //console.log("MAKA",profile)
-      return this.user = profile
-    });
+    // this.auth.getUserProfile().subscribe(profile => {
+    //   //console.log("MAKA",profile)
+    //   return this.user = profile
+    // });
   }
 }

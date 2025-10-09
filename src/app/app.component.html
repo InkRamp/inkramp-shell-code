@@ -1,8 +1,5 @@
 
-<div>
-  <a routerLink="/funny">Funny</a>
-  <a routerLink="/lazy">Lazy Load</a>
-</div>
+
 
 <div *ngIf="user; else loginTemplate">
   <p>Welcome, {{ user.name || user.email }}</p>
@@ -13,7 +10,14 @@
 </ng-template>
 
 <section id="main">
-  <router-outlet />
+  <h3>Start of router content</h3>
+    <router-outlet />
+  <h3>End of router content</h3>
 </section>
+
+<div>
+  <a routerLink="/funny">Funny</a>
+  <a routerLink="/lazy">Lazy Load</a>
+</div>
 
 <app-mfe-wrapper [name]="mfe1"></app-mfe-wrapper>
