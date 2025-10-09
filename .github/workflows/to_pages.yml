@@ -35,6 +35,7 @@ jobs:
       run: |
             npm i
             npm run build -- --configuration production
+            #npm run build -- --configuration production --base-href "/i17e/"
 
     - name: 404 hack
       run: |

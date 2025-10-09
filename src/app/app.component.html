@@ -1,7 +1,19 @@
 
-<div>
-  <a routerLink="/funny">Funny</a>
-  <a routerLink="/lazy">Lazy Load</a>
+<div class="auth-header">
+  <div>
+    <strong>Pokemon App</strong>
+  </div>
+  <div class="auth-info">
+    <span *ngIf="isAuthenticated && userInfo" class="user-name">
+      Welcome, {{ userInfo.name || userInfo.email || 'User' }}!
+    </span>
+    <button *ngIf="!isAuthenticated" class="auth-button" (click)="login()">
+      Login with Zitadel
+    </button>
+    <button *ngIf="isAuthenticated" class="auth-button logout-button" (click)="logout()">
+      Logout
+    </button>
+  </div>
 </div>
 
 <div *ngIf="user; else loginTemplate">
@@ -13,7 +25,14 @@
 </ng-template>
 
 <section id="main">
-  <router-outlet />
+  <h3>Start of router content</h3>
+    <router-outlet />
+  <h3>End of router content</h3>
 </section>
+
+<div>
+  <a routerLink="/funny">Funny</a>
+  <a routerLink="/lazy">Lazy Load</a>
+</div>
 
 <app-mfe-wrapper [name]="mfe1"></app-mfe-wrapper>

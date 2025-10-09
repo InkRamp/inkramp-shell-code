@@ -1,53 +1,40 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet, Params, ActivatedRoute, Router } from '@angular/router';
-import { AuthService } from '@org/core-services'; 
-import { AuthenticationService , UserProfile } from './services/authentication.service';
+import { ActivatedRoute, Router, Params } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { MfeWrapperComponent } from './components/mfe-wrapper/mfe-wrapper.component';
+import { AuthService } from '@org/core-services';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  imports: [RouterOutlet, CommonModule, RouterLink, RouterLinkActive, MfeWrapperComponent],
-  standalone:true,
-  styleUrls: ['./app.component.scss']
+  selector: 'app-auth-callback',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+      <div style="text-align: center;">
+        <h2>{{ message }}</h2>
+        <p *ngIf="isProcessing">Processing authentication...</p>
+      </div>
+    </div>
+  `,
+  styles: [`
+    :host {
+      display: block;
+      width: 100%;
+      height: 100vh;
+    }
+  `]
 })
-export class AppComponent implements OnInit {
-  title = 'shell-module';
-  user: UserProfile | null = null;
-  mfe1:string = "pokemon";
-
-  isAuthenticated = false;
-  userInfo: any = null;
-
+export class AuthCallbackComponent implements OnInit {
   message = 'Processing authentication...';
   isProcessing = true;
-  constructor(
-    public auth2: AuthenticationService, 
-    private auth:AuthService,
 
+  constructor(
     private route: ActivatedRoute,
     private router: Router,
-  ){
-    //console.log("In constructor of shell",this.auth.id)
-  }
+    private authService: AuthService
+  ) {}
 
-  // ngOnInit(): void {
-  //   console.log("IN ngOnInit of i17e");
-  //   this.isAuthenticated = this.auth.isAuthenticated();
-  //   this.userInfo = this.auth.getUser();
-    
-  //   // Subscribe to user changes
-  //   this.auth.user$.subscribe(user => {
-  //     this.userInfo = user;
-  //     this.isAuthenticated = !!user;
-  //   });
-  // }
-  // ngOnInit() {
-  //   this.fetchUser();
-  // }
-async ngOnInit(): Promise<void> {
+  async ngOnInit(): Promise<void> {
     // Use window.location.search for hash-based routing fallback
     let code: string | null = null;
     let state: string | null = null;
@@ -77,7 +64,7 @@ async ngOnInit(): Promise<void> {
 
     if (code && state) {
       try {
-        const success = await this.auth.handleCallback(code, state);
+        const success = await this.authService.handleCallback(code, state);
         if (success) {
           this.message = 'Authentication successful! Redirecting...';
           this.isProcessing = false;
@@ -97,20 +84,5 @@ async ngOnInit(): Promise<void> {
       this.isProcessing = false;
       setTimeout(() => this.router.navigate(['/']), 3000);
     }
-  }
-
-  login() {
-    this.auth.login();
-  }
-
-  logout() {
-    this.auth.logout();
-  }
-
-  fetchUser() {
-    // this.auth.getUserProfile().subscribe(profile => {
-    //   //console.log("MAKA",profile)
-    //   return this.user = profile
-    // });
   }
 }

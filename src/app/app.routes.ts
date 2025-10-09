@@ -15,6 +15,11 @@ export const routes: Routes = [
         path: 'funny',
         component: FunnyComponent
     },
+    {
+        path: 'auth-callback',
+        loadComponent: () => import('./auth-callback/auth-callback.component').then(m => m.AuthCallbackComponent)
+    },
+    { path: '**', redirectTo: '', pathMatch: 'full' }
     // {
     //     path: '**',
     //     redirectTo: '', // fallback
