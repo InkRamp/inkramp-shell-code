@@ -42,7 +42,6 @@ export class AuthCallbackComponent implements OnInit {
 
     // Try Angular queryParams first
     const params:Params = await firstValueFrom(this.route.queryParams);
-    console.log("Hey Jude"," param =",params," code = ",params['code'])
     if (params && Object.keys(params).length > 0) {
       code = params['code'] ?? null;
       state = params['state'] ?? null;
