@@ -47,3 +47,13 @@ export const superAdminGuard: CanActivateFn = roleGuard([
   UserRole.SUPER_ADMIN,
   UserRole.ORG_ADMIN
 ]);
+
+/**
+ * Guard to check if user has any role (sales executive and above)
+ */
+export const allRolesGuard: CanActivateFn = roleGuard([
+  UserRole.SUPER_ADMIN,
+  UserRole.ORG_ADMIN,
+  UserRole.TEAM_LEAD,
+  UserRole.SALES_EXECUTIVE
+]);
