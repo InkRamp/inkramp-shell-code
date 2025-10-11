@@ -33,6 +33,123 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-header {
+  background: white;
+  padding: 1rem 2rem;
+  border-bottom: 2px solid var(--gray-400);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.header-left {
+  flex: 1;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--gray-900);
+  font-weight: 600;
+}
+
+.header-center {
+  flex: 2;
+  display: flex;
+  justify-content: center;
+}
+
+.user-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.user-selector label {
+  font-size: 0.875rem;
+  color: var(--gray-700);
+  font-weight: 500;
+}
+
+.user-selector select {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--gray-400);
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  background: white;
+  cursor: pointer;
+  min-width: 200px;
+}
+
+.header-right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-info {
+  color: var(--gray-700);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.btn-logout {
+  background: var(--hot-red);
+  color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-logout:hover {
+  background: var(--orange-red);
+}
+
+.app-nav {
+  background: var(--gray-900);
+  padding: 0;
+  display: flex;
+  gap: 0;
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  padding: 1rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background 0.2s ease;
+  border-bottom: 3px solid transparent;
+}
+
+.nav-link:hover {
+  background: var(--gray-700);
+}
+
+.nav-link.active {
+  background: var(--bright-blue);
+  border-bottom-color: var(--electric-violet);
+}
+
+.app-content {
+  flex: 1;
+  padding: 2rem;
+  background: #f5f5f5;
+}
   
   .auth-header {
     position: fixed;
