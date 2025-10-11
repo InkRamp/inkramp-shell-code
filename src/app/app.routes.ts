@@ -5,6 +5,7 @@ import { AppComponent } from './app.component';
 import { FunnyComponent } from './components/funny/funny.component';
 import { roleGuard, adminGuard, allRolesGuard } from './guards/role.guard';
 import { UserRole } from './models/roles.model';
+import { MultiMfeDemoComponent } from './components/multi-mfe-demo/multi-mfe-demo.component';
 
 
 export const routes: Routes = [
@@ -15,6 +16,10 @@ export const routes: Routes = [
     {
         path: 'funny',
         component: FunnyComponent
+    },
+    {
+        path: 'multi-mfe-demo',
+        component: MultiMfeDemoComponent
     },
     {
         path: 'auth-callback',

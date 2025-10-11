@@ -2,6 +2,29 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.17.
 
+## ⭐ New Feature: Multi-MFE Loading
+
+The MFE Wrapper now supports **loading multiple Micro Frontends on a single page** with **lazy loading**!
+
+### Quick Example
+
+```typescript
+// Load multiple MFEs with lazy loading
+<app-mfe-wrapper 
+  [names]="['pokemon', 'my-sales', 'my-report']"
+  [lazyLoad]="true">
+</app-mfe-wrapper>
+```
+
+📖 **[Read the Complete Multi-MFE Guide](./MULTI_MFE_GUIDE.md)**
+
+### Key Features
+- ✅ Load multiple MFEs on one page
+- ✅ Lazy loading with Intersection Observer
+- ✅ Backward compatible with single-MFE mode
+- ✅ Visual loading states and error handling
+- ✅ Demo available at `/multi-mfe-demo` route
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
