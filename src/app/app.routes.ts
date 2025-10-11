@@ -3,7 +3,7 @@ import { Routes } from '@angular/router';
 import { LazyloadComponent } from './components/lazyload/lazyload.component';
 import { AppComponent } from './app.component';
 import { FunnyComponent } from './components/funny/funny.component';
-import { roleGuard, adminGuard } from './guards/role.guard';
+import { roleGuard, adminGuard, allRolesGuard } from './guards/role.guard';
 import { UserRole } from './models/roles.model';
 
 
@@ -28,12 +28,12 @@ export const routes: Routes = [
     {
         path: 'sales',
         loadChildren: () => import('./routes/mfe-routes').then(m => m.MY_SALES_ROUTES),
-        canActivate: [roleGuard([UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.TEAM_LEAD, UserRole.SALES_EXECUTIVE])]
+        canActivate: [allRolesGuard]
     },
     {
         path: 'reports',
         loadChildren: () => import('./routes/mfe-routes').then(m => m.MY_REPORT_ROUTES),
-        canActivate: [roleGuard([UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.TEAM_LEAD, UserRole.SALES_EXECUTIVE])]
+        canActivate: [allRolesGuard]
     },
     { path: '**', redirectTo: '', pathMatch: 'full' }
 ];
