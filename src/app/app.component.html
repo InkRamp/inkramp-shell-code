@@ -1,6 +1,6 @@
 
 <div class="app-container">
-  <header class="app-header">
+  <!-- <header class="app-header">
     <div class="header-left">
       <h1 class="app-title">Incentive Management System</h1>
     </div>
@@ -24,16 +24,16 @@
       </span>
       <button class="btn-logout" (click)="logout()">Logout</button>
     </div>
-  </header>
+  </header> -->
 
   <nav class="app-nav" *ngIf="currentUser">
-    <a *ngFor="let mfe of availableMfes" 
+    <!-- <a *ngFor="let mfe of availableMfes" 
        [routerLink]="'/' + mfe.route" 
        routerLinkActive="active"
        class="nav-link">
       {{ mfe.displayName }}
-    </a>
-    <a routerLink="/lazy" routerLinkActive="active" class="nav-link">Lazy Demo</a>
+    </a> -->
+    <a routerLink="/report" routerLinkActive="active" class="nav-link">Report</a>
     <a routerLink="/multi-mfe-demo" routerLinkActive="active" class="nav-link">Multi-MFE Demo</a>
   </nav>
 
