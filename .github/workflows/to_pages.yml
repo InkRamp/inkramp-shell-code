@@ -6,6 +6,8 @@ on:
       - main
       - develop
       - feat/*
+      - copilot/*
+      
   workflow_dispatch:
     inputs:
       environment:
