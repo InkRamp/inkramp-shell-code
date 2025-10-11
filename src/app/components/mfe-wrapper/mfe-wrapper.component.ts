@@ -51,7 +51,10 @@ export class MfeWrapperComponent implements AfterViewInit{
     }
 
     // Fallback to legacy MFE loading for backward compatibility
-    const options:LoadRemoteModuleScriptOptions | undefined = MFE.map(({remoteName, exposedModule})=>({remoteName, exposedModule})).find(({remoteName})=>remoteName===mfeName)
+    const mfeEntry = MFE.find(({remoteName}) => remoteName === mfeName);
+    const options: LoadRemoteModuleScriptOptions | undefined = mfeEntry
+      ? { remoteName: mfeEntry.remoteName, exposedModule: mfeEntry.exposedModule }
+      : undefined;
     if(!options) {
       console.error(`[MfeWrapperComponent] MFE ${mfeName} not found in configurations`);
       return;
