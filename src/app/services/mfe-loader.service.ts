@@ -110,7 +110,7 @@ export class MfeLoaderService {
       this.loadedMfesSubject.next(newLoadedMfes);
 
       // Remove from loading
-      const updatedLoadingMfes = new Set(loadingMfes);
+      const updatedLoadingMfes = new Set(this.loadingMfesSubject.value);
       updatedLoadingMfes.delete(config.name);
       this.loadingMfesSubject.next(updatedLoadingMfes);
 
@@ -120,7 +120,7 @@ export class MfeLoaderService {
       console.error(`[MfeLoaderService] Error loading MFE ${config.name}:`, error);
 
       // Remove from loading on error
-      const updatedLoadingMfes = new Set(loadingMfes);
+      const updatedLoadingMfes = new Set(this.loadingMfesSubject.value);
       updatedLoadingMfes.delete(config.name);
       this.loadingMfesSubject.next(updatedLoadingMfes);
 
