@@ -71,7 +71,6 @@ export class AppComponent implements OnInit {
 
     // Try Angular queryParams first
     const params:Params = await firstValueFrom(this.route.queryParams);
-    console.log("Hey Jude"," param =",params," code = ",params['code'])
     if (params && Object.keys(params).length > 0) {
       code = params['code'] ?? null;
       state = params['state'] ?? null;
@@ -143,7 +142,6 @@ export class AppComponent implements OnInit {
     
     try {
       await this.mfeLoader.preloadPriorityMfes(this.currentUser.role);
-      console.log('[AppComponent] Priority MFEs preloaded');
     } catch (error) {
       console.error('[AppComponent] Error preloading MFEs:', error);
     }
@@ -153,7 +151,6 @@ export class AppComponent implements OnInit {
    * Handle sales executive selection change
    */
   onSalesExecutiveChange(): void {
-    console.log(`[AppComponent] Selected sales executive: ${this.selectedSalesExecutiveId}`);
     // Store selected executive in session for MFEs to use
     sessionStorage.setItem('selected_sales_executive_id', this.selectedSalesExecutiveId);
     // Emit event for MFEs to react to selection change
