@@ -1,38 +1,42 @@
 
-<div class="auth-header">
-  <div>
-    <strong>Pokemon App</strong>
-  </div>
-  <div class="auth-info">
-    <span *ngIf="isAuthenticated && userInfo" class="user-name">
-      Welcome, {{ userInfo.name || userInfo.email || 'User' }}!
-    </span>
-    <button *ngIf="!isAuthenticated" class="auth-button" (click)="login()">
-      Login with Zitadel
-    </button>
-    <button *ngIf="isAuthenticated" class="auth-button logout-button" (click)="logout()">
-      Logout
-    </button>
-  </div>
-</div>
+<div class="app-container">
+  <header class="app-header">
+    <div class="header-left">
+      <h1 class="app-title">Incentive Management System</h1>
+    </div>
+    
+    <div class="header-center" *ngIf="currentUser && canViewOthers">
+      <div class="user-selector">
+        <label for="salesExecSelect">View data for:</label>
+        <span id="salesExecSelectDesc" class="visually-hidden">
+          Selecting a user will display their incentive data.
+        </span>
+        <select id="salesExecSelect" [(ngModel)]="selectedSalesExecutiveId" (change)="onSalesExecutiveChange()" aria-describedby="salesExecSelectDesc">
+          <option [value]="currentUser.id">My Data</option>
+          <option *ngFor="let exec of salesExecutives" [value]="exec.id">{{ exec.name }}</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="header-right">
+      <span *ngIf="currentUser" class="user-info">
+        {{ currentUser.name }} ({{ currentUser.role }})
+      </span>
+      <button class="btn-logout" (click)="logout()">Logout</button>
+    </div>
+  </header>
 
-<div *ngIf="user; else loginTemplate">
-  <p>Welcome, {{ user.name || user.email }}</p>
-  <button (click)="logout()">Logout</button>
-</div>
-<ng-template #loginTemplate>
-  <button (click)="login()">Login</button>
-</ng-template>
+  <nav class="app-nav" *ngIf="currentUser">
+    <a *ngFor="let mfe of availableMfes" 
+       [routerLink]="'/' + mfe.route" 
+       routerLinkActive="active"
+       class="nav-link">
+      {{ mfe.displayName }}
+    </a>
+    <a routerLink="/lazy" routerLinkActive="active" class="nav-link">Lazy Demo</a>
+  </nav>
 
-<section id="main">
-  <h3>Start of router content</h3>
+  <main class="app-content">
     <router-outlet />
-  <h3>End of router content</h3>
-</section>
-
-<div>
-  <a routerLink="/funny">Funny</a>
-  <a routerLink="/lazy">Lazy Load</a>
+  </main>
 </div>
-
-<app-mfe-wrapper [name]="mfe1"></app-mfe-wrapper>

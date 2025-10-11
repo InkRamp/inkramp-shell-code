@@ -34,13 +34,9 @@ export class AuthService {
   public user$: Observable<UserInfo | null> = this.userSubject.asObservable();
 
   constructor(private http: HttpClient) {
-    console.log("In constructor of auth service in i17e");
   }
 
   login(user?: string) {
-    if (user) {
-      console.log(`[AuthService] Logged in: ${user}`);
-    }
     this.redirectToZitadelLogin();
   }
 

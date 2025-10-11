@@ -3,12 +3,13 @@ import { Routes } from '@angular/router';
 import { LazyloadComponent } from './components/lazyload/lazyload.component';
 import { AppComponent } from './app.component';
 import { FunnyComponent } from './components/funny/funny.component';
+import { roleGuard, adminGuard } from './guards/role.guard';
+import { UserRole } from './models/roles.model';
 
 
 export const routes: Routes = [
     {
         path: 'lazy',
-        //loadComponent: () => import('./components/lazyload/lazyload.component').then(m => m.LazyloadComponent),
         component: LazyloadComponent
     },
     {
@@ -19,24 +20,20 @@ export const routes: Routes = [
         path: 'auth-callback',
         loadComponent: () => import('./auth-callback/auth-callback.component').then(m => m.AuthCallbackComponent)
     },
+    {
+        path: 'rules',
+        loadChildren: () => import('./routes/mfe-routes').then(m => m.CRUD_RULES_ROUTES),
+        canActivate: [adminGuard]
+    },
+    {
+        path: 'sales',
+        loadChildren: () => import('./routes/mfe-routes').then(m => m.MY_SALES_ROUTES),
+        canActivate: [roleGuard([UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.TEAM_LEAD, UserRole.SALES_EXECUTIVE])]
+    },
+    {
+        path: 'reports',
+        loadChildren: () => import('./routes/mfe-routes').then(m => m.MY_REPORT_ROUTES),
+        canActivate: [roleGuard([UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.TEAM_LEAD, UserRole.SALES_EXECUTIVE])]
+    },
     { path: '**', redirectTo: '', pathMatch: 'full' }
-    // {
-    //     path: '**',
-    //     redirectTo: '', // fallback
-    // }
-    // {
-    // path: 'pokemon',
-    // loadChildren: () =>
-    //     loadRemoteModule({
-    //     type: 'module',
-    //     remoteEntry: 'http://localhost:3000/angular/remoteEntry.js', // remote’s port
-    //     exposedModule: './PokemonModule'
-    //     }).then(m => m.PokemonModule)
-    // },
-        
-    // {
-    // path: '',
-    // redirectTo: 'pokemon',
-    // pathMatch: 'full'
-    // }
 ];
