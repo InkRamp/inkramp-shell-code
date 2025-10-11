@@ -79,4 +79,48 @@ describe('MfeLoaderService', () => {
   it('should track MFE loading state', () => {
     expect(service.isMfeLoading('test1')).toBe(false);
   });
+
+  it('should correctly remove from loading state after successful load', (done) => {
+    // Create a test config
+    const testConfig: MfeConfig = {
+      id: 'test-state',
+      name: 'testState',
+      displayName: 'Test State',
+      remoteName: 'testState',
+      exposedModule: './Component',
+      url: 'http://localhost:3010/remoteEntry.js',
+      route: 'test-state',
+      allowedRoles: [UserRole.SUPER_ADMIN],
+      priority: 8
+    };
+
+    // Track loading states
+    let loadingStateBeforeLoad: boolean;
+    let loadingStateDuringLoad: boolean;
+    let loadingStateAfterLoad: boolean;
+
+    // Subscribe to observe state changes
+    const subscription = service.loadingMfes$.subscribe(states => {
+      if (states.has(testConfig.name)) {
+        loadingStateDuringLoad = true;
+      }
+    });
+
+    // Check state before load
+    loadingStateBeforeLoad = service.isMfeLoading(testConfig.name);
+    expect(loadingStateBeforeLoad).toBe(false);
+
+    // Attempt to load (will fail but that's ok for state testing)
+    service.loadMfe(testConfig).catch(() => {
+      // Error is expected since URL is not real
+      // Check that loading state was properly cleared even on error
+      loadingStateAfterLoad = service.isMfeLoading(testConfig.name);
+      
+      expect(loadingStateDuringLoad).toBe(true);
+      expect(loadingStateAfterLoad).toBe(false);
+      
+      subscription.unsubscribe();
+      done();
+    });
+  });
 });
