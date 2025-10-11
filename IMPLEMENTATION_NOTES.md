@@ -5,7 +5,20 @@ This implementation adds a comprehensive role-based MFE architecture for managin
 
 ## Key Features Implemented
 
-### 1. Role-Based Access Control (RBAC)
+### 1. Multi-MFE Loading (NEW)
+
+The MFE Wrapper component now supports loading **multiple MFEs on a single page** with lazy loading:
+
+- **Multiple MFEs**: Load any number of MFEs on one page using `[names]` input
+- **Lazy Loading**: Uses Intersection Observer API to load MFEs as they come into view
+- **Backward Compatible**: Single MFE mode still works exactly as before
+- **Visual Feedback**: Loading states, error handling, and placeholders
+- **Performance**: 50px viewport margin for smooth preloading
+- **Flexibility**: Can disable lazy loading for immediate load of all MFEs
+
+See [MULTI_MFE_GUIDE.md](./MULTI_MFE_GUIDE.md) for detailed usage and examples.
+
+### 2. Role-Based Access Control (RBAC)
 - **Roles Defined**: 
   - `super-admin` - Full system access
   - `org-admin` - Organization-level management
@@ -16,7 +29,7 @@ This implementation adds a comprehensive role-based MFE architecture for managin
 - **Role Service**: Centralized role management with session persistence
 - **Route Guards**: Role-based route protection using Angular guards
 
-### 2. MFE Architecture with Priority Loading
+### 3. MFE Architecture with Priority Loading
 
 #### MFE Configurations
 Three new MFEs have been configured:
@@ -45,7 +58,13 @@ Three new MFEs have been configured:
   - 1-4: Normal (load on demand)
 - High-priority MFEs are preloaded after login for better performance
 
-### 3. Shared Services Architecture
+#### Multi-MFE Support
+- **MfeWrapperComponent** now supports loading multiple MFEs on a single page
+- Lazy loading with Intersection Observer API
+- Backward compatible with single-MFE mode
+- Demo available at `/multi-mfe-demo` route
+
+### 4. Shared Services Architecture
 
 Services exposed to MFEs via Module Federation:
 
@@ -69,7 +88,7 @@ Services exposed to MFEs via Module Federation:
    - Shared TypeScript interfaces
    - Data models, role enums, MFE configs
 
-### 4. Dummy Data Structure
+### 5. Dummy Data Structure
 
 All dummy data is centralized in `DummyDataService`:
 
@@ -79,7 +98,7 @@ All dummy data is centralized in `DummyDataService`:
 - **Incentives Earned**: 30 incentive records with various statuses
 - **Report Data**: Automatically generated with 6-month breakdown
 
-### 5. Enhanced Shell UI
+### 6. Enhanced Shell UI
 
 #### Navigation
 - Role-based navigation menu showing only allowed MFEs
@@ -97,13 +116,13 @@ All dummy data is centralized in `DummyDataService`:
 - Center: Sales executive selector (for admins/team leads)
 - Right: User info and logout button
 
-### 6. Unblocking Fetches
+### 7. Unblocking Fetches
 - All services use RxJS Observables
 - BehaviorSubject for state management
 - Non-blocking async operations
 - Services shared via Module Federation
 
-### 7. Route Configuration
+### 8. Route Configuration
 
 Routes with role-based guards:
 ```typescript
@@ -111,6 +130,7 @@ Routes with role-based guards:
 /sales       -> MY_SALES (all roles)
 /reports     -> MY_REPORT (all roles)
 /lazy        -> Demo component
+/multi-mfe-demo -> Multi-MFE showcase
 /auth-callback -> OAuth callback
 ```
 
@@ -195,17 +215,22 @@ window.sessionStorage.getItem('selected_sales_executive_id')
 - `src/app/services/mfe-loader.service.ts` - MFE loading
 - `src/app/guards/role.guard.ts` - Route protection
 - `src/app/routes/mfe-routes.ts` - MFE route definitions
+- `src/app/components/multi-mfe-demo/` - Multi-MFE demo component
+- `MULTI_MFE_GUIDE.md` - Multi-MFE usage documentation
 
 ### Modified Files
 - `src/configs/mfe.ts` - Added new MFE configs
-- `src/app/app.routes.ts` - Added role-based routes
+- `src/app/app.routes.ts` - Added role-based routes and multi-MFE demo route
 - `src/app/app.component.ts` - Integrated new services
-- `src/app/app.component.html` - New UI layout
+- `src/app/app.component.html` - New UI layout with multi-MFE demo link
 - `src/app/app.component.scss` - Enhanced styling
-- `src/app/components/mfe-wrapper/mfe-wrapper.component.ts` - Updated for new loader
+- `src/app/components/mfe-wrapper/mfe-wrapper.component.ts` - Multi-MFE and lazy loading support
+- `src/app/components/mfe-wrapper/mfe-wrapper.component.html` - Multiple MFE container support
+- `src/app/components/mfe-wrapper/mfe-wrapper.component.scss` - Grid layout styles
 - `webpack.config.js` - Exposed services
 - `tsconfig.app.json` - Include/exclude configuration
 - `angular.json` - Budget adjustments
+- `IMPLEMENTATION_NOTES.md` - Updated with multi-MFE feature
 
 ## Deployment Notes
 
