@@ -10,7 +10,19 @@ module.exports = withModuleFederationPlugin({
   },
 
   shared: {
-    ...shareAll({ singleton: true, strictVersion: true, requiredVersion: 'auto' }),
+    ...shareAll({ 
+      singleton: true, 
+      strictVersion: true, 
+      requiredVersion: 'auto', 
+      eager: false 
+    }),
+    // Make @org/core-services eager so it's available immediately for the shell's own use
+    '@org/core-services': {
+      singleton: true,
+      strictVersion: true,
+      requiredVersion: 'auto',
+      eager: true
+    }
   },
 
   // Expose shared services for MFEs from core-services library
