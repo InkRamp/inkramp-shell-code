@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MfeWrapperComponent } from './mfe-wrapper.component';
 import { ActivatedRoute } from '@angular/router';
-import { MfeLoaderService } from '../../services/mfe-loader.service';
+import { MfeLoaderService } from '@org/core-services';
 import { of } from 'rxjs';
 
 describe('MfeWrapperComponent', () => {

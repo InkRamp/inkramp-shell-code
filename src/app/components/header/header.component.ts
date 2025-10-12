@@ -2,13 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { RoleService } from '../../services/role.service';
-import { DummyDataService } from '../../services/dummy-data.service';
-import { MfeLoaderService } from '../../services/mfe-loader.service';
+import { RoleService, DummyDataService, MfeLoaderService, User, SalesExecutive, MfeConfig } from '@org/core-services';
 import { AuthService } from '@org/core-services';
-import { User } from '../../models/roles.model';
-import { SalesExecutive } from '../../models/data.model';
-import { MfeConfig } from '../../models/mfe.model';
 
 /**
  * Header component for the application

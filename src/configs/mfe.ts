@@ -1,6 +1,5 @@
 import { LoadRemoteModuleScriptOptions } from "@angular-architects/module-federation";
-import { MfeConfig } from "../app/models/mfe.model";
-import { UserRole } from "../app/models/roles.model";
+import { MfeConfig, UserRole } from "@org/core-services";
 
 /**
  * Interface for MFE URL configuration
