@@ -13,5 +13,5 @@ import { MfeWrapperComponent } from '../../components/mfe-wrapper/mfe-wrapper.co
   styleUrl: './sales-page.component.scss'
 })
 export class SalesPageComponent {
-  mfeName: string = "my-sales";
+  mfeName: string = "mySales";
 }

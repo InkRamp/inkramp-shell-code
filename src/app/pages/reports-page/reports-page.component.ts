@@ -13,5 +13,5 @@ import { MfeWrapperComponent } from '../../components/mfe-wrapper/mfe-wrapper.co
   styleUrl: './reports-page.component.scss'
 })
 export class ReportsPageComponent {
-  mfeName: string = "my-report";
+  mfeName: string = "myReport";
 }

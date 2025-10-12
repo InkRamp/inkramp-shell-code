@@ -13,5 +13,5 @@ import { MfeWrapperComponent } from '../../components/mfe-wrapper/mfe-wrapper.co
   styleUrl: './rules-page.component.scss'
 })
 export class RulesPageComponent {
-  mfeName: string = "crud-rules";
+  mfeName: string = "crudRules";
 }
