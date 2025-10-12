@@ -1,5 +1,5 @@
 import { Component, DestroyRef } from '@angular/core';
-import { EventBusService } from '../../services/event-bus.service';
+import { EventBusService } from '@org/core-services';
 import { filter } from 'rxjs';
 import { EventType } from 'mitt';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
