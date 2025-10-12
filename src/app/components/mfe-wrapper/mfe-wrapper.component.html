@@ -1,27 +1,2 @@
-<!-- Single MFE mode (backward compatible) -->
-<ng-container *ngIf="mfeStates.length === 1" #container></ng-container>
-
-<!-- Multiple MFEs mode -->
-<div *ngIf="mfeStates.length > 1" class="mfe-grid">
-  <div 
-    *ngFor="let state of mfeStates; let i = index" 
-    class="mfe-wrapper"
-    [attr.data-mfe-index]="i"
-    #mfeWrapper>
-    
-    <div class="mfe-header">
-      <h3>{{ state.name }}</h3>
-      <span *ngIf="state.loading" class="mfe-loading">Loading...</span>
-      <span *ngIf="state.error" class="mfe-error">Error: {{ state.error }}</span>
-    </div>
-    
-    <div class="mfe-content">
-      <ng-container #mfeContainer></ng-container>
-      
-      <!-- Placeholder while not loaded -->
-      <div *ngIf="!state.loaded && !state.loading && lazyLoad" class="mfe-placeholder">
-        <p>Scroll to load {{ state.name }}</p>
-      </div>
-    </div>
-  </div>
-</div>
+<p>mfe-wrapper works!</p>
+<ng-container #container></ng-container>

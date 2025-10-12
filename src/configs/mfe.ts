@@ -19,7 +19,13 @@ export interface InterfaceMfeUrl extends LoadRemoteModuleScriptOptions{
  * For Production - Legacy
  */
 const MFE:Array<InterfaceMfeUrl> = [
-    {remoteName:'pokemon',exposedModule:'./Component', url:'https://opensourcekd.github.io/all-mfe-builds/pokemon/remoteEntry.js'}
+    {remoteName:'pokemon',exposedModule:'./Component', url:'https://opensourcekd.github.io/all-mfe-builds/pokemon/remoteEntry.js'},
+    {
+        remoteName: 'myReport',
+        exposedModule: './Component',
+        // Placeholder URL - will be updated when MFE is deployed
+        url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-MY_REPORT/remoteEntry.js'
+    }
 ];
 
 /**

@@ -6,29 +6,31 @@ import { FunnyComponent } from './components/funny/funny.component';
 import { roleGuard, adminGuard, allRolesGuard } from './guards/role.guard';
 import { UserRole } from './models/roles.model';
 import { MultiMfeDemoComponent } from './components/multi-mfe-demo/multi-mfe-demo.component';
+import { ReportComponent } from './components/report-page/component';
 
 
 export const routes: Routes = [
+    // {
+    //     path: 'lazy',
+    //     component: LazyloadComponent
+    // },
+    // {
+    //     path: 'funny',
+    //     component: FunnyComponent
+    // },
+    // {
+    //     path: 'multi-mfe-demo',
+    //     component: MultiMfeDemoComponent
+    // },
+    // {
+    //     path: 'auth-callback',
+    //     loadComponent: () => import('./auth-callback/auth-callback.component').then(m => m.AuthCallbackComponent)
+    // },
     {
-        path: 'lazy',
-        component: LazyloadComponent
-    },
-    {
-        path: 'funny',
-        component: FunnyComponent
-    },
-    {
-        path: 'multi-mfe-demo',
-        component: MultiMfeDemoComponent
-    },
-    {
-        path: 'auth-callback',
-        loadComponent: () => import('./auth-callback/auth-callback.component').then(m => m.AuthCallbackComponent)
-    },
-    {
-        path: 'rules',
-        loadChildren: () => import('./routes/mfe-routes').then(m => m.CRUD_RULES_ROUTES),
-        canActivate: [adminGuard]
+        path: 'report',
+        component: ReportComponent
+        // loadChildren: () => import('./routes/mfe-routes').then(m => m.CRUD_RULES_ROUTES),
+        // canActivate: [adminGuard]
     },
     {
         path: 'sales',

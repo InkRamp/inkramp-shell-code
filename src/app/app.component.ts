@@ -83,35 +83,35 @@ export class AppComponent implements OnInit {
       error = urlParams.get('error');
     }
 
-    if (error) {
-      this.message = `Authentication failed: ${error}`;
-      this.isProcessing = false;
-      setTimeout(() => this.router.navigate(['/']), 3000);
-      return;
-    }
+    // if (error) {
+    //   this.message = `Authentication failed: ${error}`;
+    //   this.isProcessing = false;
+    //   setTimeout(() => this.router.navigate(['/']), 3000);
+    //   return;
+    // }
 
-    if (code && state) {
-      try {
-        const success = await this.auth.handleCallback(code, state);
-        if (success) {
-          this.message = 'Authentication successful! Redirecting...';
-          this.isProcessing = false;
-          setTimeout(() => this.router.navigate(['/']), 1500);
-        } else {
-          this.message = 'Authentication failed. Redirecting...';
-          this.isProcessing = false;
-          setTimeout(() => this.router.navigate(['/']), 3000);
-        }
-      } catch (e) {
-        this.message = 'Authentication failed (exception). Redirecting...';
-        this.isProcessing = false;
-        setTimeout(() => this.router.navigate(['/']), 3000);
-      }
-    } else {
-      this.message = 'Invalid callback parameters. Redirecting...';
-      this.isProcessing = false;
-      setTimeout(() => this.router.navigate(['/']), 3000);
-    }
+    // if (code && state) {
+    //   try {
+    //     const success = await this.auth.handleCallback(code, state);
+    //     if (success) {
+    //       this.message = 'Authentication successful! Redirecting...';
+    //       this.isProcessing = false;
+    //       setTimeout(() => this.router.navigate(['/']), 1500);
+    //     } else {
+    //       this.message = 'Authentication failed. Redirecting...';
+    //       this.isProcessing = false;
+    //       setTimeout(() => this.router.navigate(['/']), 3000);
+    //     }
+    //   } catch (e) {
+    //     this.message = 'Authentication failed (exception). Redirecting...';
+    //     this.isProcessing = false;
+    //     setTimeout(() => this.router.navigate(['/']), 3000);
+    //   }
+    // } else {
+    //   this.message = 'Invalid callback parameters. Redirecting...';
+    //   this.isProcessing = false;
+    //   setTimeout(() => this.router.navigate(['/']), 3000);
+    // }
   }
 
   /**
