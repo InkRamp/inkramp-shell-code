@@ -30,7 +30,7 @@ export class RoleService {
         id: '1',
         name: 'John Doe',
         email: 'john.doe@example.com',
-        role: UserRole.SALES_EXECUTIVE
+        role: UserRole.ORG_ADMIN
       };
       this.setCurrentUser(defaultUser);
     }
