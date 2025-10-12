@@ -3,6 +3,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 
+/**
+ * Token response from OAuth2 provider
+ */
 interface TokenResponse {
   access_token: string;
   id_token: string;
@@ -10,12 +13,22 @@ interface TokenResponse {
   expires_in: number;
 }
 
-interface UserInfo {
+/**
+ * User information from ID token
+ */
+export interface UserInfo {
   sub: string;
   name?: string;
   email?: string;
 }
 
+/**
+ * Authentication service for Zitadel OAuth2 integration
+ * Handles login, logout, token management, and user session
+ * 
+ * NOTE: All navigation logic using setTimeout is commented out as per requirements.
+ * To enable navigation after auth operations, uncomment the marked sections in consuming components.
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -36,10 +49,19 @@ export class AuthService {
   constructor(private http: HttpClient) {
   }
 
-  login(user?: string) {
+  /**
+   * Initiate OAuth2 login flow
+   * Redirects user to Zitadel authorization endpoint
+   * @param user - Optional user identifier (for demo purposes)
+   */
+  login(user?: string): void {
     this.redirectToZitadelLogin();
   }
 
+  /**
+   * Redirect to Zitadel OAuth2 authorization endpoint
+   * Stores state and code verifier for PKCE flow validation
+   */
   private redirectToZitadelLogin(): void {
     const authUrl = new URL(`${this.ISSUER_BASE_URL}/oauth/v2/authorize`);
     const state = this.generateRandomState();
@@ -58,11 +80,22 @@ export class AuthService {
     window.location.href = authUrl.toString();
   }
 
+  /**
+   * Handle OAuth2 callback after successful authorization
+   * Validates state, exchanges code for tokens, and stores user info
+   * 
+   * NOTE: Navigation after successful/failed authentication should be handled in the calling component
+   * using setTimeout. See commented examples in app.component.ts
+   * 
+   * @param code - Authorization code from OAuth2 provider
+   * @param state - State parameter for CSRF protection
+   * @returns Promise<boolean> - True if authentication successful, false otherwise
+   */
   async handleCallback(code: string, state: string): Promise<boolean> {
     const storedState = sessionStorage.getItem('oauth_state');
     
     if (state !== storedState) {
-      console.error('State mismatch - possible CSRF attack');
+      console.error('[AuthService] State mismatch - possible CSRF attack');
       return false;
     }
 
@@ -78,13 +111,19 @@ export class AuthService {
       sessionStorage.removeItem('oauth_state');
       sessionStorage.removeItem('code_verifier');
       
+      console.log('[AuthService] Authentication successful');
       return true;
     } catch (error) {
-      console.error('Error exchanging code for token:', error);
+      console.error('[AuthService] Error exchanging code for token:', error);
       return false;
     }
   }
 
+  /**
+   * Exchange authorization code for access token
+   * @param code - Authorization code
+   * @returns Promise<TokenResponse> - Token response from OAuth2 provider
+   */
   private async exchangeCodeForToken(code: string): Promise<TokenResponse> {
     const tokenUrl = `${this.ISSUER_BASE_URL}/oauth/v2/token`;
     
@@ -110,6 +149,11 @@ export class AuthService {
     return response.json();
   }
 
+  /**
+   * Decode JWT ID token to extract user information
+   * @param idToken - JWT ID token from OAuth2 provider
+   * @returns UserInfo - Decoded user information
+   */
   private decodeIdToken(idToken: string): UserInfo {
     try {
       const payload = idToken.split('.')[1];
@@ -120,49 +164,86 @@ export class AuthService {
         email: decoded.email,
       };
     } catch (error) {
-      console.error('Error decoding ID token:', error);
+      console.error('[AuthService] Error decoding ID token:', error);
       return { sub: '' };
     }
   }
 
+  /**
+   * Logout user and clear authentication state
+   * Removes tokens and user info from storage
+   */
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_INFO_KEY);
     this.userSubject.next(null);
+    console.log('[AuthService] User logged out');
   }
 
+  /**
+   * Get current access token
+   * @returns string | null - Access token or null if not authenticated
+   */
   getToken(): string | null {
     return localStorage.getItem(this.TOKEN_KEY);
   }
 
+  /**
+   * Set access token in storage
+   * @param token - Access token to store
+   */
   setToken(token: string): void {
     localStorage.setItem(this.TOKEN_KEY, token);
   }
 
+  /**
+   * Check if user is authenticated
+   * @returns boolean - True if user has valid token
+   */
   isAuthenticated(): boolean {
     return !!this.getToken();
   }
 
+  /**
+   * Get current user information
+   * @returns UserInfo | null - Current user or null if not authenticated
+   */
   getUser(): UserInfo | null {
     return this.userSubject.value;
   }
 
+  /**
+   * Get user information from localStorage
+   * @returns UserInfo | null - Stored user info or null
+   */
   private getUserInfoFromStorage(): UserInfo | null {
     const userJson = localStorage.getItem(this.USER_INFO_KEY);
     return userJson ? JSON.parse(userJson) : null;
   }
 
+  /**
+   * Set user information in storage and update observable
+   * @param userInfo - User information to store
+   */
   private setUserInfo(userInfo: UserInfo): void {
     localStorage.setItem(this.USER_INFO_KEY, JSON.stringify(userInfo));
     this.userSubject.next(userInfo);
   }
 
+  /**
+   * Generate random state for CSRF protection
+   * @returns string - Random state string
+   */
   private generateRandomState(): string {
     const array = new Uint8Array(32);
     crypto.getRandomValues(array);
     return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
   }
 
+  /**
+   * Generate code verifier for PKCE flow
+   * @returns string - Random code verifier string
+   */
   private generateCodeVerifier(): string {
     const array = new Uint8Array(32);
     crypto.getRandomValues(array);

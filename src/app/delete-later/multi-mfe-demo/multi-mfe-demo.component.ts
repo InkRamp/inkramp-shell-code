@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { MfeWrapperComponent } from '../mfe-wrapper/mfe-wrapper.component';
+import { MfeWrapperComponent } from '../../components/mfe-wrapper/mfe-wrapper.component';
 
 @Component({
   selector: 'app-multi-mfe-demo',

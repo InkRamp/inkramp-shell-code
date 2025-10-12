@@ -1,45 +1,29 @@
 import { loadRemoteModule } from '@angular-architects/module-federation';
 import { Routes } from '@angular/router';
-import { LazyloadComponent } from './components/lazyload/lazyload.component';
-import { AppComponent } from './app.component';
-import { FunnyComponent } from './components/funny/funny.component';
 import { roleGuard, adminGuard, allRolesGuard } from './guards/role.guard';
 import { UserRole } from './models/roles.model';
-import { MultiMfeDemoComponent } from './components/multi-mfe-demo/multi-mfe-demo.component';
-import { ReportComponent } from './components/report-page/component';
+import { RulesPageComponent } from './pages/rules-page/rules-page.component';
+import { SalesPageComponent } from './pages/sales-page/sales-page.component';
+import { ReportsPageComponent } from './pages/reports-page/reports-page.component';
 
-
+/**
+ * Application routes with role-based access control
+ * Each route is protected by guards that check user roles against MFE allowedRoles
+ */
 export const routes: Routes = [
-    // {
-    //     path: 'lazy',
-    //     component: LazyloadComponent
-    // },
-    // {
-    //     path: 'funny',
-    //     component: FunnyComponent
-    // },
-    // {
-    //     path: 'multi-mfe-demo',
-    //     component: MultiMfeDemoComponent
-    // },
-    // {
-    //     path: 'auth-callback',
-    //     loadComponent: () => import('./auth-callback/auth-callback.component').then(m => m.AuthCallbackComponent)
-    // },
     {
-        path: 'report',
-        component: ReportComponent
-        // loadChildren: () => import('./routes/mfe-routes').then(m => m.CRUD_RULES_ROUTES),
-        // canActivate: [adminGuard]
+        path: 'rules',
+        component: RulesPageComponent,
+        canActivate: [adminGuard]
     },
     {
         path: 'sales',
-        loadChildren: () => import('./routes/mfe-routes').then(m => m.MY_SALES_ROUTES),
+        component: SalesPageComponent,
         canActivate: [allRolesGuard]
     },
     {
         path: 'reports',
-        loadChildren: () => import('./routes/mfe-routes').then(m => m.MY_REPORT_ROUTES),
+        component: ReportsPageComponent,
         canActivate: [allRolesGuard]
     },
     { path: '**', redirectTo: '', pathMatch: 'full' }

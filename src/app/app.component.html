@@ -1,43 +1,10 @@
-
 <div class="app-container">
-  <!-- <header class="app-header">
-    <div class="header-left">
-      <h1 class="app-title">Incentive Management System</h1>
-    </div>
-    
-    <div class="header-center" *ngIf="currentUser && canViewOthers">
-      <div class="user-selector">
-        <label for="salesExecSelect">View data for:</label>
-        <span id="salesExecSelectDesc" class="visually-hidden">
-          Selecting a user will display their incentive data.
-        </span>
-        <select id="salesExecSelect" [(ngModel)]="selectedSalesExecutiveId" (change)="onSalesExecutiveChange()" aria-describedby="salesExecSelectDesc">
-          <option [value]="currentUser.id">My Data</option>
-          <option *ngFor="let exec of salesExecutives" [value]="exec.id">{{ exec.name }}</option>
-        </select>
-      </div>
-    </div>
-    
-    <div class="header-right">
-      <span *ngIf="currentUser" class="user-info">
-        {{ currentUser.name }} ({{ currentUser.role }})
-      </span>
-      <button class="btn-logout" (click)="logout()">Logout</button>
-    </div>
-  </header> -->
-
-  <nav class="app-nav" *ngIf="currentUser">
-    <!-- <a *ngFor="let mfe of availableMfes" 
-       [routerLink]="'/' + mfe.route" 
-       routerLinkActive="active"
-       class="nav-link">
-      {{ mfe.displayName }}
-    </a> -->
-    <a routerLink="/report" routerLinkActive="active" class="nav-link">Report</a>
-    <a routerLink="/multi-mfe-demo" routerLinkActive="active" class="nav-link">Multi-MFE Demo</a>
-  </nav>
+  <app-header></app-header>
 
   <main class="app-content">
     <router-outlet />
   </main>
+
+  <app-footer></app-footer>
 </div>
+
