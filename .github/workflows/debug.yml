@@ -1,10 +1,9 @@
-name: Deploy to i17e repository within this same org
+name: For development & debugging version of i17e
 
 on:
   push:
     branches:
-      - main
-      - develop
+      - feat/*
       - copilot/*
       
   workflow_dispatch:
@@ -35,8 +34,7 @@ jobs:
     - name: Build Angular app
       run: |
             npm i
-            npm run build -- --configuration production
-            #npm run build -- --configuration production --base-href "/i17e/"
+            npm run build -- --configuration development
 
     - name: 404 hack
       run: |
