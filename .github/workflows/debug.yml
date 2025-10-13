@@ -3,8 +3,9 @@ name: For development & debugging version of i17e
 on:
   push:
     branches:
-      - feat/*
+      - fix/*
       - copilot/*
+      - feat/*
       
   workflow_dispatch:
     inputs:
