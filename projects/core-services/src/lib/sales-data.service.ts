@@ -1,42 +1,44 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
+import {SalesRecord, SalesStatus, ProductCategory} from './models/data.model'
 
 /**
  * Sales record status
  */
-export enum SalesStatus {
-  COMPLETED = 'completed',
-  PENDING = 'pending',
-  CANCELLED = 'cancelled'
-}
+// export enum SalesStatus {
+//   COMPLETED = 'completed',
+//   PENDING = 'pending',
+//   CANCELLED = 'cancelled'
+// }
 
 /**
  * Product category
  */
-export enum ProductCategory {
-  ELECTRONICS = 'Electronics',
-  SOFTWARE = 'Software',
-  SERVICES = 'Services',
-  HARDWARE = 'Hardware'
-}
+// export enum ProductCategory {
+//   ELECTRONICS = 'Electronics',
+//   SOFTWARE = 'Software',
+//   SERVICES = 'Services',
+//   HARDWARE = 'Hardware'
+// }
 
 /**
  * Sales record interface
  */
-export interface SalesRecord {
-  id: string;
-  salesExecutiveId: string;
-  salesExecutiveName: string;
-  productName: string;
-  productCategory: ProductCategory;
-  amount: number;
-  commission: number;
-  status: SalesStatus;
-  date: Date;
-  clientName: string;
-  region: string;
-}
+// export interface SalesRecord {
+//   id: string;
+//   salesExecutiveId: string;
+//   salesExecutiveName: string;
+//   productName: string;
+//   productCategory: ProductCategory;
+//   amount: number;
+//   commission: number;
+//   status: SalesStatus;
+//   date: Date;
+//   clientName: string;
+//   region: string;
+
+// }
 
 /**
  * Sales summary interface
