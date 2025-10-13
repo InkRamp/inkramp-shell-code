@@ -3,18 +3,18 @@
  */
 
 /**
- * Sales record for a sales executive
+ * Sales record for a sales executive. Right now exported from sales-data.service.ts
  */
-export interface SalesRecord {
-  id: string;
-  salesExecutiveId: string;
-  salesExecutiveName: string;
-  date: Date;
-  productName: string;
-  amount: number;
-  quantity: number;
-  status: 'completed' | 'pending' | 'cancelled';
-}
+// export interface SalesRecord {
+//   id: string;
+//   salesExecutiveId: string;
+//   salesExecutiveName: string;
+//   date: Date;
+//   productName: string;
+//   amount: number;
+//   quantity: number;
+//   status: 'completed' | 'pending' | 'cancelled';
+// }
 
 /**
  * Incentive rule definition
