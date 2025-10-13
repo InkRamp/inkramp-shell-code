@@ -1,71 +1,149 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { User, UserRole, hasRequiredRole } from './models/roles.model';
 
 /**
- * User role types in the system
- * Privileges in descending order: super-admin > org-admin > team-lead > sales-executive
- */
-export enum UserRole {
-  SUPER_ADMIN = 'super-admin',
-  ORG_ADMIN = 'org-admin',
-  TEAM_LEAD = 'team-lead',
-  SALES_EXECUTIVE = 'sales-executive'
-}
-
-/**
- * User interface representing a user in the system
- */
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  teamId?: string;
-  managerId?: string;
-}
-
-/**
- * Role-based access control service
- * Manages user roles and permissions across the application
- * 
- * @Injectable providedIn: 'root' makes this service a singleton
+ * Service to manage user roles and permissions
  */
 @Injectable({
   providedIn: 'root'
 })
 export class RoleService {
-  private currentUserSubject = new BehaviorSubject<User | null>(this.getDummyUser());
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$: Observable<User | null> = this.currentUserSubject.asObservable();
 
-  constructor() {}
+  constructor() {
+    // DEBUG_LOG: RoleService initialized
+    console.log('[RoleService] Service initialized');
+    // Initialize with dummy user for development
+    this.loadDummyUser();
+  }
 
   /**
-   * Get the current user
-   * @returns Current user or null if not authenticated
+   * Load dummy user based on session or default
    */
-  getCurrentUser(): User | null {
-    return this.currentUserSubject.value;
+  private loadDummyUser(): void {
+    // DEBUG_LOG: Loading user from session storage
+    console.log('[RoleService] Loading user from session storage');
+    const savedUser = sessionStorage.getItem('current_user');
+    if (savedUser) {
+      const user = JSON.parse(savedUser);
+      // DEBUG_LOG: User loaded from session
+      console.log('[RoleService] User loaded from session:', user);
+      this.currentUserSubject.next(user);
+    } else {
+      // Default to sales executive for demo
+      const defaultUser: User = {
+        id: '1',
+        name: 'John Doe',
+        email: 'john.doe@example.com',
+        role: UserRole.ORG_ADMIN
+      };
+      // DEBUG_LOG: No saved user, using default
+      console.log('[RoleService] No saved user found, using default:', defaultUser);
+      this.setCurrentUser(defaultUser);
+    }
   }
 
   /**
    * Set the current user
-   * @param user - User to set as current
+   * @param user User to set as current
    */
-  setCurrentUser(user: User): void {
+  setCurrentUser(user: User | null): void {
+    // DEBUG_LOG: Setting current user
+    console.log('[RoleService] Setting current user:', user);
     this.currentUserSubject.next(user);
+    if (user) {
+      sessionStorage.setItem('current_user', JSON.stringify(user));
+      // DEBUG_LOG: User saved to session
+      console.log('[RoleService] User saved to session storage');
+    } else {
+      sessionStorage.removeItem('current_user');
+      // DEBUG_LOG: User removed from session
+      console.log('[RoleService] User removed from session storage');
+    }
   }
 
   /**
-   * Check if current user has a specific role
-   * @param role - Role to check
-   * @returns true if user has the specified role
+   * Get the current user synchronously
+   * @returns Current user or null
    */
-  hasRole(role: UserRole): boolean {
-    const user = this.getCurrentUser();
-    return user?.role === role;
+  getCurrentUser(): User | null {
+    const user = this.currentUserSubject.value;
+    // DEBUG_LOG: Getting current user
+    console.log('[RoleService] getCurrentUser() called, returning:', user);
+    return user;
   }
 
   /**
+   * Get the current user's role
+   * @returns Current user's role or null
+   */
+  getCurrentUserRole(): UserRole | null {
+    const role = this.currentUserSubject.value?.role || null;
+    // DEBUG_LOG: Getting current user role
+    console.log('[RoleService] getCurrentUserRole() called, returning:', role);
+    return role;
+  }
+
+  /**
+   * Check if current user has required role
+   * @param requiredRole Minimum required role
+   * @returns true if user has sufficient privilege
+   */
+  hasRole(requiredRole: UserRole): boolean {
+    const currentRole = this.getCurrentUserRole();
+    if (!currentRole) {
+      // DEBUG_LOG: No current role
+      console.log('[RoleService] hasRole() - No current role, access denied');
+      return false;
+    }
+    const hasAccess = hasRequiredRole(currentRole, requiredRole);
+    // DEBUG_LOG: Role check result
+    console.log(`[RoleService] hasRole() - Checking if ${currentRole} has ${requiredRole}:`, hasAccess);
+    return hasAccess;
+  }
+
+  /**
+   * Check if current user is admin or team lead
+   * @returns true if user can view other users' data
+   */
+  canViewOthersData(): boolean {
+    const role = this.getCurrentUserRole();
+    const canView = role === UserRole.SUPER_ADMIN || 
+           role === UserRole.ORG_ADMIN || 
+           role === UserRole.TEAM_LEAD;
+    // DEBUG_LOG: Can view others data check
+    console.log(`[RoleService] canViewOthersData() - Role: ${role}, Can view:`, canView);
+    return canView;
+  }
+
+  /**
+   * 
+   * From this point everything is taken from mfe-MY_SALES
+   */
+
+
+  /**
+   * Get users that current user can view
+   * - Admins and team leads can view all users
+   * - Sales executives can only view themselves
+   * @returns Array of users that current user can view
+   */
+  getViewableUsers(): User[] {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return [];
+
+    const allUsers = this.getAllUsers();
+
+    if (this.isTeamLeadOrHigher()) {
+      return allUsers.filter(u => u.role === UserRole.SALES_EXECUTIVE || u.id === currentUser.id);
+    }
+
+    return allUsers.filter(u => u.id === currentUser.id);
+  }
+
+    /**
    * Check if current user has any of the specified roles
    * @param roles - Array of roles to check
    * @returns true if user has any of the specified roles
@@ -90,7 +168,7 @@ export class RoleService {
   isTeamLeadOrHigher(): boolean {
     return this.hasAnyRole([UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.TEAM_LEAD]);
   }
-
+  
   /**
    * Get all dummy users for testing/demo purposes
    * @returns Array of dummy users
@@ -143,39 +221,6 @@ export class RoleService {
     ];
   }
 
-  /**
-   * Get users that current user can view
-   * - Admins and team leads can view all users
-   * - Sales executives can only view themselves
-   * @returns Array of users that current user can view
-   */
-  getViewableUsers(): User[] {
-    const currentUser = this.getCurrentUser();
-    if (!currentUser) return [];
-
-    const allUsers = this.getAllUsers();
-
-    if (this.isTeamLeadOrHigher()) {
-      return allUsers.filter(u => u.role === UserRole.SALES_EXECUTIVE || u.id === currentUser.id);
-    }
-
-    return allUsers.filter(u => u.id === currentUser.id);
-  }
-
-  /**
-   * Get a dummy user for testing
-   * In production, this would be replaced with actual authentication
-   * @returns A dummy user
-   */
-  private getDummyUser(): User {
-    // Return a sales executive by default for testing
-    return {
-      id: 'user-4',
-      name: 'Alice Sales',
-      email: 'alice.sales@company.com',
-      role: UserRole.SALES_EXECUTIVE,
-      teamId: 'team-1',
-      managerId: 'user-3'
-    };
-  }
 }
+
+  
