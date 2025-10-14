@@ -47,7 +47,7 @@ export interface SalesRecord {
   date: Date;
   clientName: string;
   region: string;
-  
+  quantity?: number; // 👈 optional key
 }
 
 /**

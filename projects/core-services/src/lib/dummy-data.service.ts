@@ -5,7 +5,9 @@ import {
   IncentiveRule, 
   IncentiveEarned, 
   ReportData, 
-  SalesExecutive 
+  SalesExecutive, 
+  SalesStatus, 
+  ProductCategory
 } from './models/data.model';
 
 /**
@@ -63,7 +65,7 @@ export class DummyDataService {
     const records: SalesRecord[] = [];
     const executives = this.generateSalesExecutives();
     const products = ['Product A', 'Product B', 'Product C', 'Product D'];
-    const statuses: Array<'completed' | 'pending' | 'cancelled'> = ['completed', 'pending', 'cancelled'];
+    const statuses: SalesStatus[] = [SalesStatus.COMPLETED, SalesStatus.PENDING, SalesStatus.CANCELLED];
 
     for (let i = 0; i < 50; i++) {
       const exec = executives[i % executives.length];
@@ -75,12 +77,17 @@ export class DummyDataService {
         id: `sale-${i + 1}`,
         salesExecutiveId: exec.id,
         salesExecutiveName: exec.name,
-        date: date,
+        date,
         productName: products[i % products.length],
+        productCategory: ProductCategory.SOFTWARE,
         amount: Math.floor(Math.random() * 50000) + 10000,
+        commission: Math.floor(Math.random() * 5000),
         quantity: Math.floor(Math.random() * 10) + 1,
-        status: statuses[i % 3]
+        status: statuses[i % statuses.length],
+        clientName: `Client ${i + 1}`,
+        region: ['North', 'South', 'East', 'West'][i % 4]
       });
+
     }
 
     return records;
