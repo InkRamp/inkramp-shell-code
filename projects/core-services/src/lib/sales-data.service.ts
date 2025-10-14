@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
-import {SalesRecord, SalesStatus, ProductCategory} from './models/data.model'
+import {SalesRecord, SalesStatus, ProductCategory, SalesSummary} from './models/data.model'
 
 /**
  * Sales record status
@@ -43,13 +43,13 @@ import {SalesRecord, SalesStatus, ProductCategory} from './models/data.model'
 /**
  * Sales summary interface
  */
-export interface SalesSummary {
-  totalSales: number;
-  totalCommission: number;
-  completedCount: number;
-  pendingCount: number;
-  cancelledCount: number;
-}
+// export interface SalesSummary {
+//   totalSales: number;
+//   totalCommission: number;
+//   completedCount: number;
+//   pendingCount: number;
+//   cancelledCount: number;
+// }
 
 /**
  * Sales data service

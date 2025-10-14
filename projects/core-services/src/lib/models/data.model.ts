@@ -51,6 +51,17 @@ export interface SalesRecord {
 }
 
 /**
+ * Sales summary interface
+ */
+export interface SalesSummary {
+  totalSales: number;
+  totalCommission: number;
+  completedCount: number;
+  pendingCount: number;
+  cancelledCount: number;
+}
+
+/**
  * Incentive rule definition
  */
 export interface IncentiveRule {
