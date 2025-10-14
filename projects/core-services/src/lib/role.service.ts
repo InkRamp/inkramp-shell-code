@@ -176,6 +176,12 @@ export class RoleService {
   getAllUsers(): User[] {
     return [
       {
+        id: '1',
+        name: 'John Doe',
+        email: 'john.doe@company.com',
+        role: UserRole.SUPER_ADMIN
+      },
+      {
         id: 'user-1',
         name: 'John Admin',
         email: 'john.admin@company.com',

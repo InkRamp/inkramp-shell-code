@@ -64,7 +64,9 @@ import {SalesRecord, SalesStatus, ProductCategory, SalesSummary} from './models/
 export class SalesDataService {
   private dummySalesData: SalesRecord[] = this.generateDummyData();
 
-  constructor() {}
+  constructor() {
+    console.log("IN sales data service of SHELLLL")
+  }
 
   /**
    * Get sales records for a specific user
