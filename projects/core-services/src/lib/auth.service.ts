@@ -47,14 +47,13 @@ export class AuthService {
   public user$: Observable<UserInfo | null> = this.userSubject.asObservable();
 
   constructor(private http: HttpClient) {
+    console.log("In constructor of auth service in i17e");
   }
 
-  /**
-   * Initiate OAuth2 login flow
-   * Redirects user to Zitadel authorization endpoint
-   * @param user - Optional user identifier (for demo purposes)
-   */
-  login(user?: string): void {
+  login(user?: string) {
+    if (user) {
+      console.log(`in i17e [AuthService] Logged in: ${user}`);
+    }
     this.redirectToZitadelLogin();
   }
 
