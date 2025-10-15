@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { MfeLoaderService } from './mfe-loader.service';
-import { UserRole } from '../models/roles.model';
-import { MfeConfig } from '../models/mfe.model';
+import { UserRole } from './models/roles.model';
+import { MfeConfig } from './models/mfe.model';
 
 describe('MfeLoaderService', () => {
   let service: MfeLoaderService;

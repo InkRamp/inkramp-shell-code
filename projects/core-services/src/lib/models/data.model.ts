@@ -3,17 +3,62 @@
  */
 
 /**
- * Sales record for a sales executive
+ * Sales record for a sales executive. Right now exported from sales-data.service.ts
  */
+// export interface SalesRecord {
+//   id: string;
+//   salesExecutiveId: string;
+//   salesExecutiveName: string;
+//   date: Date;
+//   productName: string;
+//   amount: number;
+//   quantity: number;
+//   status: 'completed' | 'pending' | 'cancelled';
+// }
+
+/**
+ * Sales record status
+ */
+export enum SalesStatus {
+  COMPLETED = 'completed',
+  PENDING = 'pending',
+  CANCELLED = 'cancelled'
+}
+
+/**
+ * Product category
+ */
+export enum ProductCategory {
+  ELECTRONICS = 'Electronics',
+  SOFTWARE = 'Software',
+  SERVICES = 'Services',
+  HARDWARE = 'Hardware'
+}
+
 export interface SalesRecord {
   id: string;
   salesExecutiveId: string;
   salesExecutiveName: string;
-  date: Date;
   productName: string;
+  productCategory: ProductCategory;
   amount: number;
-  quantity: number;
-  status: 'completed' | 'pending' | 'cancelled';
+  commission: number;
+  status: SalesStatus;
+  date: Date;
+  clientName: string;
+  region: string;
+  quantity?: number; // 👈 optional key
+}
+
+/**
+ * Sales summary interface
+ */
+export interface SalesSummary {
+  totalSales: number;
+  totalCommission: number;
+  completedCount: number;
+  pendingCount: number;
+  cancelledCount: number;
 }
 
 /**

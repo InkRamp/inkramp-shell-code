@@ -1,6 +1,32 @@
 import { LoadRemoteModuleScriptOptions } from "@angular-architects/module-federation";
-import { MfeConfig } from "../app/models/mfe.model";
-import { UserRole } from "../app/models/roles.model";
+
+/**
+ * User roles in descending order of privilege
+ * Duplicated here to avoid circular dependency and eager module consumption
+ */
+export enum UserRole {
+  SUPER_ADMIN = 'super-admin',
+  ORG_ADMIN = 'org-admin',
+  TEAM_LEAD = 'team-lead',
+  SALES_EXECUTIVE = 'sales-executive'
+}
+
+/**
+ * MFE configuration with metadata
+ * Duplicated here to avoid circular dependency and eager module consumption
+ */
+export interface MfeConfig {
+  id: string;
+  name: string;
+  displayName: string;
+  remoteName: string;
+  exposedModule: string;
+  url: string;
+  route: string;
+  allowedRoles: UserRole[];
+  priority: number; // Higher number = higher priority (load first)
+  icon?: string;
+}
 
 /**
  * Interface for MFE URL configuration

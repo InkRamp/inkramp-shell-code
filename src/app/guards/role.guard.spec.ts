@@ -1,8 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { roleGuard, adminGuard, superAdminGuard, allRolesGuard } from './role.guard';
-import { RoleService } from '../services/role.service';
-import { UserRole } from '../models/roles.model';
+import { RoleService, UserRole } from '@org/core-services';
 
 describe('Role Guards', () => {
   let roleService: RoleService;

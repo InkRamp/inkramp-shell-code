@@ -10,15 +10,18 @@ module.exports = withModuleFederationPlugin({
   },
 
   shared: {
-    ...shareAll({ singleton: true, strictVersion: true, requiredVersion: 'auto' }),
+    ...shareAll({ singleton: true, strictVersion: true, requiredVersion: 'auto', eager: false }),
   },
 
-  // Expose shared services for MFEs
+  // Expose shared services for MFEs from core-services library
   exposes: {
-    './RoleService': './src/app/services/role.service.ts',
-    './DummyDataService': './src/app/services/dummy-data.service.ts',
-    './MfeLoaderService': './src/app/services/mfe-loader.service.ts',
-    './Models': './src/app/models/index.ts',
+    './RoleService': './projects/core-services/src/lib/role.service.ts',
+    './DummyDataService': './projects/core-services/src/lib/dummy-data.service.ts',
+    './MfeLoaderService': './projects/core-services/src/lib/mfe-loader.service.ts',
+    './EventBusService': './projects/core-services/src/lib/event-bus.service.ts',
+    './Models': './projects/core-services/src/lib/models/roles.model.ts',
+    './DataModels': './projects/core-services/src/lib/models/data.model.ts',
+    './MfeModels': './projects/core-services/src/lib/models/mfe.model.ts',
   },
 
 });

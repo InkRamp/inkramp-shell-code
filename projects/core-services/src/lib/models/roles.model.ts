@@ -16,6 +16,8 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
+  teamId?: string;
+  managerId?: string;
 }
 
 /**

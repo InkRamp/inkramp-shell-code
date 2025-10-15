@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { loadRemoteModule } from '@angular-architects/module-federation';
-import { MfeConfig } from '../models/mfe.model';
-import { UserRole } from '../models/roles.model';
+import { MfeConfig } from './models/mfe.model';
+import { UserRole } from './models/roles.model';
 
 /**
  * Service to manage MFE loading with priority support
@@ -18,14 +18,22 @@ export class MfeLoaderService {
   private loadingMfesSubject = new BehaviorSubject<Set<string>>(new Set());
   public loadingMfes$: Observable<Set<string>> = this.loadingMfesSubject.asObservable();
 
-  constructor() {}
+  constructor() {
+    // DEBUG_LOG: MfeLoaderService initialized
+    console.log('[MfeLoaderService] Service initialized');
+  }
 
   /**
    * Set MFE configurations
    * @param configs Array of MFE configurations
    */
   setConfigs(configs: MfeConfig[]): void {
+    // DEBUG_LOG: Setting MFE configurations
+    console.log('[MfeLoaderService] setConfigs() called with', configs.length, 'configurations');
     this.mfeConfigs = configs.sort((a, b) => b.priority - a.priority);
+    // DEBUG_LOG: Configurations sorted by priority
+    console.log('[MfeLoaderService] Configurations sorted by priority:', 
+      this.mfeConfigs.map(c => ({ name: c.name, priority: c.priority })));
   }
 
   /**
@@ -33,6 +41,8 @@ export class MfeLoaderService {
    * @returns Array of MFE configurations
    */
   getConfigs(): MfeConfig[] {
+    // DEBUG_LOG: Getting all MFE configurations
+    console.log('[MfeLoaderService] getConfigs() called, returning', this.mfeConfigs.length, 'configurations');
     return this.mfeConfigs;
   }
 
@@ -42,9 +52,15 @@ export class MfeLoaderService {
    * @returns Filtered MFE configurations
    */
   getConfigsForRole(userRole: UserRole): MfeConfig[] {
-    return this.mfeConfigs.filter(config => 
+    // DEBUG_LOG: Getting MFE configs for role
+    console.log('[MfeLoaderService] getConfigsForRole() called for role:', userRole);
+    const configs = this.mfeConfigs.filter(config => 
       config.allowedRoles.includes(userRole)
     );
+    // DEBUG_LOG: Configs filtered by role
+    console.log('[MfeLoaderService] Found', configs.length, 'configurations for role:', userRole,
+      configs.map(c => c.name));
+    return configs;
   }
 
   /**
@@ -53,7 +69,16 @@ export class MfeLoaderService {
    * @returns MFE configuration or undefined
    */
   getConfigByName(name: string): MfeConfig | undefined {
-    return this.mfeConfigs.find(config => config.name === name);
+    // DEBUG_LOG: Getting MFE config by name
+    console.log('[MfeLoaderService] getConfigByName() called for:', name);
+    const config = this.mfeConfigs.find(config => config.name === name);
+    // DEBUG_LOG: Config found or not
+    if (config) {
+      console.log('[MfeLoaderService] Found configuration for:', name);
+    } else {
+      console.warn('[MfeLoaderService] Configuration not found for:', name);
+    }
+    return config;
   }
 
   /**
@@ -62,11 +87,20 @@ export class MfeLoaderService {
    * @returns Promise that resolves when preloading is complete
    */
   async preloadPriorityMfes(userRole: UserRole): Promise<void> {
+    // DEBUG_LOG: Preloading priority MFEs
+    console.log('[MfeLoaderService] preloadPriorityMfes() called for role:', userRole);
     const allowedConfigs = this.getConfigsForRole(userRole);
     const priorityConfigs = allowedConfigs.filter(config => config.priority >= 5);
+    
+    // DEBUG_LOG: Priority MFEs to preload
+    console.log('[MfeLoaderService] Preloading', priorityConfigs.length, 'priority MFEs:',
+      priorityConfigs.map(c => ({ name: c.name, priority: c.priority })));
 
     const loadPromises = priorityConfigs.map(config => this.loadMfe(config));
     await Promise.all(loadPromises);
+    
+    // DEBUG_LOG: Preloading complete
+    console.log('[MfeLoaderService] Preloading complete');
   }
 
   /**
@@ -80,12 +114,14 @@ export class MfeLoaderService {
 
     // Check if already loaded
     if (loadedMfes.has(config.name)) {
+      // DEBUG_LOG: MFE already loaded
       console.log(`[MfeLoaderService] MFE ${config.name} already loaded`);
       return;
     }
 
     // Check if already loading
     if (loadingMfes.has(config.name)) {
+      // DEBUG_LOG: MFE already loading
       console.log(`[MfeLoaderService] MFE ${config.name} is already loading`);
       return;
     }
@@ -96,7 +132,14 @@ export class MfeLoaderService {
       newLoadingMfes.add(config.name);
       this.loadingMfesSubject.next(newLoadingMfes);
 
+      // DEBUG_LOG: Starting MFE load
       console.log(`[MfeLoaderService] Loading MFE ${config.name} (priority: ${config.priority})`);
+      console.log(`[MfeLoaderService] MFE config:`, {
+        name: config.name,
+        url: config.url,
+        exposedModule: config.exposedModule,
+        remoteName: config.remoteName
+      });
 
       const module = await loadRemoteModule({
         type: 'module',
@@ -114,10 +157,18 @@ export class MfeLoaderService {
       updatedLoadingMfes.delete(config.name);
       this.loadingMfesSubject.next(updatedLoadingMfes);
 
+      // DEBUG_LOG: MFE loaded successfully
       console.log(`[MfeLoaderService] Successfully loaded MFE ${config.name}`);
+      console.log(`[MfeLoaderService] Currently loaded MFEs:`, Array.from(this.loadedMfesSubject.value));
       return module;
     } catch (error) {
+      // DEBUG_LOG: Error loading MFE
       console.error(`[MfeLoaderService] Error loading MFE ${config.name}:`, error);
+      console.error(`[MfeLoaderService] Failed config:`, {
+        name: config.name,
+        url: config.url,
+        exposedModule: config.exposedModule
+      });
 
       // Remove from loading on error
       const updatedLoadingMfes = new Set(this.loadingMfesSubject.value);
@@ -134,7 +185,10 @@ export class MfeLoaderService {
    * @returns true if loaded
    */
   isMfeLoaded(name: string): boolean {
-    return this.loadedMfesSubject.value.has(name);
+    const isLoaded = this.loadedMfesSubject.value.has(name);
+    // DEBUG_LOG: Checking if MFE is loaded
+    console.log(`[MfeLoaderService] isMfeLoaded(${name}):`, isLoaded);
+    return isLoaded;
   }
 
   /**
@@ -143,6 +197,9 @@ export class MfeLoaderService {
    * @returns true if loading
    */
   isMfeLoading(name: string): boolean {
-    return this.loadingMfesSubject.value.has(name);
+    const isLoading = this.loadingMfesSubject.value.has(name);
+    // DEBUG_LOG: Checking if MFE is loading
+    console.log(`[MfeLoaderService] isMfeLoading(${name}):`, isLoading);
+    return isLoading;
   }
 }

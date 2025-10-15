@@ -1,7 +1,7 @@
 import { Component, DestroyRef, effect, EventEmitter, Input, OnInit, Output, Signal, WritableSignal, signal } from '@angular/core';
 import { Pokemon, PokemonService } from './pokemon.service';
 import { Router } from '@angular/router';
-import { EventBusService } from '../../services/event-bus.service';
+import { EventBusService } from '@org/core-services';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { map, combineLatest, debounce, debounceTime, distinctUntilChanged, filter, fromEvent, takeLast, takeUntil, throttle, throttleTime, EMPTY, of } from 'rxjs';
