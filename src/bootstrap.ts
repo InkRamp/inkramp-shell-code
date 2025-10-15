@@ -4,7 +4,7 @@ import { AppComponent } from './app/app.component';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { routes } from './app/app.routes';
-import { cacheInterceptor } from '@org/cache-api.service'; 
+import { cacheInterceptor } from '@org/core-services'; 
 //import { OAuthModule } from 'angular-oauth2-oidc';
 
 export function bootstrap() {
