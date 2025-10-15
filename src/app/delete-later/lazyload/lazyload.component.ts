@@ -5,8 +5,8 @@ import { EventBusService } from '@org/core-services';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { map, combineLatest, debounce, debounceTime, distinctUntilChanged, filter, fromEvent, takeLast, takeUntil, throttle, throttleTime, EMPTY, of } from 'rxjs';
-import { SseFromEventService } from '../../services/sse-event-from.service';
-import { SseControlService } from '../../services/sse-event-from.service2';
+import { SseFromEventService } from '@org/sse-event-from.service';
+import { SseControlService } from '@org/sse-event-from.service2'; 
 
 @Component({
   selector: 'app-lazyload',
