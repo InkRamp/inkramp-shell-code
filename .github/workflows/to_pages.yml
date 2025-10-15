@@ -5,9 +5,9 @@ on:
     branches:
       - main
       - develop
-      - feat/*
-      - copilot/*
-      - fix/*
+      # - feat/*
+      # - copilot/*
+      # - fix/*
       
   workflow_dispatch:
     inputs:
