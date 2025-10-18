@@ -37,6 +37,14 @@ export class AppComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    // Check if user is already authenticated
+    if (this.auth.isAuthenticated()) {
+      const userInfo = this.auth.getUser();
+      if (userInfo) {
+        this.roleService.setUserFromAuth(userInfo);
+      }
+    }
+
     // Use window.location.search for hash-based routing fallback
     let code: string | null = null;
     let state: string | null = null;

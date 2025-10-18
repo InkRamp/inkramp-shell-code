@@ -15,10 +15,11 @@ describe('RoleService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should initialize with default sales executive user', (done) => {
+  it('should initialize with default org admin user', (done) => {
     service.currentUser$.subscribe(user => {
       expect(user).toBeTruthy();
-      expect(user?.role).toBe(UserRole.SALES_EXECUTIVE);
+      expect(user?.role).toBe(UserRole.ORG_ADMIN);
+      expect(user?.id).toBe('user-1');
       done();
     });
   });
@@ -104,5 +105,48 @@ describe('RoleService', () => {
 
     expect(sessionStorage.getItem('current_user')).toBeNull();
     expect(service.getCurrentUser()).toBeNull();
+  });
+
+  it('should map Zitadel user to internal user with correct role based on email', () => {
+    const adminUserInfo = {
+      sub: 'zitadel-123',
+      name: 'Admin User',
+      email: 'admin@example.com'
+    };
+
+    service.setUserFromAuth(adminUserInfo);
+    const user = service.getCurrentUser();
+
+    expect(user).toBeTruthy();
+    expect(user?.id).toBe('zitadel-123');
+    expect(user?.name).toBe('Admin User');
+    expect(user?.email).toBe('admin@example.com');
+    expect(user?.role).toBe(UserRole.SUPER_ADMIN);
+  });
+
+  it('should assign SALES_EXECUTIVE role by default', () => {
+    const userInfo = {
+      sub: 'zitadel-456',
+      name: 'Regular User',
+      email: 'user@example.com'
+    };
+
+    service.setUserFromAuth(userInfo);
+    const user = service.getCurrentUser();
+
+    expect(user?.role).toBe(UserRole.SALES_EXECUTIVE);
+  });
+
+  it('should assign TEAM_LEAD role for team/lead emails', () => {
+    const userInfo = {
+      sub: 'zitadel-789',
+      name: 'Team Lead',
+      email: 'team.lead@example.com'
+    };
+
+    service.setUserFromAuth(userInfo);
+    const user = service.getCurrentUser();
+
+    expect(user?.role).toBe(UserRole.TEAM_LEAD);
   });
 });
