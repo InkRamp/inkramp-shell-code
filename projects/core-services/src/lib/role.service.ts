@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { User, UserRole, hasRequiredRole } from './models/roles.model';
+import { UserInfo } from './auth.service';
 
 /**
  * Service to manage user roles and permissions
@@ -20,6 +21,42 @@ export class RoleService {
   }
 
   /**
+   * Set user from Zitadel authentication
+   * Maps Zitadel UserInfo to internal User model with role
+   * @param userInfo User information from Zitadel
+   */
+  setUserFromAuth(userInfo: UserInfo): void {
+    console.log('[RoleService] Setting user from Zitadel auth:', userInfo);
+    
+    // Map Zitadel user to internal User model
+    // Default role assignment logic:
+    // - Check email domain or specific emails for role assignment
+    // - For now, use email patterns to determine roles
+    let role: UserRole = UserRole.SALES_EXECUTIVE; // Default role
+    
+    const email = userInfo.email?.toLowerCase() || '';
+    
+    // Role mapping logic based on email patterns
+    if (email.includes('admin') || email.includes('super')) {
+      role = UserRole.SUPER_ADMIN;
+    } else if (email.includes('manager') || email.includes('org')) {
+      role = UserRole.ORG_ADMIN;
+    } else if (email.includes('lead') || email.includes('team')) {
+      role = UserRole.TEAM_LEAD;
+    }
+    
+    const user: User = {
+      id: userInfo.sub,
+      name: userInfo.name || userInfo.email || 'User',
+      email: userInfo.email || '',
+      role: role
+    };
+    
+    console.log('[RoleService] Mapped user with role:', user);
+    this.setCurrentUser(user);
+  }
+
+  /**
    * Load dummy user based on session or default
    */
   private loadDummyUser(): void {
@@ -32,11 +69,11 @@ export class RoleService {
       console.log('[RoleService] User loaded from session:', user);
       this.currentUserSubject.next(user);
     } else {
-      // Default to sales executive for demo
+      // Default to org admin for demo (matches sales data)
       const defaultUser: User = {
-        id: '1',
-        name: 'John Doe',
-        email: 'john.doe@example.com',
+        id: 'user-1',
+        name: 'John Admin',
+        email: 'john.admin@company.com',
         role: UserRole.ORG_ADMIN
       };
       // DEBUG_LOG: No saved user, using default
@@ -175,12 +212,6 @@ export class RoleService {
    */
   getAllUsers(): User[] {
     return [
-      {
-        id: '1',
-        name: 'John Doe',
-        email: 'john.doe@company.com',
-        role: UserRole.SUPER_ADMIN
-      },
       {
         id: 'user-1',
         name: 'John Admin',

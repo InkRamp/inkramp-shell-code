@@ -56,27 +56,32 @@ export class AppComponent implements OnInit {
       error = urlParams.get('error');
     }
 
-    // Auth callback handling - navigation commented out as per requirements
-    // if (error) {
-    //   console.error('Authentication failed:', error);
-    //   // TODO: Uncomment when ready - setTimeout(() => this.router.navigate(['/']), 3000);
-    //   return;
-    // }
+    // Auth callback handling
+    if (error) {
+      console.error('Authentication failed:', error);
+      setTimeout(() => this.router.navigate(['/']), 3000);
+      return;
+    }
 
-    // if (code && state) {
-    //   try {
-    //     const success = await this.auth.handleCallback(code, state);
-    //     if (success) {
-    //       console.log('Authentication successful');
-    //       // TODO: Uncomment when ready - setTimeout(() => this.router.navigate(['/']), 1500);
-    //     } else {
-    //       console.error('Authentication failed');
-    //       // TODO: Uncomment when ready - setTimeout(() => this.router.navigate(['/']), 3000);
-    //     }
-    //   } catch (e) {
-    //     console.error('Authentication failed (exception):', e);
-    //     // TODO: Uncomment when ready - setTimeout(() => this.router.navigate(['/']), 3000);
-    //   }
-    // }
+    if (code && state) {
+      try {
+        const success = await this.auth.handleCallback(code, state);
+        if (success) {
+          console.log('Authentication successful');
+          // Get user info from auth service and set it in role service
+          const userInfo = this.auth.getUser();
+          if (userInfo) {
+            this.roleService.setUserFromAuth(userInfo);
+          }
+          setTimeout(() => this.router.navigate(['/']), 1500);
+        } else {
+          console.error('Authentication failed');
+          setTimeout(() => this.router.navigate(['/']), 3000);
+        }
+      } catch (e) {
+        console.error('Authentication failed (exception):', e);
+        setTimeout(() => this.router.navigate(['/']), 3000);
+      }
+    }
   }
 }
