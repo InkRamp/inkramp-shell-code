@@ -40,7 +40,9 @@ export class AppComponent implements OnInit {
     // Check if user is already authenticated
     if (this.auth.isAuthenticated()) {
       const userInfo = this.auth.getUser();
-      if (userInfo) {
+      const currentUser = this.roleService.getCurrentUser();
+      // Only set user from auth if no current user or if the IDs differ
+      if (userInfo && (!currentUser || currentUser.id !== userInfo.sub)) {
         this.roleService.setUserFromAuth(userInfo);
       }
     }

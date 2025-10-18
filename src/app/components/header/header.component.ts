@@ -34,8 +34,9 @@ export class HeaderComponent implements OnInit {
     // Check if user is already authenticated via Zitadel
     if (this.auth.isAuthenticated()) {
       const userInfo = this.auth.getUser();
-      if (userInfo && !this.roleService.getCurrentUser()) {
-        // If authenticated but no role user set, map from auth
+      const currentUser = this.roleService.getCurrentUser();
+      // Only set user from auth if no current user or if the IDs differ
+      if (userInfo && (!currentUser || currentUser.id !== userInfo.sub)) {
         this.roleService.setUserFromAuth(userInfo);
       }
     }
@@ -87,8 +88,6 @@ export class HeaderComponent implements OnInit {
   logout(): void {
     this.auth.logout();
     this.roleService.setCurrentUser(null);
-    // Optionally redirect to login
-    // this.auth.login();
   }
 
   /**
