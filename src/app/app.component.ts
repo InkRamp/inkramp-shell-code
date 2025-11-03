@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { RouterOutlet, Params, ActivatedRoute, Router } from '@angular/router';
 import { AuthService, UserInfo } from '@org/core-services'; 
 import { AuthenticationService } from './services/authentication.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { firstValueFrom } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { RoleService, MfeLoaderService, User } from '@org/core-services';
 import { MFE_CONFIGS } from '../configs/mfe';
 import { HeaderComponent } from './components/header/header.component';
@@ -27,8 +27,9 @@ interface AuthCallbackParams {
   standalone: true,
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   title = 'Incentive Management System';
+  private subscriptions = new Subscription();
 
   constructor(
     public auth2: AuthenticationService, 
@@ -42,11 +43,13 @@ export class AppComponent implements OnInit {
     this.mfeLoader.setConfigs(MFE_CONFIGS);
   }
 
-  async ngOnInit(): Promise<void> {
+  ngOnInit(): void {
     this.syncAuthenticatedUser();
-    
-    const authParams = await this.extractAuthParams();
-    await this.handleAuthCallback(authParams);
+    this.subscribeToAuthCallback();
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
   /**
@@ -74,10 +77,21 @@ export class AppComponent implements OnInit {
   }
 
   /**
-   * Extract authentication parameters from route or URL
+   * Subscribe to query parameters for authentication callback
    */
-  private async extractAuthParams(): Promise<AuthCallbackParams> {
-    const params = await firstValueFrom(this.route.queryParams);
+  private subscribeToAuthCallback(): void {
+    const subscription = this.route.queryParams.subscribe(params => {
+      const authParams = this.extractAuthParams(params);
+      this.handleAuthCallback(authParams);
+    });
+    
+    this.subscriptions.add(subscription);
+  }
+
+  /**
+   * Extract authentication parameters from route params
+   */
+  private extractAuthParams(params: Params): AuthCallbackParams {
     const hasParams = params && Object.keys(params).length > 0;
     
     return hasParams 
@@ -111,14 +125,14 @@ export class AppComponent implements OnInit {
   /**
    * Handle authentication callback logic
    */
-  private async handleAuthCallback(params: AuthCallbackParams): Promise<void> {
+  private handleAuthCallback(params: AuthCallbackParams): void {
     if (params.error) {
       this.handleAuthError(params.error);
       return;
     }
 
     if (params.code && params.state) {
-      await this.processAuthCode(params.code, params.state);
+      this.processAuthCode(params.code, params.state);
     }
   }
 
