@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService, RoleService } from '@org/core-services';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-auth-callback',
@@ -23,9 +24,13 @@ import { AuthService, RoleService } from '@org/core-services';
     }
   `]
 })
-export class AuthCallbackComponent implements OnInit {
+export class AuthCallbackComponent implements OnInit, OnDestroy {
+  private static readonly SUCCESS_REDIRECT_DELAY = 1500;
+  private static readonly ERROR_REDIRECT_DELAY = 3000;
+
   message = 'Processing authentication...';
   isProcessing = true;
+  private subscription?: Subscription;
 
   constructor(
     private route: ActivatedRoute,
@@ -35,13 +40,13 @@ export class AuthCallbackComponent implements OnInit {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    this.route.queryParams.subscribe(async params => {
+    this.subscription = this.route.queryParams.subscribe(async params => {
       const { state, code, error } = params;
       
       if (error) {
         this.message = `Authentication failed: ${error}`;
         this.isProcessing = false;
-        setTimeout(() => this.router.navigate(['/']), 3000);
+        setTimeout(() => this.router.navigate(['/']), AuthCallbackComponent.ERROR_REDIRECT_DELAY);
         return;
       }
       
@@ -56,22 +61,26 @@ export class AuthCallbackComponent implements OnInit {
             }
             this.message = 'Authentication successful! Redirecting...';
             this.isProcessing = false;
-            setTimeout(() => this.router.navigate(['/']), 1500);
+            setTimeout(() => this.router.navigate(['/']), AuthCallbackComponent.SUCCESS_REDIRECT_DELAY);
           } else {
             this.message = 'Authentication failed. Redirecting...';
             this.isProcessing = false;
-            setTimeout(() => this.router.navigate(['/']), 3000);
+            setTimeout(() => this.router.navigate(['/']), AuthCallbackComponent.ERROR_REDIRECT_DELAY);
           }
         } catch (e) {
           this.message = 'Authentication failed (exception). Redirecting...';
           this.isProcessing = false;
-          setTimeout(() => this.router.navigate(['/']), 3000);
+          setTimeout(() => this.router.navigate(['/']), AuthCallbackComponent.ERROR_REDIRECT_DELAY);
         }
       } else {
         this.message = 'Invalid callback parameters. Redirecting...';
         this.isProcessing = false;
-        setTimeout(() => this.router.navigate(['/']), 3000);
+        setTimeout(() => this.router.navigate(['/']), AuthCallbackComponent.ERROR_REDIRECT_DELAY);
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.subscription?.unsubscribe();
   }
 }
