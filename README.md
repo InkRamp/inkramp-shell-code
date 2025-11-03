@@ -1,3 +1,8 @@
+# Local Development Setup
+- Step 1: In angular json change to "baseHref": "./" so all assets are relatively served. 
+- Step 2: Open 2 terminal windows. In 1 window run the command `npm run watch` or `npm run watch:prod`
+- Step 3: In the second terminal run the command `npx http-server dist/i17e`
+
 # ShellModule
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.17.
