@@ -81,7 +81,7 @@ export class RoleService {
     }
 
     // Fall back to loading dummy user
-    this.loadDummyUser();
+    //this.loadDummyUser();
   }
 
   /**
