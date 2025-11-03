@@ -105,6 +105,12 @@ export const getApiUrl = (endpoint: string, config: ApiConfig = API_CONFIG): str
 /**
  * Update API configuration
  * Useful for switching environments or updating endpoint
+ * 
+ * NOTE: This mutates the global API_CONFIG object intentionally for simplicity.
+ * All API services share this configuration. For more complex scenarios with
+ * multiple API endpoints or tenant-specific configs, consider using a service
+ * with dependency injection instead.
+ * 
  * @param newConfig - Partial configuration to update
  */
 export const updateApiConfig = (newConfig: Partial<ApiConfig>): void => {
