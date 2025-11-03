@@ -2,6 +2,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { EventBusService } from './event-bus.service';
 
 /**
  * Token response from OAuth2 provider
@@ -25,6 +26,7 @@ export interface UserInfo {
 /**
  * Authentication service for Zitadel OAuth2 integration
  * Handles login, logout, token management, and user session
+ * Stores tokens in sessionStorage and emits authentication events for MicroApps
  * 
  * NOTE: All navigation logic using setTimeout is commented out as per requirements.
  * To enable navigation after auth operations, uncomment the marked sections in consuming components.
@@ -46,7 +48,10 @@ export class AuthService {
   private userSubject = new BehaviorSubject<UserInfo | null>(this.getUserInfoFromStorage());
   public user$: Observable<UserInfo | null> = this.userSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private eventBus: EventBusService
+  ) {
     console.log("In constructor of auth service in i17e");
   }
 
@@ -170,29 +175,31 @@ export class AuthService {
 
   /**
    * Logout user and clear authentication state
-   * Removes tokens and user info from storage
+   * Removes tokens and user info from storage and emits logout event
    */
   logout(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.USER_INFO_KEY);
+    sessionStorage.removeItem(this.TOKEN_KEY);
+    sessionStorage.removeItem(this.USER_INFO_KEY);
     this.userSubject.next(null);
+    this.emitAuthEvent('logout', null);
     console.log('[AuthService] User logged out');
   }
 
   /**
-   * Get current access token
+   * Get current access token from sessionStorage
    * @returns string | null - Access token or null if not authenticated
    */
   getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
+    return sessionStorage.getItem(this.TOKEN_KEY);
   }
 
   /**
-   * Set access token in storage
+   * Set access token in storage and emit event for MicroApps
    * @param token - Access token to store
    */
   setToken(token: string): void {
-    localStorage.setItem(this.TOKEN_KEY, token);
+    sessionStorage.setItem(this.TOKEN_KEY, token);
+    this.emitAuthEvent('token_updated', { token });
   }
 
   /**
@@ -212,21 +219,38 @@ export class AuthService {
   }
 
   /**
-   * Get user information from localStorage
+   * Get user information from sessionStorage
    * @returns UserInfo | null - Stored user info or null
    */
   private getUserInfoFromStorage(): UserInfo | null {
-    const userJson = localStorage.getItem(this.USER_INFO_KEY);
+    const userJson = sessionStorage.getItem(this.USER_INFO_KEY);
     return userJson ? JSON.parse(userJson) : null;
   }
 
   /**
-   * Set user information in storage and update observable
+   * Set user information in storage, update observable and emit event for MicroApps
    * @param userInfo - User information to store
    */
   private setUserInfo(userInfo: UserInfo): void {
-    localStorage.setItem(this.USER_INFO_KEY, JSON.stringify(userInfo));
+    sessionStorage.setItem(this.USER_INFO_KEY, JSON.stringify(userInfo));
     this.userSubject.next(userInfo);
+    this.emitAuthEvent('user_info_updated', userInfo);
+  }
+
+  /**
+   * Emit authentication event for MicroApps to consume
+   * Events are emitted via EventBus for cross-MFE communication
+   * @param eventType - Type of authentication event
+   * @param payload - Event payload
+   */
+  private emitAuthEvent(eventType: string, payload: any): void {
+    const event = {
+      type: `auth:${eventType}`,
+      payload,
+      timestamp: new Date().toISOString()
+    };
+    this.eventBus.sendEvent(JSON.stringify(event));
+    console.log('[AuthService] Auth event emitted:', event.type);
   }
 
   /**
