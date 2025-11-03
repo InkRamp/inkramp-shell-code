@@ -156,7 +156,6 @@ export class SalesDataService {
     const regions = ['North', 'South', 'East', 'West', 'Central'];
 
     const salesExecutives = [
-      { id: '1', name: 'John Doe' },
       { id: 'user-4', name: 'Alice Sales' },
       { id: 'user-5', name: 'Bob Sales' },
       { id: 'user-6', name: 'Carol Sales' }

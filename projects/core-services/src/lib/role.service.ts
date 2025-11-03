@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { User, UserRole, hasRequiredRole } from './models/roles.model';
+import { UserInfo } from './auth.service';
 
 /**
  * Service to manage user roles and permissions
@@ -20,6 +21,54 @@ export class RoleService {
   }
 
   /**
+   * Set user from Zitadel authentication
+   * Maps Zitadel UserInfo to internal User model with role
+   * @param userInfo User information from Zitadel
+   */
+  setUserFromAuth(userInfo: UserInfo): void {
+    console.log('[RoleService] Setting user from Zitadel auth:', userInfo);
+    
+    const user = this.mapUserInfoToUser(userInfo);
+    console.log('[RoleService] Mapped user with role:', user);
+    this.setCurrentUser(user);
+  }
+
+  /**
+   * Pure function to map UserInfo to User with role assignment
+   * @param userInfo User information from Zitadel
+   * @returns Mapped User object with assigned role
+   */
+  private mapUserInfoToUser(userInfo: UserInfo): User {
+    return {
+      id: userInfo.sub,
+      name: userInfo.name || userInfo.email || 'User',
+      email: userInfo.email || '',
+      role: this.determineRoleFromEmail(userInfo.email || '')
+    };
+  }
+
+  /**
+   * Pure function to determine user role from email pattern
+   * @param email User email address
+   * @returns Assigned UserRole based on email pattern
+   */
+  private determineRoleFromEmail(email: string): UserRole {
+    const normalizedEmail = email.toLowerCase();
+    
+    const rolePatterns: Array<{ patterns: string[]; role: UserRole }> = [
+      { patterns: ['admin', 'super'], role: UserRole.SUPER_ADMIN },
+      { patterns: ['manager', 'org'], role: UserRole.ORG_ADMIN },
+      { patterns: ['lead', 'team'], role: UserRole.TEAM_LEAD }
+    ];
+
+    const matchedRole = rolePatterns.find(({ patterns }) =>
+      patterns.some(pattern => normalizedEmail.includes(pattern))
+    );
+
+    return matchedRole?.role ?? UserRole.SALES_EXECUTIVE;
+  }
+
+  /**
    * Load dummy user based on session or default
    */
   private loadDummyUser(): void {
@@ -32,11 +81,11 @@ export class RoleService {
       console.log('[RoleService] User loaded from session:', user);
       this.currentUserSubject.next(user);
     } else {
-      // Default to sales executive for demo
+      // Default to org admin for demo (matches sales data)
       const defaultUser: User = {
-        id: '1',
-        name: 'John Doe',
-        email: 'john.doe@example.com',
+        id: 'user-1',
+        name: 'John Admin',
+        email: 'john.admin@company.com',
         role: UserRole.ORG_ADMIN
       };
       // DEBUG_LOG: No saved user, using default
@@ -175,12 +224,6 @@ export class RoleService {
    */
   getAllUsers(): User[] {
     return [
-      {
-        id: '1',
-        name: 'John Doe',
-        email: 'john.doe@company.com',
-        role: UserRole.SUPER_ADMIN
-      },
       {
         id: 'user-1',
         name: 'John Admin',

@@ -48,11 +48,12 @@ export class DummyDataService {
     // DEBUG_LOG: Generating sales executives
     console.log('[DummyDataService] Generating sales executives');
     return [
-      { id: '1', name: 'John Doe', email: 'john.doe@example.com', teamId: 'team1' },
-      { id: '2', name: 'Jane Smith', email: 'jane.smith@example.com', teamId: 'team1' },
-      { id: '3', name: 'Bob Johnson', email: 'bob.johnson@example.com', teamId: 'team2' },
-      { id: '4', name: 'Alice Williams', email: 'alice.williams@example.com', teamId: 'team2' },
-      { id: '5', name: 'Charlie Brown', email: 'charlie.brown@example.com', teamId: 'team1' }
+      { id: 'user-1', name: 'John Admin', email: 'john.admin@company.com', teamId: 'team-1' },
+      { id: 'user-2', name: 'Sarah Manager', email: 'sarah.manager@company.com', teamId: 'team-1' },
+      { id: 'user-3', name: 'Mike Lead', email: 'mike.lead@company.com', teamId: 'team-1' },
+      { id: 'user-4', name: 'Alice Sales', email: 'alice.sales@company.com', teamId: 'team-1' },
+      { id: 'user-5', name: 'Bob Sales', email: 'bob.sales@company.com', teamId: 'team-1' },
+      { id: 'user-6', name: 'Carol Sales', email: 'carol.sales@company.com', teamId: 'team-1' }
     ];
   }
 
