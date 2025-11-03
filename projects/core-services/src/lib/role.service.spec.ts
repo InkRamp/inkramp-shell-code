@@ -149,4 +149,54 @@ describe('RoleService', () => {
 
     expect(user?.role).toBe(UserRole.TEAM_LEAD);
   });
+
+  it('should assign ORG_ADMIN role for manager/org emails', () => {
+    const userInfo = {
+      sub: 'zitadel-101',
+      name: 'Manager User',
+      email: 'manager@example.com'
+    };
+
+    service.setUserFromAuth(userInfo);
+    const user = service.getCurrentUser();
+
+    expect(user?.role).toBe(UserRole.ORG_ADMIN);
+  });
+
+  it('should handle missing email gracefully', () => {
+    const userInfo = {
+      sub: 'zitadel-102',
+      name: 'No Email User'
+    };
+
+    service.setUserFromAuth(userInfo);
+    const user = service.getCurrentUser();
+
+    expect(user).toBeTruthy();
+    expect(user?.email).toBe('');
+    expect(user?.role).toBe(UserRole.SALES_EXECUTIVE);
+  });
+
+  it('should handle missing name by using email', () => {
+    const userInfo = {
+      sub: 'zitadel-103',
+      email: 'user@example.com'
+    };
+
+    service.setUserFromAuth(userInfo);
+    const user = service.getCurrentUser();
+
+    expect(user?.name).toBe('user@example.com');
+  });
+
+  it('should handle missing name and email', () => {
+    const userInfo = {
+      sub: 'zitadel-104'
+    };
+
+    service.setUserFromAuth(userInfo);
+    const user = service.getCurrentUser();
+
+    expect(user?.name).toBe('User');
+  });
 });

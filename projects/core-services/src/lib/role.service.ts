@@ -28,32 +28,44 @@ export class RoleService {
   setUserFromAuth(userInfo: UserInfo): void {
     console.log('[RoleService] Setting user from Zitadel auth:', userInfo);
     
-    // Map Zitadel user to internal User model
-    // Default role assignment logic:
-    // - Check email domain or specific emails for role assignment
-    // - For now, use email patterns to determine roles
-    let role: UserRole = UserRole.SALES_EXECUTIVE; // Default role
-    
-    const email = userInfo.email?.toLowerCase() || '';
-    
-    // Role mapping logic based on email patterns
-    if (email.includes('admin') || email.includes('super')) {
-      role = UserRole.SUPER_ADMIN;
-    } else if (email.includes('manager') || email.includes('org')) {
-      role = UserRole.ORG_ADMIN;
-    } else if (email.includes('lead') || email.includes('team')) {
-      role = UserRole.TEAM_LEAD;
-    }
-    
-    const user: User = {
+    const user = this.mapUserInfoToUser(userInfo);
+    console.log('[RoleService] Mapped user with role:', user);
+    this.setCurrentUser(user);
+  }
+
+  /**
+   * Pure function to map UserInfo to User with role assignment
+   * @param userInfo User information from Zitadel
+   * @returns Mapped User object with assigned role
+   */
+  private mapUserInfoToUser(userInfo: UserInfo): User {
+    return {
       id: userInfo.sub,
       name: userInfo.name || userInfo.email || 'User',
       email: userInfo.email || '',
-      role: role
+      role: this.determineRoleFromEmail(userInfo.email || '')
     };
+  }
+
+  /**
+   * Pure function to determine user role from email pattern
+   * @param email User email address
+   * @returns Assigned UserRole based on email pattern
+   */
+  private determineRoleFromEmail(email: string): UserRole {
+    const normalizedEmail = email.toLowerCase();
     
-    console.log('[RoleService] Mapped user with role:', user);
-    this.setCurrentUser(user);
+    const rolePatterns: Array<{ patterns: string[]; role: UserRole }> = [
+      { patterns: ['admin', 'super'], role: UserRole.SUPER_ADMIN },
+      { patterns: ['manager', 'org'], role: UserRole.ORG_ADMIN },
+      { patterns: ['lead', 'team'], role: UserRole.TEAM_LEAD }
+    ];
+
+    const matchedRole = rolePatterns.find(({ patterns }) =>
+      patterns.some(pattern => normalizedEmail.includes(pattern))
+    );
+
+    return matchedRole?.role ?? UserRole.SALES_EXECUTIVE;
   }
 
   /**
