@@ -96,13 +96,14 @@ npm test
 - Error handling
 
 ### Local Development
-- Dev user mimicking (test different roles)
+- Dev user mimicking (test different roles - in-memory only, not persisted)
 - Environment-based configuration
 - Hot reload support
 
 ### Example: Dev User Mimicking
 ```typescript
 // In browser console or initialization
+// Note: This is stored in-memory only and will not persist across browser sessions
 const testAdmin = {
   id: 'dev-1',
   name: 'Dev Admin',
@@ -110,8 +111,9 @@ const testAdmin = {
   role: 'super-admin'
 };
 
-localStorage.setItem('dev_mimic_user', JSON.stringify(testAdmin));
-// Refresh page to apply
+// Inject RoleService and use it
+// roleService.setDevMimicUser(testAdmin);
+// Refresh will clear the mimic user - you'll need to set it again
 ```
 
 ## 🏗️ Architecture

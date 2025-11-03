@@ -12,11 +12,14 @@ import { UserInfo } from './auth.service';
 export class RoleService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$: Observable<User | null> = this.currentUserSubject.asObservable();
+  
+  // In-memory storage for dev mimic user (not persisted across sessions)
+  private devMimicUser: User | null = null;
 
   constructor() {
     // DEBUG_LOG: RoleService initialized
     console.log('[RoleService] Service initialized');
-    // Initialize with dummy user for development or load from localStorage for mimicking
+    // Initialize with dummy user for development
     this.loadInitialUser();
   }
 
@@ -72,11 +75,10 @@ export class RoleService {
    * Load initial user - checks for dev mimic user first, then session, then default
    */
   private loadInitialUser(): void {
-    // Check for dev mimic user (for local development)
-    const mimicUser = this.getDevMimicUser();
-    if (mimicUser) {
-      console.log('[RoleService] Using dev mimic user:', mimicUser);
-      this.currentUserSubject.next(mimicUser);
+    // Check for in-memory dev mimic user (for local development in current session)
+    if (this.devMimicUser) {
+      console.log('[RoleService] Using dev mimic user:', this.devMimicUser);
+      this.currentUserSubject.next(this.devMimicUser);
       return;
     }
 
@@ -85,38 +87,27 @@ export class RoleService {
   }
 
   /**
-   * Get dev mimic user from localStorage
-   * This allows developers to mimic different users locally
-   * Set by calling: localStorage.setItem('dev_mimic_user', JSON.stringify(user))
+   * Get dev mimic user from in-memory storage
+   * This allows developers to mimic different users locally during current session
+   * Note: User mimicking is only available during the current session and will not persist
    */
   private getDevMimicUser(): User | null {
-    try {
-      const mimicUserJson = localStorage.getItem('dev_mimic_user');
-      if (mimicUserJson) {
-        const user = JSON.parse(mimicUserJson);
-        // Validate it's a proper user object
-        if (user.id && user.name && user.role) {
-          return user;
-        }
-      }
-    } catch (error) {
-      console.error('[RoleService] Error parsing dev mimic user:', error);
-    }
-    return null;
+    return this.devMimicUser;
   }
 
   /**
    * Set dev mimic user for local development
    * This allows testing different user roles without authentication
+   * Note: Mimic user is only stored in memory and will not persist across browser sessions
    * @param user - User to mimic (or null to clear)
    */
   setDevMimicUser(user: User | null): void {
     if (user) {
-      localStorage.setItem('dev_mimic_user', JSON.stringify(user));
+      this.devMimicUser = user;
       this.currentUserSubject.next(user);
-      console.log('[RoleService] Dev mimic user set:', user);
+      console.log('[RoleService] Dev mimic user set (in-memory only):', user);
     } else {
-      localStorage.removeItem('dev_mimic_user');
+      this.devMimicUser = null;
       this.loadDummyUser();
       console.log('[RoleService] Dev mimic user cleared');
     }
