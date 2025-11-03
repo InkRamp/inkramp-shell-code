@@ -1,11 +1,24 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { AuthService } from '@org/core-services';
+import { AuthService } from '../auth.service';
 
 /**
  * Authentication HTTP Interceptor
  * Automatically adds authentication token to outgoing API requests
  * Uses functional interceptor pattern (Angular 18+)
+ * 
+ * This interceptor is shareable and can be used in both Shell and MFE applications.
+ * 
+ * Usage in app.config.ts:
+ * ```typescript
+ * import { authInterceptor } from '@org/core-services';
+ * 
+ * export const appConfig: ApplicationConfig = {
+ *   providers: [
+ *     provideHttpClient(withInterceptors([authInterceptor]))
+ *   ]
+ * };
+ * ```
  */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);

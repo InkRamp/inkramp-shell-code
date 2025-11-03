@@ -23,6 +23,9 @@ export * from './lib/incentives-api.service';
 export * from './lib/targets-api.service';
 export * from './lib/tasks-api.service';
 
+// Interceptors
+export * from './lib/interceptors/auth.interceptor';
+
 // Models
 export * from './lib/models/roles.model';
 export * from './lib/models/data.model';
