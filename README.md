@@ -1,7 +1,8 @@
 # Local Development Setup
 - Step 1: In angular json change to "baseHref": "./" so all assets are relatively served. 
-- Step 2: Open 2 terminal windows. In 1 window run the command `npm run watch` or `npm run watch:prod`
+- Step 2: Open 2 terminal windows. In 1 window run the command `npm run watch:prod`
 - Step 3: In the second terminal run the command `npx http-server dist/i17e`
+- Step 4: In core-services/src/lib/auth.service.ts change to following `private readonly REDIRECT_URI = 'http://127.0.0.1:8080/';`
 
 # ShellModule - Incentive Management System
 
