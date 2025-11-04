@@ -75,11 +75,18 @@ npm test
 
 ## 📚 Documentation
 
+### Authentication & Token Management
+- [Zitadel Token Usage Guide](./docs/ZITADEL_TOKEN_USAGE_IN_MFES.md) - **Complete guide on how MFEs use Zitadel tokens**
+- [Zitadel Token Quick Reference](./docs/ZITADEL_TOKEN_QUICK_REFERENCE.md) - **Quick code snippets and examples**
+- [Proposed Token Solutions](./docs/ZITADEL_TOKEN_PROPOSED_SOLUTIONS.md) - **Enhancement proposals and roadmap**
+- [Zitadel Integration Setup](./ZITADEL_INTEGRATION.md) - OAuth2 configuration and setup
+
+### Development Guides
 - [API Integration Guide](./docs/API_INTEGRATION_GUIDE.md) - How to use the new API services
 - [Migration Guide](./docs/MIGRATION_GUIDE.md) - Migrating from dummy data to real API
-- [Zitadel Integration](./ZITADEL_INTEGRATION.md) - Authentication setup
 - [Multi-MFE Guide](./MULTI_MFE_GUIDE.md) - Loading multiple MFEs
 - [Developer Guide](./docs/DEVELOPER_GUIDE.md) - Development best practices
+- [MFE Development Guide](./docs/MFE_DEVELOPMENT_GUIDE.md) - Creating new MFEs
 
 ## 🔑 Key Features
 
