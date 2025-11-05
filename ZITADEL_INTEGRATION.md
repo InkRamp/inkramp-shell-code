@@ -11,11 +11,40 @@ This document describes the Zitadel OAuth2 authentication integration with the R
 3. User authenticates with Zitadel credentials
 4. Zitadel redirects back with authorization code
 5. Application exchanges code for access token and ID token
-6. User info extracted from ID token and stored in localStorage
-7. RoleService maps Zitadel user to internal User model
-8. User redirected to home page with role-based access
+6. **All claims from ID token are extracted and logged to console**
+7. User info extracted from ID token and stored in sessionStorage
+8. RoleService maps Zitadel user to internal User model
+9. User redirected to home page with role-based access
 
-### 2. Role Mapping
+### 2. Zitadel Claims Extraction
+
+The application now extracts and logs **all possible claims** from the Zitadel ID token, including:
+
+#### Standard OIDC Claims
+- `sub` - Subject/User ID
+- `name` - Full name
+- `email` - Email address
+- `email_verified` - Email verification status
+- `preferred_username` - Preferred username
+- `given_name` - First name
+- `family_name` - Last name
+- `locale` - User locale
+- `picture` - Profile picture URL
+- `phone` - Phone number
+- `phone_verified` - Phone verification status
+- `updated_at` - Last update timestamp
+
+#### Zitadel-Specific Claims (URN Format)
+- `urn:zitadel:iam:org:project:roles` - Project-specific roles
+- `urn:zitadel:iam:org:domain:primary` - Primary domain
+- `urn:zitadel:iam:user:metadata` - Custom user metadata
+- `urn:zitadel:iam:user:resourceowner:id` - Organization ID
+- `urn:zitadel:iam:user:resourceowner:name` - Organization name
+- `urn:zitadel:iam:user:resourceowner:primary_domain` - Organization primary domain
+
+All claims are automatically logged to the browser console during authentication for debugging and development purposes.
+
+### 3. Role Mapping
 The system automatically assigns roles based on email patterns:
 
 | Email Pattern | Assigned Role |
@@ -25,11 +54,14 @@ The system automatically assigns roles based on email patterns:
 | Contains "lead" or "team" | TEAM_LEAD |
 | Default | SALES_EXECUTIVE |
 
-### 3. State Persistence
-- Authentication state persists in localStorage
+**Note:** Future enhancements may use Zitadel's `urn:zitadel:iam:org:project:roles` claim for direct role assignment.
+
+### 4. State Persistence
+- Authentication state persists in sessionStorage
 - User info synced with RoleService on app initialization
 - Session maintained across page reloads
 - Logout clears all authentication state
+- All Zitadel claims are stored in sessionStorage for access throughout the session
 
 ## Data Contract Standardization
 
@@ -101,12 +133,20 @@ setUserFromAuth(userInfo: UserInfo): void {
    - Click Login → Redirect to Zitadel
    - Authenticate → Redirect back to app
    - Verify role assigned based on email
+   - **Open browser console to see all extracted Zitadel claims**
 
-3. **Test persistence:**
+3. **View Zitadel claims in console:**
+   - Login with Zitadel
+   - Open browser DevTools (F12)
+   - Check Console tab
+   - Look for logs starting with `[AuthService] 🔍 ZITADEL ID TOKEN - ALL CLAIMS`
+   - Review standard OIDC claims, Zitadel-specific URN claims, and complete token payload
+
+4. **Test persistence:**
    - Login → Refresh page
    - Verify user remains logged in
 
-4. **Test logout:**
+5. **Test logout:**
    - Click Logout → Verify state cleared
 
 ### Automated Testing
@@ -125,12 +165,26 @@ npm test
 ### Wrong Role Assigned
 - Check email pattern in `setUserFromAuth()`
 - Verify Zitadel user email
-- Check localStorage for `zitadel_user_info`
+- Check sessionStorage for `zitadel_user_info`
 
 ### Session Not Persisting
-- Check localStorage for `zitadel_token`
+- Check sessionStorage for `zitadel_token`
 - Verify `isAuthenticated()` returns true
 - Check browser console for sync errors
+
+### Viewing Zitadel Claims
+To view all claims extracted from Zitadel:
+1. Open browser DevTools (F12)
+2. Go to Console tab
+3. Login with Zitadel
+4. Look for the detailed log output:
+   - `[AuthService] 🔍 ZITADEL ID TOKEN - ALL CLAIMS` - Main header
+   - Standard OIDC claims section
+   - Zitadel-specific claims (URN format)
+   - Complete token payload (JSON)
+5. Alternatively, check sessionStorage:
+   - Key: `zitadel_user_info`
+   - Contains all extracted claims as JSON
 
 ## Future Enhancements
 
