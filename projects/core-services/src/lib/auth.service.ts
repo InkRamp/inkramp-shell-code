@@ -43,6 +43,18 @@ export interface UserInfo {
 }
 
 /**
+ * Explicit Zitadel URN claims that should be logged
+ */
+export const EXPLICIT_ZITADEL_CLAIMS = [
+  'urn:zitadel:iam:org:project:roles',
+  'urn:zitadel:iam:org:domain:primary',
+  'urn:zitadel:iam:user:metadata',
+  'urn:zitadel:iam:user:resourceowner:id',
+  'urn:zitadel:iam:user:resourceowner:name',
+  'urn:zitadel:iam:user:resourceowner:primary_domain'
+] as const;
+
+/**
  * Authentication service for Zitadel OAuth2 integration
  * Handles login, logout, token management, and user session
  * Stores tokens in sessionStorage and emits authentication events for MicroApps
@@ -242,15 +254,7 @@ export class AuthService {
       
       // Log any additional Zitadel claims that weren't explicitly listed above
       const orgClaims = Object.keys(decoded).filter(key => key.startsWith('urn:zitadel'));
-      const explicitClaims = [
-        'urn:zitadel:iam:org:project:roles',
-        'urn:zitadel:iam:org:domain:primary',
-        'urn:zitadel:iam:user:metadata',
-        'urn:zitadel:iam:user:resourceowner:id',
-        'urn:zitadel:iam:user:resourceowner:name',
-        'urn:zitadel:iam:user:resourceowner:primary_domain'
-      ];
-      const additionalZitadelClaims = orgClaims.filter(claim => !explicitClaims.includes(claim));
+      const additionalZitadelClaims = orgClaims.filter(claim => !EXPLICIT_ZITADEL_CLAIMS.includes(claim as any));
       
       if (additionalZitadelClaims.length > 0) {
         console.log('\n  Additional Zitadel claims:');

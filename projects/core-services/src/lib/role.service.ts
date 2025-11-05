@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { User, UserRole, hasRequiredRole } from './models/roles.model';
-import { UserInfo } from './auth.service';
+import { UserInfo, EXPLICIT_ZITADEL_CLAIMS } from './auth.service';
 
 /**
  * Service to manage user roles and permissions
