@@ -68,7 +68,7 @@ export class AuthService {
   private readonly ISSUER_BASE_URL = 'https://topfix-wrczmn.us1.zitadel.cloud';
   private readonly CLIENT_ID = '336777344075263315';
   private readonly REDIRECT_URI = 'https://opensourcekd.github.io/i17e/auth-callback';
-  private readonly SCOPE = 'openid profile email';
+  private readonly SCOPE = 'openid profile email urn:zitadel:iam:org:project:roles';
   private readonly TOKEN_KEY = 'zitadel_token';
   private readonly USER_INFO_KEY = 'zitadel_user_info';
 
