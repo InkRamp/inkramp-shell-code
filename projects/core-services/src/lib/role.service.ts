@@ -23,10 +23,30 @@ export class RoleService {
   /**
    * Set user from Zitadel authentication
    * Maps Zitadel UserInfo to internal User model with role
+   * Logs all available Zitadel claims
    * @param userInfo User information from Zitadel
    */
   setUserFromAuth(userInfo: UserInfo): void {
     console.log('[RoleService] Setting user from Zitadel auth:', userInfo);
+    
+    // Log Zitadel-specific claims
+    const zitadelClaims = Object.keys(userInfo).filter(key => key.startsWith('urn:zitadel'));
+    if (zitadelClaims.length > 0) {
+      console.log('[RoleService] 🏢 Zitadel-specific claims available:');
+      zitadelClaims.forEach(claim => {
+        console.log(`  • ${claim}:`, userInfo[claim]);
+      });
+      
+      // Log organization info if available
+      if (userInfo['urn:zitadel:iam:user:resourceowner:name']) {
+        console.log(`[RoleService] 🏢 User belongs to organization: ${userInfo['urn:zitadel:iam:user:resourceowner:name']}`);
+      }
+      
+      // Log roles if available
+      if (userInfo['urn:zitadel:iam:org:project:roles']) {
+        console.log('[RoleService] 👤 Zitadel project roles:', userInfo['urn:zitadel:iam:org:project:roles']);
+      }
+    }
     
     const user = this.mapUserInfoToUser(userInfo);
     console.log('[RoleService] Mapped user with role:', user);

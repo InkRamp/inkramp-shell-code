@@ -16,11 +16,30 @@ interface TokenResponse {
 
 /**
  * User information from ID token
+ * Extended to include all possible Zitadel claims
  */
 export interface UserInfo {
   sub: string;
   name?: string;
   email?: string;
+  email_verified?: boolean;
+  preferred_username?: string;
+  given_name?: string;
+  family_name?: string;
+  locale?: string;
+  picture?: string;
+  phone?: string;
+  phone_verified?: boolean;
+  updated_at?: number;
+  // Zitadel-specific claims (URN format)
+  'urn:zitadel:iam:org:project:roles'?: Record<string, any>;
+  'urn:zitadel:iam:org:domain:primary'?: string;
+  'urn:zitadel:iam:user:metadata'?: Record<string, any>;
+  'urn:zitadel:iam:user:resourceowner:id'?: string;
+  'urn:zitadel:iam:user:resourceowner:name'?: string;
+  'urn:zitadel:iam:user:resourceowner:primary_domain'?: string;
+  // Additional Zitadel claims that might be present
+  [key: string]: any; // Allow for dynamic claims
 }
 
 /**
@@ -155,17 +174,116 @@ export class AuthService {
 
   /**
    * Decode JWT ID token to extract user information
+   * Extracts and logs ALL claims from Zitadel including custom URN claims
    * @param idToken - JWT ID token from OAuth2 provider
-   * @returns UserInfo - Decoded user information
+   * @returns UserInfo - Decoded user information with all available claims
    */
   private decodeIdToken(idToken: string): UserInfo {
     try {
       const payload = idToken.split('.')[1];
       const decoded = JSON.parse(atob(payload));
+      
+      // Log all claims for debugging and visibility
+      console.log('='.repeat(80));
+      console.log('[AuthService] 🔍 ZITADEL ID TOKEN - ALL CLAIMS:');
+      console.log('='.repeat(80));
+      
+      // Standard OIDC claims
+      console.log('\n📋 Standard OIDC Claims:');
+      console.log('  • sub (Subject/User ID):', decoded.sub);
+      console.log('  • name:', decoded.name);
+      console.log('  • email:', decoded.email);
+      console.log('  • email_verified:', decoded.email_verified);
+      console.log('  • preferred_username:', decoded.preferred_username);
+      console.log('  • given_name:', decoded.given_name);
+      console.log('  • family_name:', decoded.family_name);
+      console.log('  • locale:', decoded.locale);
+      console.log('  • picture:', decoded.picture);
+      console.log('  • phone:', decoded.phone);
+      console.log('  • phone_verified:', decoded.phone_verified);
+      console.log('  • updated_at:', decoded.updated_at);
+      
+      // Zitadel-specific URN claims
+      console.log('\n🏢 Zitadel Organization Claims:');
+      const orgClaims = Object.keys(decoded).filter(key => key.startsWith('urn:zitadel'));
+      
+      if (orgClaims.length > 0) {
+        orgClaims.forEach(claim => {
+          const value = decoded[claim];
+          if (typeof value === 'object') {
+            console.log(`  • ${claim}:`, JSON.stringify(value, null, 2));
+          } else {
+            console.log(`  • ${claim}:`, value);
+          }
+        });
+      } else {
+        console.log('  No Zitadel-specific claims found');
+      }
+      
+      // Additional/custom claims
+      console.log('\n🔧 Additional Claims:');
+      const standardClaims = ['sub', 'name', 'email', 'email_verified', 'preferred_username', 
+                              'given_name', 'family_name', 'locale', 'picture', 'phone', 
+                              'phone_verified', 'updated_at', 'iss', 'aud', 'exp', 'iat', 
+                              'auth_time', 'nonce', 'acr', 'amr', 'azp'];
+      const additionalClaims = Object.keys(decoded).filter(
+        key => !standardClaims.includes(key) && !key.startsWith('urn:zitadel')
+      );
+      
+      if (additionalClaims.length > 0) {
+        additionalClaims.forEach(claim => {
+          const value = decoded[claim];
+          if (typeof value === 'object') {
+            console.log(`  • ${claim}:`, JSON.stringify(value, null, 2));
+          } else {
+            console.log(`  • ${claim}:`, value);
+          }
+        });
+      } else {
+        console.log('  No additional claims found');
+      }
+      
+      // Token metadata
+      console.log('\n🔐 Token Metadata:');
+      console.log('  • iss (Issuer):', decoded.iss);
+      console.log('  • aud (Audience):', decoded.aud);
+      console.log('  • exp (Expiration):', decoded.exp, decoded.exp ? `(${new Date(decoded.exp * 1000).toISOString()})` : '');
+      console.log('  • iat (Issued At):', decoded.iat, decoded.iat ? `(${new Date(decoded.iat * 1000).toISOString()})` : '');
+      console.log('  • auth_time:', decoded.auth_time);
+      console.log('  • nonce:', decoded.nonce);
+      console.log('  • azp (Authorized Party):', decoded.azp);
+      
+      // Complete claim dump
+      console.log('\n📦 Complete Token Payload (JSON):');
+      console.log(JSON.stringify(decoded, null, 2));
+      console.log('='.repeat(80));
+      
+      // Return the complete decoded object with all claims
       return {
         sub: decoded.sub,
         name: decoded.name,
         email: decoded.email,
+        email_verified: decoded.email_verified,
+        preferred_username: decoded.preferred_username,
+        given_name: decoded.given_name,
+        family_name: decoded.family_name,
+        locale: decoded.locale,
+        picture: decoded.picture,
+        phone: decoded.phone,
+        phone_verified: decoded.phone_verified,
+        updated_at: decoded.updated_at,
+        // Include all Zitadel-specific claims
+        ...Object.keys(decoded)
+          .filter(key => key.startsWith('urn:zitadel'))
+          .reduce((acc, key) => ({ ...acc, [key]: decoded[key] }), {}),
+        // Include any other claims
+        ...Object.keys(decoded)
+          .filter(key => !['sub', 'name', 'email', 'email_verified', 'preferred_username',
+                          'given_name', 'family_name', 'locale', 'picture', 'phone',
+                          'phone_verified', 'updated_at', 'iss', 'aud', 'exp', 'iat',
+                          'auth_time', 'nonce', 'acr', 'amr', 'azp'].includes(key) &&
+                         !key.startsWith('urn:zitadel'))
+          .reduce((acc, key) => ({ ...acc, [key]: decoded[key] }), {})
       };
     } catch (error) {
       console.error('[AuthService] Error decoding ID token:', error);
@@ -229,11 +347,31 @@ export class AuthService {
 
   /**
    * Set user information in storage, update observable and emit event for MicroApps
+   * Logs all Zitadel claims for debugging
    * @param userInfo - User information to store
    */
   private setUserInfo(userInfo: UserInfo): void {
     sessionStorage.setItem(this.USER_INFO_KEY, JSON.stringify(userInfo));
     this.userSubject.next(userInfo);
+    
+    // Log stored user info with all claims
+    console.log('[AuthService] 💾 User info stored in sessionStorage:');
+    console.log('  Standard claims:', {
+      sub: userInfo.sub,
+      name: userInfo.name,
+      email: userInfo.email,
+      email_verified: userInfo.email_verified
+    });
+    
+    // Log Zitadel-specific claims if present
+    const zitadelClaims = Object.keys(userInfo).filter(key => key.startsWith('urn:zitadel'));
+    if (zitadelClaims.length > 0) {
+      console.log('  Zitadel claims stored:');
+      zitadelClaims.forEach(claim => {
+        console.log(`    • ${claim}:`, userInfo[claim]);
+      });
+    }
+    
     this.emitAuthEvent('user_info_updated', userInfo);
   }
 

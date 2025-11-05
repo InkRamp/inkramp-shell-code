@@ -148,6 +148,18 @@ export class AuthCallbackComponent implements OnInit {
     const userInfo = this.authService.getUser();
     
     if (userInfo) {
+      console.log('[AuthCallbackComponent] 🎉 Authentication successful! User info retrieved:');
+      console.log('  User ID:', userInfo.sub);
+      console.log('  Name:', userInfo.name);
+      console.log('  Email:', userInfo.email);
+      
+      // Log Zitadel-specific claims if available
+      const zitadelClaims = Object.keys(userInfo).filter(key => key.startsWith('urn:zitadel'));
+      if (zitadelClaims.length > 0) {
+        console.log('  Zitadel claims count:', zitadelClaims.length);
+        console.log('  For full details, check AuthService logs above');
+      }
+      
       this.roleService.setUserFromAuth(userInfo);
     }
 
