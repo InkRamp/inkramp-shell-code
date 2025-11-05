@@ -56,6 +56,14 @@ export interface UserInfo {
 export class AuthService {
   id = 'auth of pokemon';
 
+  // Standard JWT claims that should be excluded from additional claims
+  private readonly STANDARD_JWT_CLAIMS = [
+    'sub', 'name', 'email', 'email_verified', 'preferred_username',
+    'given_name', 'family_name', 'locale', 'picture', 'phone',
+    'phone_verified', 'updated_at', 'iss', 'aud', 'exp', 'iat',
+    'auth_time', 'nonce', 'acr', 'amr', 'azp'
+  ];
+
   // Zitadel configuration
   private readonly ISSUER_BASE_URL = 'https://topfix-wrczmn.us1.zitadel.cloud';
   private readonly CLIENT_ID = '336777344075263315';
@@ -175,6 +183,7 @@ export class AuthService {
   /**
    * Decode JWT ID token to extract user information
    * Extracts and logs ALL claims from Zitadel including custom URN claims
+   * NOTE: Logging is verbose for development/debugging purposes
    * @param idToken - JWT ID token from OAuth2 provider
    * @returns UserInfo - Decoded user information with all available claims
    */
@@ -184,6 +193,7 @@ export class AuthService {
       const decoded = JSON.parse(atob(payload));
       
       // Log all claims for debugging and visibility
+      // Note: In production, consider using a proper logging service with log levels
       console.log('='.repeat(80));
       console.log('[AuthService] 🔍 ZITADEL ID TOKEN - ALL CLAIMS:');
       console.log('='.repeat(80));
@@ -222,12 +232,8 @@ export class AuthService {
       
       // Additional/custom claims
       console.log('\n🔧 Additional Claims:');
-      const standardClaims = ['sub', 'name', 'email', 'email_verified', 'preferred_username', 
-                              'given_name', 'family_name', 'locale', 'picture', 'phone', 
-                              'phone_verified', 'updated_at', 'iss', 'aud', 'exp', 'iat', 
-                              'auth_time', 'nonce', 'acr', 'amr', 'azp'];
       const additionalClaims = Object.keys(decoded).filter(
-        key => !standardClaims.includes(key) && !key.startsWith('urn:zitadel')
+        key => !this.STANDARD_JWT_CLAIMS.includes(key) && !key.startsWith('urn:zitadel')
       );
       
       if (additionalClaims.length > 0) {
@@ -254,6 +260,8 @@ export class AuthService {
       console.log('  • azp (Authorized Party):', decoded.azp);
       
       // Complete claim dump
+      // WARNING: This logs the complete token which may contain sensitive data
+      // In production, consider removing or sanitizing this log
       console.log('\n📦 Complete Token Payload (JSON):');
       console.log(JSON.stringify(decoded, null, 2));
       console.log('='.repeat(80));
@@ -276,13 +284,9 @@ export class AuthService {
         ...Object.keys(decoded)
           .filter(key => key.startsWith('urn:zitadel'))
           .reduce((acc, key) => ({ ...acc, [key]: decoded[key] }), {}),
-        // Include any other claims
+        // Include any other claims (excluding standard JWT claims)
         ...Object.keys(decoded)
-          .filter(key => !['sub', 'name', 'email', 'email_verified', 'preferred_username',
-                          'given_name', 'family_name', 'locale', 'picture', 'phone',
-                          'phone_verified', 'updated_at', 'iss', 'aud', 'exp', 'iat',
-                          'auth_time', 'nonce', 'acr', 'amr', 'azp'].includes(key) &&
-                         !key.startsWith('urn:zitadel'))
+          .filter(key => !this.STANDARD_JWT_CLAIMS.includes(key) && !key.startsWith('urn:zitadel'))
           .reduce((acc, key) => ({ ...acc, [key]: decoded[key] }), {})
       };
     } catch (error) {
