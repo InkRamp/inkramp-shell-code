@@ -43,6 +43,18 @@ export interface UserInfo {
 }
 
 /**
+ * Explicit Zitadel URN claims that should be logged
+ */
+export const EXPLICIT_ZITADEL_CLAIMS = [
+  'urn:zitadel:iam:org:project:roles',
+  'urn:zitadel:iam:org:domain:primary',
+  'urn:zitadel:iam:user:metadata',
+  'urn:zitadel:iam:user:resourceowner:id',
+  'urn:zitadel:iam:user:resourceowner:name',
+  'urn:zitadel:iam:user:resourceowner:primary_domain'
+] as const;
+
+/**
  * Authentication service for Zitadel OAuth2 integration
  * Handles login, logout, token management, and user session
  * Stores tokens in sessionStorage and emits authentication events for MicroApps
@@ -213,12 +225,40 @@ export class AuthService {
       console.log('  • phone_verified:', decoded.phone_verified);
       console.log('  • updated_at:', decoded.updated_at);
       
-      // Zitadel-specific URN claims
+      // Zitadel-specific URN claims - explicitly log each expected claim
       console.log('\n🏢 Zitadel Organization Claims:');
-      const orgClaims = Object.keys(decoded).filter(key => key.startsWith('urn:zitadel'));
       
-      if (orgClaims.length > 0) {
-        orgClaims.forEach(claim => {
+      // Project-specific roles
+      console.log('  • urn:zitadel:iam:org:project:roles:', 
+        decoded['urn:zitadel:iam:org:project:roles'] || '(not present)');
+      
+      // Primary domain
+      console.log('  • urn:zitadel:iam:org:domain:primary:', 
+        decoded['urn:zitadel:iam:org:domain:primary'] || '(not present)');
+      
+      // Custom user metadata
+      console.log('  • urn:zitadel:iam:user:metadata:', 
+        decoded['urn:zitadel:iam:user:metadata'] || '(not present)');
+      
+      // Organization ID
+      console.log('  • urn:zitadel:iam:user:resourceowner:id:', 
+        decoded['urn:zitadel:iam:user:resourceowner:id'] || '(not present)');
+      
+      // Organization name
+      console.log('  • urn:zitadel:iam:user:resourceowner:name:', 
+        decoded['urn:zitadel:iam:user:resourceowner:name'] || '(not present)');
+      
+      // Organization primary domain
+      console.log('  • urn:zitadel:iam:user:resourceowner:primary_domain:', 
+        decoded['urn:zitadel:iam:user:resourceowner:primary_domain'] || '(not present)');
+      
+      // Log any additional Zitadel claims that weren't explicitly listed above
+      const orgClaims = Object.keys(decoded).filter(key => key.startsWith('urn:zitadel'));
+      const additionalZitadelClaims = orgClaims.filter(claim => !EXPLICIT_ZITADEL_CLAIMS.includes(claim as any));
+      
+      if (additionalZitadelClaims.length > 0) {
+        console.log('\n  Additional Zitadel claims:');
+        additionalZitadelClaims.forEach(claim => {
           const value = decoded[claim];
           if (typeof value === 'object') {
             console.log(`  • ${claim}:`, JSON.stringify(value, null, 2));
@@ -226,8 +266,6 @@ export class AuthService {
             console.log(`  • ${claim}:`, value);
           }
         });
-      } else {
-        console.log('  No Zitadel-specific claims found');
       }
       
       // Additional/custom claims

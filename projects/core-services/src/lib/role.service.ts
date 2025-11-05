@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { User, UserRole, hasRequiredRole } from './models/roles.model';
-import { UserInfo } from './auth.service';
+import { UserInfo, EXPLICIT_ZITADEL_CLAIMS } from './auth.service';
 
 /**
  * Service to manage user roles and permissions
@@ -29,23 +29,41 @@ export class RoleService {
   setUserFromAuth(userInfo: UserInfo): void {
     console.log('[RoleService] Setting user from Zitadel auth:', userInfo);
     
-    // Log Zitadel-specific claims
-    const zitadelClaims = Object.keys(userInfo).filter(key => key.startsWith('urn:zitadel'));
-    if (zitadelClaims.length > 0) {
-      console.log('[RoleService] 🏢 Zitadel-specific claims available:');
-      zitadelClaims.forEach(claim => {
-        console.log(`  • ${claim}:`, userInfo[claim]);
-      });
-      
-      // Log organization info if available
-      if (userInfo['urn:zitadel:iam:user:resourceowner:name']) {
-        console.log(`[RoleService] 🏢 User belongs to organization: ${userInfo['urn:zitadel:iam:user:resourceowner:name']}`);
-      }
-      
-      // Log roles if available
-      if (userInfo['urn:zitadel:iam:org:project:roles']) {
-        console.log('[RoleService] 👤 Zitadel project roles:', userInfo['urn:zitadel:iam:org:project:roles']);
-      }
+    // Explicitly log all expected Zitadel-specific claims
+    console.log('[RoleService] 🏢 Zitadel-specific claims:');
+    
+    // Project-specific roles
+    console.log('  • urn:zitadel:iam:org:project:roles:', 
+      userInfo['urn:zitadel:iam:org:project:roles'] || '(not present)');
+    
+    // Primary domain
+    console.log('  • urn:zitadel:iam:org:domain:primary:', 
+      userInfo['urn:zitadel:iam:org:domain:primary'] || '(not present)');
+    
+    // Custom user metadata
+    console.log('  • urn:zitadel:iam:user:metadata:', 
+      userInfo['urn:zitadel:iam:user:metadata'] || '(not present)');
+    
+    // Organization ID
+    console.log('  • urn:zitadel:iam:user:resourceowner:id:', 
+      userInfo['urn:zitadel:iam:user:resourceowner:id'] || '(not present)');
+    
+    // Organization name
+    console.log('  • urn:zitadel:iam:user:resourceowner:name:', 
+      userInfo['urn:zitadel:iam:user:resourceowner:name'] || '(not present)');
+    
+    // Organization primary domain
+    console.log('  • urn:zitadel:iam:user:resourceowner:primary_domain:', 
+      userInfo['urn:zitadel:iam:user:resourceowner:primary_domain'] || '(not present)');
+    
+    // Log organization info if available
+    if (userInfo['urn:zitadel:iam:user:resourceowner:name']) {
+      console.log(`[RoleService] 🏢 User belongs to organization: ${userInfo['urn:zitadel:iam:user:resourceowner:name']}`);
+    }
+    
+    // Log roles if available
+    if (userInfo['urn:zitadel:iam:org:project:roles']) {
+      console.log('[RoleService] 👤 Zitadel project roles:', userInfo['urn:zitadel:iam:org:project:roles']);
     }
     
     const user = this.mapUserInfoToUser(userInfo);
