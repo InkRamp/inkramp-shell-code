@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import zitadelConfig from '../config/zitadel.config';
 import { CreateOrganizationDto, UpdateOrganizationDto, Organization } from '../models/entities';
+import { sanitizeId } from '../middleware/validation';
 
 /**
  * Controller for Organization CRUD operations
@@ -45,7 +46,7 @@ export class OrganizationController {
    */
   async getById(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = sanitizeId(req.params.id);
       const client = await zitadelConfig.getApiClient();
       const response = await client.get(`/management/v1/orgs/${id}`);
 
@@ -113,7 +114,7 @@ export class OrganizationController {
    */
   async update(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = sanitizeId(req.params.id);
       const dto: UpdateOrganizationDto = req.body;
       const client = await zitadelConfig.getApiClient();
 
@@ -150,7 +151,7 @@ export class OrganizationController {
    */
   async delete(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = sanitizeId(req.params.id);
       const client = await zitadelConfig.getApiClient();
 
       await client.delete(`/admin/v1/orgs/${id}`);
