@@ -5,6 +5,7 @@ import organizationRoutes from './routes/organization.routes';
 import userRoutes from './routes/user.routes';
 import roleRoutes from './routes/role.routes';
 import projectRoutes from './routes/project.routes';
+import teamRoutes from './routes/team.routes';
 
 // Load environment variables
 dotenv.config();
@@ -40,6 +41,7 @@ app.use('/api/organizations', organizationRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/teams', teamRoutes);
 
 // Root endpoint
 app.get('/', (req: Request, res: Response) => {
@@ -51,6 +53,7 @@ app.get('/', (req: Request, res: Response) => {
       users: '/api/users',
       roles: '/api/roles',
       projects: '/api/projects',
+      teams: '/api/teams',
       health: '/health',
     },
     documentation: {
@@ -84,6 +87,15 @@ app.get('/', (req: Request, res: Response) => {
         'DELETE /api/projects/:id': 'Delete project',
         'POST /api/projects/:id/roles': 'Add role to project',
         'DELETE /api/projects/:id/roles/:roleId': 'Remove role from project',
+      },
+      teams: {
+        'GET /api/teams': 'Get all teams (filter by ?organizationId=xxx)',
+        'GET /api/teams/:id': 'Get team by ID',
+        'POST /api/teams': 'Create new team',
+        'PUT /api/teams/:id': 'Update team',
+        'DELETE /api/teams/:id': 'Delete team',
+        'POST /api/teams/:id/members': 'Add member to team',
+        'DELETE /api/teams/:id/members/:userId': 'Remove member from team',
       },
     },
     relationships: {
@@ -128,6 +140,7 @@ app.listen(PORT, () => {
   console.log('   • Users:         /api/users');
   console.log('   • Roles:         /api/roles');
   console.log('   • Projects:      /api/projects');
+  console.log('   • Teams:         /api/teams');
   console.log('');
   console.log('🔐 Zitadel Integration:');
   console.log(`   • Issuer: ${process.env.ZITADEL_ISSUER || 'Not configured'}`);

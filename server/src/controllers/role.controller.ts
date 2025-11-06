@@ -14,22 +14,27 @@ export class RoleController {
   async getAll(req: Request, res: Response): Promise<void> {
     try {
       const { projectId, isSystemRole } = req.query;
-      const client = await zitadelConfig.getApiClient();
       
       let roles: Role[] = [];
 
       if (projectId) {
         // Get project-specific roles
-        const response = await client.get(`/management/v1/projects/${projectId}/roles/_search`);
-        roles = response.data.result?.map((role: any) => ({
-          id: role.key,
-          name: role.key,
-          description: role.displayName || '',
-          permissions: [],
-          isSystemRole: false,
-          createdAt: new Date(role.details?.creationDate || Date.now()),
-          updatedAt: new Date(role.details?.changeDate || Date.now()),
-        })) || [];
+        if (zitadelConfig.isConfigured()) {
+          const client = await zitadelConfig.getApiClient();
+          const response = await client.get(`/management/v1/projects/${projectId}/roles/_search`);
+          roles = response.data.result?.map((role: any) => ({
+            id: role.key,
+            name: role.key,
+            description: role.displayName || '',
+            permissions: [],
+            isSystemRole: false,
+            createdAt: new Date(role.details?.creationDate || Date.now()),
+            updatedAt: new Date(role.details?.changeDate || Date.now()),
+          })) || [];
+        } else {
+          // Return empty for project roles in mock mode
+          roles = [];
+        }
       } else {
         // Return common/system roles
         // In Zitadel, system roles would be defined at the instance level
