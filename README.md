@@ -10,6 +10,15 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 ## 🎯 Recent Updates
 
+### ✅ Backend API Server
+- **CRUD Operations**: Full backend API for Organizations, Users, Roles, Projects, and Teams
+- **Zitadel Integration**: Seamless integration with Zitadel for entity management
+- **RESTful Endpoints**: Comprehensive API with proper relationships
+- **Mock Mode Support**: Works without Zitadel credentials for development
+- 📖 **[Read the Backend README](./server/README.md)**
+- 📖 **[Read the API Documentation](./server/API_DOCUMENTATION.md)**
+- 📖 **[Read the Integration Guide](./server/INTEGRATION_GUIDE.md)**
+
 ### ✅ API Integration
 - **Real API Integration**: Connected to actual backend API
 - **Centralized Configuration**: Easy-to-update API endpoint configuration
@@ -51,21 +60,45 @@ The MFE Wrapper supports **loading multiple Micro Frontends on a single page** w
 
 ## 🚀 Quick Start
 
-### Installation
+### Frontend Installation
 ```bash
 npm install
 ```
 
-### Development
+### Backend Installation
+```bash
+cd server
+npm install
+```
+
+### Running Full Stack
+
+**Terminal 1 - Backend Server:**
+```bash
+cd server
+npm run dev
+# Server will start on http://localhost:4000
+```
+
+**Terminal 2 - Frontend Development:**
 ```bash
 npm start
 # Navigate to http://localhost:4200/
 ```
 
 ### Build
+
+**Frontend:**
 ```bash
 npm run build
 # Build artifacts will be in dist/
+```
+
+**Backend:**
+```bash
+cd server
+npm run build
+npm start
 ```
 
 ### Test
@@ -75,6 +108,9 @@ npm test
 
 ## 📚 Documentation
 
+- [Backend API Server](./server/README.md) - Backend server setup and usage
+- [API Documentation](./server/API_DOCUMENTATION.md) - Complete API reference
+- [Integration Guide](./server/INTEGRATION_GUIDE.md) - Frontend-Backend integration
 - [API Integration Guide](./docs/API_INTEGRATION_GUIDE.md) - How to use the new API services
 - [Migration Guide](./docs/MIGRATION_GUIDE.md) - Migrating from dummy data to real API
 - [Zitadel Integration](./ZITADEL_INTEGRATION.md) - Authentication setup
@@ -82,6 +118,15 @@ npm test
 - [Developer Guide](./docs/DEVELOPER_GUIDE.md) - Development best practices
 
 ## 🔑 Key Features
+
+### Backend API
+- CRUD operations for Organizations, Users, Roles, Projects, and Teams
+- Zitadel integration for authentication and authorization
+- RESTful API with comprehensive endpoints
+- Proper entity relationships (Org→Users, Org→Teams, etc.)
+- Mock mode for development without Zitadel credentials
+- System-wide common roles
+- Team management with member assignment
 
 ### Authentication
 - Zitadel OAuth2 integration
