@@ -30,6 +30,11 @@
 </header>
 
 <nav class="app-nav" *ngIf="currentUser">
+  <a routerLink="/zitadel-test" 
+     routerLinkActive="active"
+     class="nav-link nav-link-test">
+    🔧 Zitadel Test
+  </a>
   <a *ngFor="let mfe of availableMfes" 
      [routerLink]="'/' + mfe.route" 
      routerLinkActive="active"

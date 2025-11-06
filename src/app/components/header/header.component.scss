@@ -123,3 +123,18 @@
   background: var(--bright-blue);
   border-bottom-color: var(--electric-violet);
 }
+
+.nav-link-test {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-left: 1px solid rgba(255,255,255,0.2);
+  border-right: 1px solid rgba(255,255,255,0.2);
+}
+
+.nav-link-test:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.nav-link-test.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-bottom-color: #ffd700;
+}

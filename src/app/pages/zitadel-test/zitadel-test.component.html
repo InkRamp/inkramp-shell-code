@@ -1,0 +1,292 @@
+<div class="zitadel-test-container">
+  <h1>Zitadel CRUD Test Interface</h1>
+  <p class="subtitle">Testing Organizations, Users, Roles, Projects, and Teams</p>
+
+  <!-- Status Messages -->
+  <div class="messages">
+    <div *ngIf="statusMessage" class="alert alert-success">{{ statusMessage }}</div>
+    <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button 
+      [class.active]="activeTab === 'organizations'" 
+      (click)="setActiveTab('organizations')">
+      Organizations ({{ organizations.length }})
+    </button>
+    <button 
+      [class.active]="activeTab === 'users'" 
+      (click)="setActiveTab('users')">
+      Users ({{ users.length }})
+    </button>
+    <button 
+      [class.active]="activeTab === 'roles'" 
+      (click)="setActiveTab('roles')">
+      Roles ({{ roles.length }})
+    </button>
+    <button 
+      [class.active]="activeTab === 'projects'" 
+      (click)="setActiveTab('projects')">
+      Projects ({{ projects.length }})
+    </button>
+    <button 
+      [class.active]="activeTab === 'teams'" 
+      (click)="setActiveTab('teams')">
+      Teams ({{ teams.length }})
+    </button>
+  </div>
+
+  <!-- Organizations Tab -->
+  <div *ngIf="activeTab === 'organizations'" class="tab-content">
+    <h2>Organizations</h2>
+    
+    <!-- Create Form -->
+    <div class="create-form">
+      <h3>Create Organization</h3>
+      <div class="form-group">
+        <input [(ngModel)]="newOrg.name" placeholder="Name *" class="form-input">
+        <input [(ngModel)]="newOrg.displayName" placeholder="Display Name" class="form-input">
+        <input [(ngModel)]="newOrg.primaryDomain" placeholder="Primary Domain" class="form-input">
+        <button (click)="createOrganization()" class="btn btn-primary">Create Organization</button>
+      </div>
+    </div>
+
+    <!-- List -->
+    <div class="data-list">
+      <h3>Organizations List</h3>
+      <button (click)="loadOrganizations()" class="btn btn-secondary">Refresh</button>
+      
+      <div *ngFor="let org of organizations" class="card">
+        <div *ngIf="editingOrg?.id !== org.id">
+          <h4>{{ org.displayName || org.name }}</h4>
+          <p><strong>ID:</strong> {{ org.id }}</p>
+          <p><strong>Name:</strong> {{ org.name }}</p>
+          <p><strong>Domain:</strong> {{ org.primaryDomain }}</p>
+          <div class="actions">
+            <button (click)="editOrganization(org)" class="btn btn-small">Edit</button>
+            <button (click)="deleteOrganization(org.id)" class="btn btn-small btn-danger">Delete</button>
+          </div>
+        </div>
+        
+        <div *ngIf="editingOrg?.id === org.id" class="edit-form">
+          <h4>Edit Organization</h4>
+          <input [(ngModel)]="editingOrg.name" placeholder="Name" class="form-input">
+          <input [(ngModel)]="editingOrg.displayName" placeholder="Display Name" class="form-input">
+          <input [(ngModel)]="editingOrg.primaryDomain" placeholder="Primary Domain" class="form-input">
+          <div class="actions">
+            <button (click)="updateOrganization()" class="btn btn-primary">Save</button>
+            <button (click)="editingOrg = null" class="btn btn-secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users Tab -->
+  <div *ngIf="activeTab === 'users'" class="tab-content">
+    <h2>Users</h2>
+    
+    <!-- Create Form -->
+    <div class="create-form">
+      <h3>Create User</h3>
+      <div class="form-group">
+        <input [(ngModel)]="newUser.userName" placeholder="Username *" class="form-input">
+        <input [(ngModel)]="newUser.email" placeholder="Email *" class="form-input">
+        <input [(ngModel)]="newUser.firstName" placeholder="First Name *" class="form-input">
+        <input [(ngModel)]="newUser.lastName" placeholder="Last Name *" class="form-input">
+        <select [(ngModel)]="newUser.organizationId" class="form-input">
+          <option value="">Select Organization *</option>
+          <option *ngFor="let org of organizations" [value]="org.id">{{ org.displayName || org.name }}</option>
+        </select>
+        <select [(ngModel)]="newUser.teamId" class="form-input">
+          <option value="">Select Team (Optional)</option>
+          <option *ngFor="let team of teams" [value]="team.id">{{ team.name }}</option>
+        </select>
+        <button (click)="createUser()" class="btn btn-primary">Create User</button>
+      </div>
+    </div>
+
+    <!-- List -->
+    <div class="data-list">
+      <h3>Users List</h3>
+      <button (click)="loadUsers()" class="btn btn-secondary">Refresh</button>
+      
+      <div *ngFor="let user of users" class="card">
+        <div *ngIf="editingUser?.id !== user.id">
+          <h4>{{ user.firstName }} {{ user.lastName }}</h4>
+          <p><strong>ID:</strong> {{ user.id }}</p>
+          <p><strong>Username:</strong> {{ user.userName }}</p>
+          <p><strong>Email:</strong> {{ user.email }}</p>
+          <p><strong>Organization:</strong> {{ getOrganizationName(user.organizationId) }}</p>
+          <p><strong>Team:</strong> {{ user.teamId ? getUserName(user.teamId) : 'None' }}</p>
+          <p><strong>Roles:</strong> {{ user.roleIds.join(', ') }}</p>
+          <p><strong>Active:</strong> {{ user.isActive ? 'Yes' : 'No' }}</p>
+          <div class="actions">
+            <button (click)="editUser(user)" class="btn btn-small">Edit</button>
+            <button (click)="deleteUser(user.id)" class="btn btn-small btn-danger">Delete</button>
+          </div>
+        </div>
+        
+        <div *ngIf="editingUser?.id === user.id" class="edit-form">
+          <h4>Edit User</h4>
+          <input [(ngModel)]="editingUser.firstName" placeholder="First Name" class="form-input">
+          <input [(ngModel)]="editingUser.lastName" placeholder="Last Name" class="form-input">
+          <input [(ngModel)]="editingUser.email" placeholder="Email" class="form-input">
+          <select [(ngModel)]="editingUser.teamId" class="form-input">
+            <option value="">No Team</option>
+            <option *ngFor="let team of teams" [value]="team.id">{{ team.name }}</option>
+          </select>
+          <div class="actions">
+            <button (click)="updateUser()" class="btn btn-primary">Save</button>
+            <button (click)="editingUser = null" class="btn btn-secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Roles Tab -->
+  <div *ngIf="activeTab === 'roles'" class="tab-content">
+    <h2>System Roles</h2>
+    
+    <div class="data-list">
+      <h3>Available Roles</h3>
+      <button (click)="loadRoles()" class="btn btn-secondary">Refresh</button>
+      <p class="info-text">System roles are predefined and cannot be modified through the UI.</p>
+      
+      <div *ngFor="let role of roles" class="card">
+        <h4>{{ role.name }}</h4>
+        <p><strong>ID:</strong> {{ role.id }}</p>
+        <p><strong>Description:</strong> {{ role.description }}</p>
+        <p><strong>Permissions:</strong> {{ role.permissions.join(', ') }}</p>
+        <p><strong>System Role:</strong> {{ role.isSystemRole ? 'Yes' : 'No' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Projects Tab -->
+  <div *ngIf="activeTab === 'projects'" class="tab-content">
+    <h2>Projects</h2>
+    
+    <!-- Create Form -->
+    <div class="create-form">
+      <h3>Create Project</h3>
+      <div class="form-group">
+        <input [(ngModel)]="newProject.name" placeholder="Project Name *" class="form-input">
+        <select [(ngModel)]="newProject.organizationId" class="form-input">
+          <option value="">Select Organization *</option>
+          <option *ngFor="let org of organizations" [value]="org.id">{{ org.displayName || org.name }}</option>
+        </select>
+        <button (click)="createProject()" class="btn btn-primary">Create Project</button>
+      </div>
+    </div>
+
+    <!-- List -->
+    <div class="data-list">
+      <h3>Projects List</h3>
+      <button (click)="loadProjects()" class="btn btn-secondary">Refresh</button>
+      
+      <div *ngFor="let project of projects" class="card">
+        <div *ngIf="editingProject?.id !== project.id">
+          <h4>{{ project.name }}</h4>
+          <p><strong>ID:</strong> {{ project.id }}</p>
+          <p><strong>Organization:</strong> {{ getOrganizationName(project.organizationId) }}</p>
+          <p><strong>Roles:</strong> {{ project.roleIds.length }} role(s)</p>
+          <div class="actions">
+            <button (click)="editProject(project)" class="btn btn-small">Edit</button>
+            <button (click)="deleteProject(project.id)" class="btn btn-small btn-danger">Delete</button>
+          </div>
+        </div>
+        
+        <div *ngIf="editingProject?.id === project.id" class="edit-form">
+          <h4>Edit Project</h4>
+          <input [(ngModel)]="editingProject.name" placeholder="Project Name" class="form-input">
+          <div class="actions">
+            <button (click)="updateProject()" class="btn btn-primary">Save</button>
+            <button (click)="editingProject = null" class="btn btn-secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Teams Tab -->
+  <div *ngIf="activeTab === 'teams'" class="tab-content">
+    <h2>Teams</h2>
+    
+    <!-- Create Form -->
+    <div class="create-form">
+      <h3>Create Team</h3>
+      <div class="form-group">
+        <input [(ngModel)]="newTeam.name" placeholder="Team Name *" class="form-input">
+        <input [(ngModel)]="newTeam.description" placeholder="Description" class="form-input">
+        <select [(ngModel)]="newTeam.organizationId" class="form-input">
+          <option value="">Select Organization *</option>
+          <option *ngFor="let org of organizations" [value]="org.id">{{ org.displayName || org.name }}</option>
+        </select>
+        <select [(ngModel)]="newTeam.leaderId" class="form-input">
+          <option value="">Select Team Leader (Optional)</option>
+          <option *ngFor="let user of users" [value]="user.id">{{ user.firstName }} {{ user.lastName }}</option>
+        </select>
+        <button (click)="createTeam()" class="btn btn-primary">Create Team</button>
+      </div>
+    </div>
+
+    <!-- List -->
+    <div class="data-list">
+      <h3>Teams List</h3>
+      <button (click)="loadTeams()" class="btn btn-secondary">Refresh</button>
+      
+      <div *ngFor="let team of teams" class="card">
+        <div *ngIf="editingTeam?.id !== team.id">
+          <h4>{{ team.name }}</h4>
+          <p><strong>ID:</strong> {{ team.id }}</p>
+          <p><strong>Description:</strong> {{ team.description }}</p>
+          <p><strong>Organization:</strong> {{ getOrganizationName(team.organizationId) }}</p>
+          <p><strong>Leader:</strong> {{ team.leaderId ? getUserName(team.leaderId) : 'None' }}</p>
+          <p><strong>Members:</strong> {{ team.memberIds.length }}</p>
+          
+          <!-- Team Members -->
+          <div class="team-members">
+            <h5>Team Members:</h5>
+            <ul>
+              <li *ngFor="let memberId of team.memberIds">
+                {{ getUserName(memberId) }}
+                <button (click)="removeTeamMember(team.id, memberId)" class="btn btn-tiny btn-danger">Remove</button>
+              </li>
+            </ul>
+            
+            <!-- Add Member -->
+            <div class="add-member">
+              <select #memberSelect class="form-input">
+                <option value="">Select User to Add</option>
+                <option *ngFor="let user of users" [value]="user.id">{{ user.firstName }} {{ user.lastName }}</option>
+              </select>
+              <button (click)="addTeamMember(team.id, memberSelect.value); memberSelect.value = ''" class="btn btn-small">Add Member</button>
+            </div>
+          </div>
+          
+          <div class="actions">
+            <button (click)="editTeam(team)" class="btn btn-small">Edit</button>
+            <button (click)="deleteTeam(team.id)" class="btn btn-small btn-danger">Delete</button>
+          </div>
+        </div>
+        
+        <div *ngIf="editingTeam?.id === team.id" class="edit-form">
+          <h4>Edit Team</h4>
+          <input [(ngModel)]="editingTeam.name" placeholder="Team Name" class="form-input">
+          <input [(ngModel)]="editingTeam.description" placeholder="Description" class="form-input">
+          <select [(ngModel)]="editingTeam.leaderId" class="form-input">
+            <option value="">No Leader</option>
+            <option *ngFor="let user of users" [value]="user.id">{{ user.firstName }} {{ user.lastName }}</option>
+          </select>
+          <div class="actions">
+            <button (click)="updateTeam()" class="btn btn-primary">Save</button>
+            <button (click)="editingTeam = null" class="btn btn-secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
