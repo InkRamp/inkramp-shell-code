@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { User, UserRole, hasRequiredRole } from './models/roles.model';
+import { UserInfo, EXPLICIT_ZITADEL_CLAIMS } from './auth.service';
 
 /**
  * Service to manage user roles and permissions
@@ -15,8 +16,148 @@ export class RoleService {
   constructor() {
     // DEBUG_LOG: RoleService initialized
     console.log('[RoleService] Service initialized');
-    // Initialize with dummy user for development
-    this.loadDummyUser();
+    // Initialize with dummy user for development or load from localStorage for mimicking
+    this.loadInitialUser();
+  }
+
+  /**
+   * Set user from Zitadel authentication
+   * Maps Zitadel UserInfo to internal User model with role
+   * Logs all available Zitadel claims
+   * @param userInfo User information from Zitadel
+   */
+  setUserFromAuth(userInfo: UserInfo): void {
+    console.log('[RoleService] Setting user from Zitadel auth:', userInfo);
+    
+    // Explicitly log all expected Zitadel-specific claims
+    console.log('[RoleService] 🏢 Zitadel-specific claims:');
+    
+    // Project-specific roles
+    console.log('  • urn:zitadel:iam:org:project:roles:', 
+      userInfo['urn:zitadel:iam:org:project:roles'] || '(not present)');
+    
+    // Primary domain
+    console.log('  • urn:zitadel:iam:org:domain:primary:', 
+      userInfo['urn:zitadel:iam:org:domain:primary'] || '(not present)');
+    
+    // Custom user metadata
+    console.log('  • urn:zitadel:iam:user:metadata:', 
+      userInfo['urn:zitadel:iam:user:metadata'] || '(not present)');
+    
+    // Organization ID
+    console.log('  • urn:zitadel:iam:user:resourceowner:id:', 
+      userInfo['urn:zitadel:iam:user:resourceowner:id'] || '(not present)');
+    
+    // Organization name
+    console.log('  • urn:zitadel:iam:user:resourceowner:name:', 
+      userInfo['urn:zitadel:iam:user:resourceowner:name'] || '(not present)');
+    
+    // Organization primary domain
+    console.log('  • urn:zitadel:iam:user:resourceowner:primary_domain:', 
+      userInfo['urn:zitadel:iam:user:resourceowner:primary_domain'] || '(not present)');
+    
+    // Log organization info if available
+    if (userInfo['urn:zitadel:iam:user:resourceowner:name']) {
+      console.log(`[RoleService] 🏢 User belongs to organization: ${userInfo['urn:zitadel:iam:user:resourceowner:name']}`);
+    }
+    
+    // Log roles if available
+    if (userInfo['urn:zitadel:iam:org:project:roles']) {
+      console.log('[RoleService] 👤 Zitadel project roles:', userInfo['urn:zitadel:iam:org:project:roles']);
+    }
+    
+    const user = this.mapUserInfoToUser(userInfo);
+    console.log('[RoleService] Mapped user with role:', user);
+    this.setCurrentUser(user);
+  }
+
+  /**
+   * Pure function to map UserInfo to User with role assignment
+   * @param userInfo User information from Zitadel
+   * @returns Mapped User object with assigned role
+   */
+  private mapUserInfoToUser(userInfo: UserInfo): User {
+    return {
+      id: userInfo.sub,
+      name: userInfo.name || userInfo.email || 'User',
+      email: userInfo.email || '',
+      role: this.determineRoleFromEmail(userInfo.email || '')
+    };
+  }
+
+  /**
+   * Pure function to determine user role from email pattern
+   * @param email User email address
+   * @returns Assigned UserRole based on email pattern
+   */
+  private determineRoleFromEmail(email: string): UserRole {
+    const normalizedEmail = email.toLowerCase();
+    
+    const rolePatterns: Array<{ patterns: string[]; role: UserRole }> = [
+      { patterns: ['admin', 'super'], role: UserRole.SUPER_ADMIN },
+      { patterns: ['manager', 'org'], role: UserRole.ORG_ADMIN },
+      { patterns: ['lead', 'team'], role: UserRole.TEAM_LEAD }
+    ];
+
+    const matchedRole = rolePatterns.find(({ patterns }) =>
+      patterns.some(pattern => normalizedEmail.includes(pattern))
+    );
+
+    return matchedRole?.role ?? UserRole.SALES_EXECUTIVE;
+  }
+
+  /**
+   * Load initial user - checks for dev mimic user first, then session, then default
+   */
+  private loadInitialUser(): void {
+    // Check for dev mimic user (for local development)
+    const mimicUser = this.getDevMimicUser();
+    if (mimicUser) {
+      console.log('[RoleService] Using dev mimic user:', mimicUser);
+      this.currentUserSubject.next(mimicUser);
+      return;
+    }
+
+    // Fall back to loading dummy user
+    //this.loadDummyUser();
+  }
+
+  /**
+   * Get dev mimic user from localStorage
+   * This allows developers to mimic different users locally
+   * Set by calling: localStorage.setItem('dev_mimic_user', JSON.stringify(user))
+   */
+  private getDevMimicUser(): User | null {
+    try {
+      const mimicUserJson = localStorage.getItem('dev_mimic_user');
+      if (mimicUserJson) {
+        const user = JSON.parse(mimicUserJson);
+        // Validate it's a proper user object
+        if (user.id && user.name && user.role) {
+          return user;
+        }
+      }
+    } catch (error) {
+      console.error('[RoleService] Error parsing dev mimic user:', error);
+    }
+    return null;
+  }
+
+  /**
+   * Set dev mimic user for local development
+   * This allows testing different user roles without authentication
+   * @param user - User to mimic (or null to clear)
+   */
+  setDevMimicUser(user: User | null): void {
+    if (user) {
+      localStorage.setItem('dev_mimic_user', JSON.stringify(user));
+      this.currentUserSubject.next(user);
+      console.log('[RoleService] Dev mimic user set:', user);
+    } else {
+      localStorage.removeItem('dev_mimic_user');
+      this.loadDummyUser();
+      console.log('[RoleService] Dev mimic user cleared');
+    }
   }
 
   /**
@@ -32,11 +173,11 @@ export class RoleService {
       console.log('[RoleService] User loaded from session:', user);
       this.currentUserSubject.next(user);
     } else {
-      // Default to sales executive for demo
+      // Default to org admin for demo (matches sales data)
       const defaultUser: User = {
-        id: '1',
-        name: 'John Doe',
-        email: 'john.doe@example.com',
+        id: 'user-1',
+        name: 'John Admin',
+        email: 'john.admin@company.com',
         role: UserRole.ORG_ADMIN
       };
       // DEBUG_LOG: No saved user, using default
@@ -175,12 +316,6 @@ export class RoleService {
    */
   getAllUsers(): User[] {
     return [
-      {
-        id: '1',
-        name: 'John Doe',
-        email: 'john.doe@company.com',
-        role: UserRole.SUPER_ADMIN
-      },
       {
         id: 'user-1',
         name: 'John Admin',

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { RoleService, DummyDataService, MfeLoaderService, User, SalesExecutive, MfeConfig } from '@org/core-services';
+import { RoleService, DummyDataService, MfeLoaderService, User, SalesExecutive, MfeConfig, UserInfo } from '@org/core-services';
 import { AuthService } from '@org/core-services';
 
 /**
@@ -31,44 +31,107 @@ export class HeaderComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.syncAuthenticatedUser();
+    this.subscribeToUserChanges();
+  }
+
+  /**
+   * Sync authenticated user from auth service to role service if needed
+   */
+  private syncAuthenticatedUser(): void {
+    const isAuthenticated = this.auth.isAuthenticated();
+    const userInfo = this.auth.getUser();
+    const currentUser = this.roleService.getCurrentUser();
+    
+    const shouldSync = isAuthenticated && 
+                      userInfo && 
+                      this.shouldUpdateUser(currentUser, userInfo);
+    
+    if (shouldSync) {
+      this.roleService.setUserFromAuth(userInfo);
+    }
+  }
+
+  /**
+   * Pure function to determine if user should be updated
+   */
+  private shouldUpdateUser(currentUser: User | null, userInfo: UserInfo): boolean {
+    return !currentUser || currentUser.id !== userInfo.sub;
+  }
+
+  /**
+   * Subscribe to user changes and update component state
+   */
+  private subscribeToUserChanges(): void {
     this.roleService.currentUser$.subscribe(user => {
       this.currentUser = user;
-      if (user) {
-        this.selectedSalesExecutiveId = user.id;
-        this.canViewOthers = this.roleService.canViewOthersData();
-        this.updateAvailableMfes();
-        this.loadSalesExecutives();
-      }
+      this.updateComponentState(user);
     });
+  }
+
+  /**
+   * Update component state based on current user
+   */
+  private updateComponentState(user: User | null): void {
+    if (!user) {
+      this.resetComponentState();
+      return;
+    }
+
+    this.selectedSalesExecutiveId = user.id;
+    this.canViewOthers = this.roleService.canViewOthersData();
+    this.updateAvailableMfes();
+    this.loadSalesExecutives();
+  }
+
+  /**
+   * Reset component state when no user
+   */
+  private resetComponentState(): void {
+    this.availableMfes = [];
+    this.salesExecutives = [];
+    this.canViewOthers = false;
   }
 
   /**
    * Update available MFEs based on current user role
    */
   private updateAvailableMfes(): void {
-    if (!this.currentUser) {
-      this.availableMfes = [];
-      return;
-    }
-    this.availableMfes = this.mfeLoader.getConfigsForRole(this.currentUser.role);
+    this.availableMfes = this.currentUser 
+      ? this.mfeLoader.getConfigsForRole(this.currentUser.role)
+      : [];
   }
 
   /**
    * Load sales executives for selection (admin/team lead only)
    */
   private loadSalesExecutives(): void {
-    if (this.canViewOthers) {
-      this.salesExecutives = this.dummyDataService.getSalesExecutives();
-    }
+    this.salesExecutives = this.canViewOthers 
+      ? this.dummyDataService.getSalesExecutives()
+      : [];
   }
 
   /**
    * Handle sales executive selection change
    */
   onSalesExecutiveChange(): void {
-    sessionStorage.setItem('selected_sales_executive_id', this.selectedSalesExecutiveId);
+    this.persistSelectedExecutive(this.selectedSalesExecutiveId);
+    this.notifyExecutiveChange(this.selectedSalesExecutiveId);
+  }
+
+  /**
+   * Persist selected executive to session storage
+   */
+  private persistSelectedExecutive(executiveId: string): void {
+    sessionStorage.setItem('selected_sales_executive_id', executiveId);
+  }
+
+  /**
+   * Notify other components of executive change via custom event
+   */
+  private notifyExecutiveChange(executiveId: string): void {
     window.dispatchEvent(new CustomEvent('salesExecutiveChanged', { 
-      detail: { salesExecutiveId: this.selectedSalesExecutiveId } 
+      detail: { salesExecutiveId: executiveId } 
     }));
   }
 

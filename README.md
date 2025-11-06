@@ -1,10 +1,34 @@
-# ShellModule
+# Local Development Setup
+- Step 1: In angular json change to "baseHref": "./" so all assets are relatively served. 
+- Step 2: Open 2 terminal windows. In 1 window run the command `npm run watch:prod`
+- Step 3: In the second terminal run the command `npx http-server dist/i17e`
+- Step 4: In core-services/src/lib/auth.service.ts change to following `private readonly REDIRECT_URI = 'http://127.0.0.1:8080/';`
+
+# ShellModule - Incentive Management System
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.17.
 
-## ⭐ New Feature: Multi-MFE Loading
+## 🎯 Recent Updates
 
-The MFE Wrapper now supports **loading multiple Micro Frontends on a single page** with **lazy loading**!
+### ✅ API Integration
+- **Real API Integration**: Connected to actual backend API
+- **Centralized Configuration**: Easy-to-update API endpoint configuration
+- **New API Services**: IncentiveRules, Incentives, Targets, Tasks
+- **Authentication**: Tokens stored in sessionStorage with event broadcasting
+- **Dev Mimicking**: Test different user roles without authentication
+- 📖 **[Read the API Integration Guide](./docs/API_INTEGRATION_GUIDE.md)**
+- 📖 **[Read the Migration Guide](./docs/MIGRATION_GUIDE.md)**
+
+### ✅ Authentication & Authorization
+- **Zitadel OAuth2**: Full integration with Zitadel for authentication
+- **Token Management**: Secure storage in sessionStorage
+- **Event Broadcasting**: Auth events emitted for MicroApp consumption
+- **Role-Based Access**: User roles and permissions from Zitadel
+- 📖 **[Read the Zitadel Integration Guide](./ZITADEL_INTEGRATION.md)**
+
+## ⭐ Multi-MFE Loading
+
+The MFE Wrapper supports **loading multiple Micro Frontends on a single page** with **lazy loading**!
 
 ### Quick Example
 
@@ -24,6 +48,97 @@ The MFE Wrapper now supports **loading multiple Micro Frontends on a single page
 - ✅ Backward compatible with single-MFE mode
 - ✅ Visual loading states and error handling
 - ✅ Demo available at `/multi-mfe-demo` route
+
+## 🚀 Quick Start
+
+### Installation
+```bash
+npm install
+```
+
+### Development
+```bash
+npm start
+# Navigate to http://localhost:4200/
+```
+
+### Build
+```bash
+npm run build
+# Build artifacts will be in dist/
+```
+
+### Test
+```bash
+npm test
+```
+
+## 📚 Documentation
+
+- [API Integration Guide](./docs/API_INTEGRATION_GUIDE.md) - How to use the new API services
+- [Migration Guide](./docs/MIGRATION_GUIDE.md) - Migrating from dummy data to real API
+- [Zitadel Integration](./ZITADEL_INTEGRATION.md) - Authentication setup
+- [Multi-MFE Guide](./MULTI_MFE_GUIDE.md) - Loading multiple MFEs
+- [Developer Guide](./docs/DEVELOPER_GUIDE.md) - Development best practices
+
+## 🔑 Key Features
+
+### Authentication
+- Zitadel OAuth2 integration
+- Token-based authentication
+- Role-based access control
+- Session persistence
+
+### API Integration
+- RESTful API client services
+- Centralized configuration
+- GraphQL-ready architecture
+- Automatic token injection
+- Error handling
+
+### Local Development
+- Dev user mimicking (test different roles)
+- Environment-based configuration
+- Hot reload support
+
+### Example: Dev User Mimicking
+```typescript
+// In browser console or initialization
+const testAdmin = {
+  id: 'dev-1',
+  name: 'Dev Admin',
+  email: 'admin@test.com',
+  role: 'super-admin'
+};
+
+localStorage.setItem('dev_mimic_user', JSON.stringify(testAdmin));
+// Refresh page to apply
+```
+
+## 🏗️ Architecture
+
+### Core Services (`@org/core-services`)
+- **AuthService**: Zitadel authentication & token management
+- **RoleService**: User roles & permissions
+- **BrandContextService**: Multi-tenant brand context
+- **EventBusService**: Cross-MFE communication
+- **API Services**: IncentiveRules, Incentives, Targets, Tasks
+
+### MFE Integration
+- Dynamic module federation
+- Role-based MFE loading
+- Shared services across MFEs
+- Event-driven communication
+
+### API Configuration
+```typescript
+// Update API endpoint
+import { updateApiConfig } from '@org/core-services';
+
+updateApiConfig({
+  baseUrl: 'https://new-endpoint.com/db'
+});
+```
 
 ## Development server
 
