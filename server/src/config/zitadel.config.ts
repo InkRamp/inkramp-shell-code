@@ -6,6 +6,13 @@ dotenv.config();
 /**
  * Zitadel API Configuration
  * Provides authenticated API client for Zitadel management
+ * 
+ * NOTE: Token management is simplified for development.
+ * TODO: For production, implement:
+ * 1. Token refresh logic before expiration
+ * 2. Retry failed requests with new tokens
+ * 3. Token expiration monitoring
+ * 4. Proper error handling for authentication failures
  */
 export class ZitadelConfig {
   private static instance: ZitadelConfig;

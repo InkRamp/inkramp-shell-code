@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import zitadelConfig from '../config/zitadel.config';
+import { SYSTEM_ROLES, getSystemRoleById } from '../config/system-roles';
 import { CreateRoleDto, UpdateRoleDto, Role } from '../models/entities';
 
 /**
@@ -36,46 +37,8 @@ export class RoleController {
           roles = [];
         }
       } else {
-        // Return common/system roles
-        // In Zitadel, system roles would be defined at the instance level
-        roles = [
-          {
-            id: 'super-admin',
-            name: 'SUPER_ADMIN',
-            description: 'Super administrator with full access',
-            permissions: ['*'],
-            isSystemRole: true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-          {
-            id: 'org-admin',
-            name: 'ORG_ADMIN',
-            description: 'Organization administrator',
-            permissions: ['org:*', 'team:*', 'user:*'],
-            isSystemRole: true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-          {
-            id: 'team-lead',
-            name: 'TEAM_LEAD',
-            description: 'Team leader with team management access',
-            permissions: ['team:read', 'team:update', 'user:read'],
-            isSystemRole: true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-          {
-            id: 'sales-executive',
-            name: 'SALES_EXECUTIVE',
-            description: 'Sales executive with basic access',
-            permissions: ['sales:read', 'sales:write'],
-            isSystemRole: true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-        ];
+        // Return system roles
+        roles = SYSTEM_ROLES;
 
         if (isSystemRole === 'false') {
           roles = [];
@@ -105,49 +68,11 @@ export class RoleController {
       const { projectId } = req.query;
 
       // Check if it's a system role first
-      const systemRoles = {
-        'super-admin': {
-          id: 'super-admin',
-          name: 'SUPER_ADMIN',
-          description: 'Super administrator with full access',
-          permissions: ['*'],
-          isSystemRole: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        'org-admin': {
-          id: 'org-admin',
-          name: 'ORG_ADMIN',
-          description: 'Organization administrator',
-          permissions: ['org:*', 'team:*', 'user:*'],
-          isSystemRole: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        'team-lead': {
-          id: 'team-lead',
-          name: 'TEAM_LEAD',
-          description: 'Team leader with team management access',
-          permissions: ['team:read', 'team:update', 'user:read'],
-          isSystemRole: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        'sales-executive': {
-          id: 'sales-executive',
-          name: 'SALES_EXECUTIVE',
-          description: 'Sales executive with basic access',
-          permissions: ['sales:read', 'sales:write'],
-          isSystemRole: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
-
-      if (systemRoles[id as keyof typeof systemRoles]) {
+      const systemRole = getSystemRoleById(id);
+      if (systemRole) {
         res.json({
           success: true,
-          data: systemRoles[id as keyof typeof systemRoles],
+          data: systemRole,
         });
         return;
       }

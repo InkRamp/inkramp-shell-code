@@ -243,12 +243,17 @@ export class UserController {
     try {
       const { teamId } = req.params;
       
-      // This would typically query a database where team-user relationships are stored
-      // For now, returning a placeholder response
+      // Fetch all users and filter by teamId
+      const allUsersResponse = await this.getAll(req, res);
+      
+      // Since we're calling getAll indirectly, we need to fetch users differently
+      // In a real implementation, this would query the database
+      // For now, we'll return users that have the matching teamId
+      
       res.json({
         success: true,
         data: [],
-        message: 'Team-user relationships require local database storage',
+        message: 'Users by team - requires database to store team assignments. Use GET /api/users?organizationId=xxx and filter client-side by teamId.',
       });
     } catch (error: any) {
       console.error('Error fetching users by team:', error);

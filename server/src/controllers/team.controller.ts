@@ -5,6 +5,10 @@ import { CreateTeamDto, UpdateTeamDto, Team } from '../models/entities';
  * Controller for Team CRUD operations
  * Teams are stored locally (not in Zitadel)
  * Relationship: Organization (1) -> Teams (n), Team (1) -> Users (n)
+ * 
+ * NOTE: Currently using in-memory storage for simplicity.
+ * TODO: For production, implement persistent storage using a database (e.g., PostgreSQL, MongoDB)
+ * to ensure data persists across server restarts and supports horizontal scaling.
  */
 export class TeamController {
   // In-memory storage for teams (in production, use a database)

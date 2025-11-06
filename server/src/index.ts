@@ -14,8 +14,12 @@ const app: Application = express();
 const PORT = process.env.PORT || 4000;
 
 // Middleware
+const corsOrigins = process.env.CORS_ORIGINS 
+  ? process.env.CORS_ORIGINS.split(',')
+  : ['http://localhost:4200', 'http://127.0.0.1:8080', 'https://opensourcekd.github.io'];
+
 app.use(cors({
-  origin: ['http://localhost:4200', 'http://127.0.0.1:8080', 'https://opensourcekd.github.io'],
+  origin: corsOrigins,
   credentials: true,
 }));
 app.use(express.json());
