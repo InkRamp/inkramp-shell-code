@@ -1,0 +1,1287 @@
+{
+"info": {
+"_postman_id": "zitadel-multi-tenant-crud-001",
+"name": "Zitadel Multi-Tenant CRUD Operations",
+"description": "Comprehensive Postman collection for CRUD operations on Zitadel:\n\n**Multi-Tenant Architecture:**\n- 1 Organization → Multiple Teams/Projects → Multiple Users\n- Global Roles (shared across all organizations)\n\n**Covered Entities:**\n1. Organizations (Orgs)\n2. Projects (Teams within Orgs)\n3. Users (Assigned to Projects/Teams)\n4. Roles (Global and Project-specific)\n5. Grants (User assignments to Projects/Roles)\n\n**Prerequisites:**\n1. Zitadel instance URL\n2. Service Account with necessary permissions\n3. PAT (Personal Access Token) or OAuth2 credentials\n\n**Setup Instructions:**\n1. Import this collection into Postman\n2. Configure environment variables:\n   - `zitadel_domain`: Your Zitadel instance (e.g., your-instance.zitadel.cloud)\n   - `zitadel_token`: Your service account token/PAT\n   - `org_id`: Organization ID (will be set after creating org)\n   - `project_id`: Project ID (will be set after creating project)\n   - `user_id`: User ID (will be set after creating user)\n3. Run requests in order for dependent operations",
+"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+},
+"auth": {
+"type": "bearer",
+"bearer": [
+{
+"key": "token",
+"value": "{{zitadel_token}}",
+"type": "string"
+}
+]
+},
+"item": [
+{
+"name": "0. Authentication",
+"item": [
+{
+"name": "Get Access Token (OAuth2)",
+"event": [
+{
+"listen": "test",
+"script": {
+"exec": [
+"if (pm.response.code === 200) {",
+"    const jsonData = pm.response.json();",
+"    pm.environment.set(\"zitadel_token\", jsonData.access_token);",
+"    console.log(\"Token set successfully\");",
+"}"
+],
+"type": "text/javascript"
+}
+}
+],
+"request": {
+"method": "POST",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/x-www-form-urlencoded"
+}
+],
+"body": {
+"mode": "urlencoded",
+"urlencoded": [
+{
+"key": "grant_type",
+"value": "client_credentials",
+"type": "text"
+},
+{
+"key": "scope",
+"value": "openid profile email urn:zitadel:iam:org:project:id:zitadel:aud",
+"type": "text"
+}
+]
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/oauth/v2/token",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"oauth",
+"v2",
+"token"
+]
+},
+"description": "Get OAuth2 access token using service account credentials.\n\nNote: This uses client_credentials flow. You'll need to configure your service account key as Basic Auth or use JWT assertion."
+}
+},
+{
+"name": "Introspect Token",
+"request": {
+"method": "POST",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/x-www-form-urlencoded"
+}
+],
+"body": {
+"mode": "urlencoded",
+"urlencoded": [
+{
+"key": "token",
+"value": "{{zitadel_token}}",
+"type": "text"
+}
+]
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/oauth/v2/introspect",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"oauth",
+"v2",
+"introspect"
+]
+},
+"description": "Verify and inspect the current access token."
+}
+}
+],
+"description": "Authentication and token management endpoints for Zitadel API access."
+},
+{
+"name": "1. Organizations",
+"item": [
+{
+"name": "Create Organization",
+"event": [
+{
+"listen": "test",
+"script": {
+"exec": [
+"if (pm.response.code === 200 || pm.response.code === 201) {",
+"    const jsonData = pm.response.json();",
+"    if (jsonData.id || jsonData.orgId || jsonData.details?.resourceOwner) {",
+"        const orgId = jsonData.id || jsonData.orgId || jsonData.details.resourceOwner;",
+"        pm.environment.set(\"org_id\", orgId);",
+"        console.log(\"Organization ID set: \" + orgId);",
+"    }",
+"}"
+],
+"type": "text/javascript"
+}
+}
+],
+"request": {
+"method": "POST",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"name\": \"Acme Corporation\",\n  \"domain\": \"acme-corp\"\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/orgs",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"orgs"
+]
+},
+"description": "Create a new organization. Each organization represents a tenant in your multi-tenant architecture.\n\n**Fields:**\n- `name`: Display name of the organization\n- `domain`: Unique domain identifier"
+}
+},
+{
+"name": "List Organizations",
+"request": {
+"method": "POST",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"query\": {\n    \"offset\": 0,\n    \"limit\": 100,\n    \"asc\": true\n  },\n  \"queries\": []\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/admin/v1/orgs/_search",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"admin",
+"v1",
+"orgs",
+"_search"
+]
+},
+"description": "List all organizations. Use queries to filter results."
+}
+},
+{
+"name": "Get Organization by ID",
+"request": {
+"method": "GET",
+"header": [],
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/orgs/me",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"orgs",
+"me"
+]
+},
+"description": "Get current organization details. Replace 'me' with specific org ID if needed."
+}
+},
+{
+"name": "Update Organization",
+"request": {
+"method": "PUT",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"name\": \"Acme Corporation Updated\"\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/orgs/me",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"orgs",
+"me"
+]
+},
+"description": "Update organization details."
+}
+},
+{
+"name": "Delete Organization",
+"request": {
+"method": "DELETE",
+"header": [],
+"url": {
+"raw": "https://{{zitadel_domain}}/admin/v1/orgs/{{org_id}}",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"admin",
+"v1",
+"orgs",
+"{{org_id}}"
+]
+},
+"description": "Delete an organization. ⚠️ This is destructive and cannot be undone."
+}
+}
+],
+"description": "Organization management. In your multi-tenant architecture, each organization represents a separate tenant."
+},
+{
+"name": "2. Projects (Teams)",
+"item": [
+{
+"name": "Create Project",
+"event": [
+{
+"listen": "test",
+"script": {
+"exec": [
+"if (pm.response.code === 200 || pm.response.code === 201) {",
+"    const jsonData = pm.response.json();",
+"    if (jsonData.id || jsonData.projectId) {",
+"        const projectId = jsonData.id || jsonData.projectId;",
+"        pm.environment.set(\"project_id\", projectId);",
+"        console.log(\"Project ID set: \" + projectId);",
+"    }",
+"}"
+],
+"type": "text/javascript"
+}
+}
+],
+"request": {
+"method": "POST",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"name\": \"Engineering Team\",\n  \"projectRoleAssertion\": true,\n  \"projectRoleCheck\": true,\n  \"hasProjectCheck\": true,\n  \"privateLabelingSetting\": \"PRIVATE_LABELING_SETTING_UNSPECIFIED\"\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/projects",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"projects"
+]
+},
+"description": "Create a new project within an organization. Projects represent teams in your multi-tenant structure.\n\n**Fields:**\n- `name`: Project/Team name\n- `projectRoleAssertion`: Include roles in tokens\n- `projectRoleCheck`: Verify roles on requests\n- `hasProjectCheck`: Check if user has project access"
+}
+},
+{
+"name": "List Projects",
+"request": {
+"method": "POST",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"query\": {\n    \"offset\": 0,\n    \"limit\": 100,\n    \"asc\": true\n  },\n  \"queries\": []\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/projects/_search",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"projects",
+"_search"
+]
+},
+"description": "List all projects in the current organization."
+}
+},
+{
+"name": "Get Project by ID",
+"request": {
+"method": "GET",
+"header": [],
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/projects/{{project_id}}",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"projects",
+"{{project_id}}"
+]
+},
+"description": "Get specific project details by ID."
+}
+},
+{
+"name": "Update Project",
+"request": {
+"method": "PUT",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"name\": \"Engineering Team - Updated\"\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/projects/{{project_id}}",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"projects",
+"{{project_id}}"
+]
+},
+"description": "Update project details."
+}
+},
+{
+"name": "Delete Project",
+"request": {
+"method": "DELETE",
+"header": [],
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/projects/{{project_id}}",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"projects",
+"{{project_id}}"
+]
+},
+"description": "Delete a project. ⚠️ This will remove all associated roles and grants."
+}
+}
+],
+"description": "Project management. Projects represent teams within an organization in your multi-tenant architecture."
+},
+{
+"name": "3. Roles",
+"item": [
+{
+"name": "Global Roles",
+"item": [
+{
+"name": "List Global Roles",
+"request": {
+"method": "POST",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"query\": {\n    \"offset\": 0,\n    \"limit\": 100\n  }\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/admin/v1/roles/_search",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"admin",
+"v1",
+"roles",
+"_search"
+]
+},
+"description": "List all global/instance-level roles. These are system-wide roles."
+}
+}
+],
+"description": "Global roles are instance-wide and available across all organizations."
+},
+{
+"name": "Project Roles",
+"item": [
+{
+"name": "Create Project Role",
+"request": {
+"method": "POST",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"roleKey\": \"developer\",\n  \"displayName\": \"Developer\",\n  \"group\": \"Engineering\"\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/projects/{{project_id}}/roles",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"projects",
+"{{project_id}}",
+"roles"
+]
+},
+"description": "Create a role within a specific project/team.\n\n**Fields:**\n- `roleKey`: Unique identifier (e.g., 'admin', 'developer')\n- `displayName`: Human-readable name\n- `group`: Optional grouping for roles"
+}
+},
+{
+"name": "List Project Roles",
+"request": {
+"method": "POST",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"query\": {\n    \"offset\": 0,\n    \"limit\": 100,\n    \"asc\": true\n  },\n  \"queries\": []\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/projects/{{project_id}}/roles/_search",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"projects",
+"{{project_id}}",
+"roles",
+"_search"
+]
+},
+"description": "List all roles in a specific project."
+}
+},
+{
+"name": "Update Project Role",
+"request": {
+"method": "PUT",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"displayName\": \"Senior Developer\",\n  \"group\": \"Engineering - Senior\"\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/projects/{{project_id}}/roles/developer",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"projects",
+"{{project_id}}",
+"roles",
+"developer"
+]
+},
+"description": "Update a project role. Replace 'developer' with the roleKey you want to update."
+}
+},
+{
+"name": "Delete Project Role",
+"request": {
+"method": "DELETE",
+"header": [],
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/projects/{{project_id}}/roles/developer",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"projects",
+"{{project_id}}",
+"roles",
+"developer"
+]
+},
+"description": "Delete a project role. ⚠️ This will remove the role from all users."
+}
+}
+],
+"description": "Project-specific roles. These roles are scoped to a particular project/team."
+}
+],
+"description": "Role management - both global (instance-wide) and project-specific roles."
+},
+{
+"name": "4. Users",
+"item": [
+{
+"name": "Create User (Human)",
+"event": [
+{
+"listen": "test",
+"script": {
+"exec": [
+"if (pm.response.code === 200 || pm.response.code === 201) {",
+"    const jsonData = pm.response.json();",
+"    if (jsonData.userId) {",
+"        pm.environment.set(\"user_id\", jsonData.userId);",
+"        console.log(\"User ID set: \" + jsonData.userId);",
+"    }",
+"}"
+],
+"type": "text/javascript"
+}
+}
+],
+"request": {
+"method": "POST",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"userName\": \"john.doe\",\n  \"profile\": {\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"displayName\": \"John Doe\",\n    \"preferredLanguage\": \"en\",\n    \"gender\": \"GENDER_MALE\"\n  },\n  \"email\": {\n    \"email\": \"john.doe@example.com\",\n    \"isEmailVerified\": false\n  },\n  \"phone\": {\n    \"phone\": \"+1234567890\",\n    \"isPhoneVerified\": false\n  },\n  \"password\": \"SecurePassword123!\",\n  \"passwordChangeRequired\": true\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/users/human",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"users",
+"human"
+]
+},
+"description": "Create a human user (actual person).\n\n**Fields:**\n- `userName`: Unique username\n- `profile`: User profile information\n- `email`: Email address and verification status\n- `phone`: Phone number (optional)\n- `password`: Initial password\n- `passwordChangeRequired`: Force password change on first login"
+}
+},
+{
+"name": "Create User (Machine)",
+"event": [
+{
+"listen": "test",
+"script": {
+"exec": [
+"if (pm.response.code === 200 || pm.response.code === 201) {",
+"    const jsonData = pm.response.json();",
+"    if (jsonData.userId) {",
+"        pm.environment.set(\"machine_user_id\", jsonData.userId);",
+"        console.log(\"Machine User ID set: \" + jsonData.userId);",
+"    }",
+"}"
+],
+"type": "text/javascript"
+}
+}
+],
+"request": {
+"method": "POST",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"userName\": \"api-service\",\n  \"name\": \"API Service Account\",\n  \"description\": \"Service account for API access\",\n  \"accessTokenType\": \"ACCESS_TOKEN_TYPE_BEARER\"\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/users/machine",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"users",
+"machine"
+]
+},
+"description": "Create a machine user (service account) for API access."
+}
+},
+{
+"name": "List Users",
+"request": {
+"method": "POST",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"query\": {\n    \"offset\": 0,\n    \"limit\": 100,\n    \"asc\": true\n  },\n  \"queries\": [\n    {\n      \"userNameQuery\": {\n        \"userName\": \"\",\n        \"method\": \"TEXT_QUERY_METHOD_CONTAINS\"\n      }\n    }\n  ]\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/users/_search",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"users",
+"_search"
+]
+},
+"description": "Search and list users with optional filters."
+}
+},
+{
+"name": "Get User by ID",
+"request": {
+"method": "GET",
+"header": [],
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/users/{{user_id}}",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"users",
+"{{user_id}}"
+]
+},
+"description": "Get user details by ID."
+}
+},
+{
+"name": "Update User Profile",
+"request": {
+"method": "PUT",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe Updated\",\n  \"displayName\": \"John Doe (Senior)\",\n  \"preferredLanguage\": \"en\"\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/users/{{user_id}}/profile",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"users",
+"{{user_id}}",
+"profile"
+]
+},
+"description": "Update user profile information."
+}
+},
+{
+"name": "Update User Email",
+"request": {
+"method": "PUT",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"email\": \"john.doe.new@example.com\",\n  \"isEmailVerified\": false\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/users/{{user_id}}/email",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"users",
+"{{user_id}}",
+"email"
+]
+},
+"description": "Update user email address."
+}
+},
+{
+"name": "Deactivate User",
+"request": {
+"method": "POST",
+"header": [],
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/users/{{user_id}}/_deactivate",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"users",
+"{{user_id}}",
+"_deactivate"
+]
+},
+"description": "Deactivate a user (soft delete - can be reactivated)."
+}
+},
+{
+"name": "Reactivate User",
+"request": {
+"method": "POST",
+"header": [],
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/users/{{user_id}}/_reactivate",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"users",
+"{{user_id}}",
+"_reactivate"
+]
+},
+"description": "Reactivate a previously deactivated user."
+}
+},
+{
+"name": "Delete User",
+"request": {
+"method": "DELETE",
+"header": [],
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/users/{{user_id}}",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"users",
+"{{user_id}}"
+]
+},
+"description": "Permanently delete a user. ⚠️ This cannot be undone."
+}
+}
+],
+"description": "User management - create, read, update, and delete both human and machine users."
+},
+{
+"name": "5. User Grants (Team Assignments)",
+"item": [
+{
+"name": "Create User Grant",
+"request": {
+"method": "POST",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"projectId\": \"{{project_id}}\",\n  \"roleKeys\": [\n    \"developer\",\n    \"viewer\"\n  ]\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/users/{{user_id}}/grants",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"users",
+"{{user_id}}",
+"grants"
+]
+},
+"description": "Grant a user access to a project/team with specific roles.\n\nThis is how you assign users to teams in your multi-tenant architecture.\n\n**Fields:**\n- `userId`: The user to grant access\n- `projectId`: The project/team to grant access to\n- `roleKeys`: Array of role keys to assign"
+}
+},
+{
+"name": "List User Grants",
+"request": {
+"method": "POST",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"query\": {\n    \"offset\": 0,\n    \"limit\": 100,\n    \"asc\": true\n  },\n  \"queries\": []\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/users/{{user_id}}/grants/_search",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"users",
+"{{user_id}}",
+"grants",
+"_search"
+]
+},
+"description": "List all grants for a specific user (all projects/teams they have access to)."
+}
+},
+{
+"name": "List Project Grants",
+"request": {
+"method": "POST",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"query\": {\n    \"offset\": 0,\n    \"limit\": 100,\n    \"asc\": true\n  },\n  \"queries\": []\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/projects/{{project_id}}/grants/_search",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"projects",
+"{{project_id}}",
+"grants",
+"_search"
+]
+},
+"description": "List all users who have access to a specific project/team."
+}
+},
+{
+"name": "Update User Grant",
+"request": {
+"method": "PUT",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"roleKeys\": [\n    \"developer\",\n    \"admin\"\n  ]\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/users/{{user_id}}/grants/{{grant_id}}",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"users",
+"{{user_id}}",
+"grants",
+"{{grant_id}}"
+]
+},
+"description": "Update a user's roles in a specific project/team."
+}
+},
+{
+"name": "Delete User Grant",
+"request": {
+"method": "DELETE",
+"header": [],
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/users/{{user_id}}/grants/{{grant_id}}",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"users",
+"{{user_id}}",
+"grants",
+"{{grant_id}}"
+]
+},
+"description": "Remove a user's access to a project/team."
+}
+}
+],
+"description": "User grants manage the assignment of users to projects/teams with specific roles. This is the core of your multi-tenant team structure."
+},
+{
+"name": "6. Organization Members",
+"item": [
+{
+"name": "Add Organization Member",
+"request": {
+"method": "POST",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"roles\": [\n    \"ORG_OWNER\"\n  ]\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/orgs/me/members",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"orgs",
+"me",
+"members"
+]
+},
+"description": "Add a user as a member of the organization with org-level roles.\n\n**Common Org Roles:**\n- ORG_OWNER: Full organization control\n- ORG_USER_MANAGER: Manage users\n- ORG_PROJECT_CREATOR: Create projects"
+}
+},
+{
+"name": "List Organization Members",
+"request": {
+"method": "POST",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"query\": {\n    \"offset\": 0,\n    \"limit\": 100,\n    \"asc\": true\n  },\n  \"queries\": []\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/orgs/me/members/_search",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"orgs",
+"me",
+"members",
+"_search"
+]
+},
+"description": "List all members of the organization."
+}
+},
+{
+"name": "Update Organization Member",
+"request": {
+"method": "PUT",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"roles\": [\n    \"ORG_OWNER\",\n    \"ORG_USER_MANAGER\"\n  ]\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/orgs/me/members/{{user_id}}",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"orgs",
+"me",
+"members",
+"{{user_id}}"
+]
+},
+"description": "Update an organization member's roles."
+}
+},
+{
+"name": "Remove Organization Member",
+"request": {
+"method": "DELETE",
+"header": [],
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/orgs/me/members/{{user_id}}",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"orgs",
+"me",
+"members",
+"{{user_id}}"
+]
+},
+"description": "Remove a user from the organization."
+}
+}
+],
+"description": "Organization membership management - add users to organizations with org-level permissions."
+},
+{
+"name": "7. Advanced Queries",
+"item": [
+{
+"name": "Search Users by Organization",
+"request": {
+"method": "POST",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"query\": {\n    \"offset\": 0,\n    \"limit\": 100,\n    \"asc\": true\n  },\n  \"queries\": [\n    {\n      \"orgQuery\": {\n        \"orgId\": \"{{org_id}}\"\n      }\n    }\n  ]\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/admin/v1/users/_search",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"admin",
+"v1",
+"users",
+"_search"
+]
+},
+"description": "Find all users in a specific organization."
+}
+},
+{
+"name": "Get User's Projects",
+"request": {
+"method": "POST",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"query\": {\n    \"offset\": 0,\n    \"limit\": 100\n  },\n  \"queries\": []\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/users/{{user_id}}/grants/_search",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"users",
+"{{user_id}}",
+"grants",
+"_search"
+]
+},
+"description": "Get all projects/teams that a user has access to."
+}
+},
+{
+"name": "Get Project's Users",
+"request": {
+"method": "POST",
+"header": [
+{
+"key": "Content-Type",
+"value": "application/json"
+}
+],
+"body": {
+"mode": "raw",
+"raw": "{\n  \"query\": {\n    \"offset\": 0,\n    \"limit\": 100\n  },\n  \"queries\": []\n}"
+},
+"url": {
+"raw": "https://{{zitadel_domain}}/management/v1/projects/{{project_id}}/grants/_search",
+"protocol": "https",
+"host": [
+"{{zitadel_domain}}"
+],
+"path": [
+"management",
+"v1",
+"projects",
+"{{project_id}}",
+"grants",
+"_search"
+]
+},
+"description": "Get all users who have access to a specific project/team."
+}
+}
+],
+"description": "Advanced query patterns for understanding relationships between orgs, projects, and users."
+}
+],
+"variable": [
+{
+"key": "zitadel_domain",
+"value": "your-instance.zitadel.cloud",
+"type": "default"
+},
+{
+"key": "zitadel_token",
+"value": "",
+"type": "secret"
+},
+{
+"key": "org_id",
+"value": "",
+"type": "default"
+},
+{
+"key": "project_id",
+"value": "",
+"type": "default"
+},
+{
+"key": "user_id",
+"value": "",
+"type": "default"
+},
+{
+"key": "grant_id",
+"value": "",
+"type": "default"
+},
+{
+"key": "machine_user_id",
+"value": "",
+"type": "default"
+}
+]
+}
