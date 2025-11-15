@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { EventBusService } from './event-bus.service';
-import Auth0Client, { Auth0Client as Auth0ClientType } from '@auth0/auth0-spa-js';
+import { Auth0Client as Auth0ClientType, createAuth0Client } from '@auth0/auth0-spa-js';
 import { 
   AUTH0_CONFIG, 
   STORAGE_CONFIG, 
@@ -77,7 +77,7 @@ export class AuthService {
    */
   private async initializeAuth0(): Promise<void> {
     try {
-      this.auth0Client = await Auth0Client.createAuth0Client({
+      this.auth0Client = await createAuth0Client({
         domain: AUTH0_CONFIG.domain,
         clientId: AUTH0_CONFIG.clientId,
         authorizationParams: {
