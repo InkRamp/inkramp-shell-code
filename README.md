@@ -20,11 +20,11 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 - 📖 **[Read the Migration Guide](./docs/MIGRATION_GUIDE.md)**
 
 ### ✅ Authentication & Authorization
-- **Zitadel OAuth2**: Full integration with Zitadel for authentication
-- **Token Management**: Secure storage in sessionStorage
+- **Auth0 OAuth2**: Full integration with Auth0 for authentication
+- **Token Management**: Secure storage in sessionStorage (not localStorage)
 - **Event Broadcasting**: Auth events emitted for MicroApp consumption
-- **Role-Based Access**: User roles and permissions from Zitadel
-- 📖 **[Read the Zitadel Integration Guide](./ZITADEL_INTEGRATION.md)**
+- **Role-Based Access**: User roles and permissions from Auth0
+- 📖 **[Read the Auth0 Integration Guide](./AUTH0_INTEGRATION.md)**
 
 ## ⭐ Multi-MFE Loading
 
@@ -77,17 +77,17 @@ npm test
 
 - [API Integration Guide](./docs/API_INTEGRATION_GUIDE.md) - How to use the new API services
 - [Migration Guide](./docs/MIGRATION_GUIDE.md) - Migrating from dummy data to real API
-- [Zitadel Integration](./ZITADEL_INTEGRATION.md) - Authentication setup
+- [Auth0 Integration](./AUTH0_INTEGRATION.md) - Authentication setup and security
 - [Multi-MFE Guide](./MULTI_MFE_GUIDE.md) - Loading multiple MFEs
 - [Developer Guide](./docs/DEVELOPER_GUIDE.md) - Development best practices
 
 ## 🔑 Key Features
 
 ### Authentication
-- Zitadel OAuth2 integration
-- Token-based authentication
+- Auth0 OAuth2 integration
+- Token-based authentication with sessionStorage
 - Role-based access control
-- Session persistence
+- Session persistence (cleared on tab/browser close for security)
 
 ### API Integration
 - RESTful API client services
@@ -118,11 +118,12 @@ localStorage.setItem('dev_mimic_user', JSON.stringify(testAdmin));
 ## 🏗️ Architecture
 
 ### Core Services (`@org/core-services`)
-- **AuthService**: Zitadel authentication & token management
+- **AuthService**: Auth0 authentication & token management (sessionStorage)
 - **RoleService**: User roles & permissions
 - **BrandContextService**: Multi-tenant brand context
 - **EventBusService**: Cross-MFE communication
 - **API Services**: IncentiveRules, Incentives, Targets, Tasks
+- **Auth Config**: Centralized authentication configuration
 
 ### MFE Integration
 - Dynamic module federation

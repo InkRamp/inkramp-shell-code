@@ -62,8 +62,8 @@ export class AppComponent implements OnInit, OnDestroy {
   /**
    * Sync authenticated user from auth service to role service if needed
    */
-  private syncAuthenticatedUser(): void {
-    const isAuthenticated = this.auth.isAuthenticated();
+  private async syncAuthenticatedUser(): Promise<void> {
+    const isAuthenticated = await this.auth.isAuthenticated();
     const userInfo = this.auth.getUser();
     const currentUser = this.roleService.getCurrentUser();
     
@@ -156,7 +156,7 @@ export class AppComponent implements OnInit, OnDestroy {
    */
   private async processAuthCode(code: string, state: string): Promise<void> {
     try {
-      const success = await this.auth.handleCallback(code, state);
+      const success = await this.auth.handleCallback();
       success 
         ? this.handleAuthSuccess()
         : this.handleAuthFailure();

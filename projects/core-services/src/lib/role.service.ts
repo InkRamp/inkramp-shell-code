@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { User, UserRole, hasRequiredRole } from './models/roles.model';
-import { UserInfo, EXPLICIT_ZITADEL_CLAIMS } from './auth.service';
+import { UserInfo } from './auth.service';
 
 /**
  * Service to manage user roles and permissions
@@ -16,54 +16,37 @@ export class RoleService {
   constructor() {
     // DEBUG_LOG: RoleService initialized
     console.log('[RoleService] Service initialized');
-    // Initialize with dummy user for development or load from localStorage for mimicking
+    // Initialize with dummy user for development or load from sessionStorage for mimicking
     this.loadInitialUser();
   }
 
   /**
-   * Set user from Zitadel authentication
-   * Maps Zitadel UserInfo to internal User model with role
-   * Logs all available Zitadel claims
-   * @param userInfo User information from Zitadel
+   * Set user from Auth0 authentication
+   * Maps Auth0 UserInfo to internal User model with role
+   * Logs all available Auth0 claims
+   * @param userInfo User information from Auth0
    */
   setUserFromAuth(userInfo: UserInfo): void {
-    console.log('[RoleService] Setting user from Zitadel auth:', userInfo);
+    console.log('[RoleService] Setting user from Auth0 auth:', userInfo);
     
-    // Explicitly log all expected Zitadel-specific claims
-    console.log('[RoleService] 🏢 Zitadel-specific claims:');
+    // Log Auth0 custom claims (namespaced with http:// or https://)
+    console.log('[RoleService] 🔑 Auth0 custom claims:');
+    const customClaims = Object.keys(userInfo).filter(
+      key => key.startsWith('http://') || key.startsWith('https://')
+    );
     
-    // Project-specific roles
-    console.log('  • urn:zitadel:iam:org:project:roles:', 
-      userInfo['urn:zitadel:iam:org:project:roles'] || '(not present)');
-    
-    // Primary domain
-    console.log('  • urn:zitadel:iam:org:domain:primary:', 
-      userInfo['urn:zitadel:iam:org:domain:primary'] || '(not present)');
-    
-    // Custom user metadata
-    console.log('  • urn:zitadel:iam:user:metadata:', 
-      userInfo['urn:zitadel:iam:user:metadata'] || '(not present)');
-    
-    // Organization ID
-    console.log('  • urn:zitadel:iam:user:resourceowner:id:', 
-      userInfo['urn:zitadel:iam:user:resourceowner:id'] || '(not present)');
-    
-    // Organization name
-    console.log('  • urn:zitadel:iam:user:resourceowner:name:', 
-      userInfo['urn:zitadel:iam:user:resourceowner:name'] || '(not present)');
-    
-    // Organization primary domain
-    console.log('  • urn:zitadel:iam:user:resourceowner:primary_domain:', 
-      userInfo['urn:zitadel:iam:user:resourceowner:primary_domain'] || '(not present)');
-    
-    // Log organization info if available
-    if (userInfo['urn:zitadel:iam:user:resourceowner:name']) {
-      console.log(`[RoleService] 🏢 User belongs to organization: ${userInfo['urn:zitadel:iam:user:resourceowner:name']}`);
+    if (customClaims.length > 0) {
+      customClaims.forEach(claim => {
+        console.log(`  • ${claim}:`, userInfo[claim]);
+      });
+    } else {
+      console.log('  No custom claims found');
     }
     
-    // Log roles if available
-    if (userInfo['urn:zitadel:iam:org:project:roles']) {
-      console.log('[RoleService] 👤 Zitadel project roles:', userInfo['urn:zitadel:iam:org:project:roles']);
+    // Log roles if available (common Auth0 custom claim pattern)
+    const rolesClaim = customClaims.find(claim => claim.includes('roles'));
+    if (rolesClaim && userInfo[rolesClaim]) {
+      console.log('[RoleService] 👤 Auth0 roles:', userInfo[rolesClaim]);
     }
     
     const user = this.mapUserInfoToUser(userInfo);

@@ -34,3 +34,4 @@ export * from './lib/models/api.model';
 
 // Config
 export * from './lib/config/api.config';
+export * from './lib/config/auth.config';
