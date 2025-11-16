@@ -1,14 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router, Params } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService, RoleService } from '@org/core-services';
-import { firstValueFrom } from 'rxjs';
-
-interface AuthCallbackParams {
-  code: string | null;
-  state: string | null;
-  error: string | null;
-}
 
 interface AuthState {
   message: string;
@@ -48,97 +41,27 @@ export class AuthCallbackComponent implements OnInit {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    const authParams = await this.extractAuthParams();
-    await this.processAuthCallback(authParams);
+    await this.processAuthCallback();
   }
 
   /**
-   * Extract authentication parameters from route or URL
+   * Process authentication callback
    */
-  private async extractAuthParams(): Promise<AuthCallbackParams> {
-    const params = await firstValueFrom(this.route.queryParams);
-    const hasParams = params && Object.keys(params).length > 0;
-    
-    return hasParams 
-      ? this.extractFromRouteParams(params)
-      : this.extractFromUrlParams();
-  }
-
-  /**
-   * Extract auth params from Angular route params
-   */
-  private extractFromRouteParams(params: Params): AuthCallbackParams {
-    return {
-      code: params['code'] ?? null,
-      state: params['state'] ?? null,
-      error: params['error'] ?? null
-    };
-  }
-
-  /**
-   * Extract auth params from URL search params (fallback for hash routing)
-   */
-  private extractFromUrlParams(): AuthCallbackParams {
-    const urlParams = new URLSearchParams(window.location.search);
-    return {
-      code: urlParams.get('code'),
-      state: urlParams.get('state'),
-      error: urlParams.get('error')
-    };
-  }
-
-  /**
-   * Process authentication callback based on params
-   */
-  private async processAuthCallback(params: AuthCallbackParams): Promise<void> {
-    const authState = params.error
-      ? this.createErrorState(params.error)
-      : await this.processAuthCode(params);
-
-    this.applyAuthState(authState);
-    this.scheduleRedirect(authState.redirectDelayMs);
-  }
-
-  /**
-   * Create auth state for error case
-   */
-  private createErrorState(error: string): AuthState {
-    return {
-      message: `Authentication failed: ${error}`,
-      isProcessing: false,
-      redirectDelayMs: 3000
-    };
-  }
-
-  /**
-   * Process authentication code and state
-   */
-  private async processAuthCode(params: AuthCallbackParams): Promise<AuthState> {
-    const hasRequiredParams = params.code && params.state;
-    
-    if (!hasRequiredParams) {
-      return this.createInvalidParamsState();
-    }
-
+  private async processAuthCallback(): Promise<void> {
     try {
-      const success = await this.authService.handleCallback(params.code!, params.state!);
-      return success 
+      const success = await this.authService.handleCallback();
+      const authState = success 
         ? this.handleAuthSuccess()
         : this.createFailureState();
-    } catch (e) {
-      return this.createExceptionState();
-    }
-  }
 
-  /**
-   * Create state for invalid parameters
-   */
-  private createInvalidParamsState(): AuthState {
-    return {
-      message: 'Invalid callback parameters. Redirecting...',
-      isProcessing: false,
-      redirectDelayMs: 3000
-    };
+      this.applyAuthState(authState);
+      this.scheduleRedirect(authState.redirectDelayMs);
+    } catch (error) {
+      console.error('[AuthCallbackComponent] Error processing callback:', error);
+      const authState = this.createExceptionState();
+      this.applyAuthState(authState);
+      this.scheduleRedirect(authState.redirectDelayMs);
+    }
   }
 
   /**
@@ -153,10 +76,12 @@ export class AuthCallbackComponent implements OnInit {
       console.log('  Name:', userInfo.name);
       console.log('  Email:', userInfo.email);
       
-      // Log Zitadel-specific claims if available
-      const zitadelClaims = Object.keys(userInfo).filter(key => key.startsWith('urn:zitadel'));
-      if (zitadelClaims.length > 0) {
-        console.log('  Zitadel claims count:', zitadelClaims.length);
+      // Log Auth0 custom claims if available
+      const customClaims = Object.keys(userInfo).filter(
+        key => key.startsWith('http://') || key.startsWith('https://')
+      );
+      if (customClaims.length > 0) {
+        console.log('  Custom claims count:', customClaims.length);
         console.log('  For full details, check AuthService logs above');
       }
       

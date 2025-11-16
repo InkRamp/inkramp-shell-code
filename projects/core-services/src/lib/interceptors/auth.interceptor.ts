@@ -22,7 +22,7 @@ import { AuthService } from '../auth.service';
  */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
-  const token = authService.getToken();
+  const token = authService.getTokenSync();
 
   // Skip adding token if not authenticated or if request is to auth endpoints
   if (!token || isAuthEndpoint(req.url)) {
@@ -48,7 +48,7 @@ const isAuthEndpoint = (url: string): boolean => {
   const authPatterns = [
     '/oauth',
     '/auth',
-    'zitadel.cloud'
+    'auth0.com'
   ];
   
   return authPatterns.some(pattern => url.includes(pattern));
