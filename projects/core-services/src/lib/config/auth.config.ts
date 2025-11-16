@@ -72,10 +72,10 @@ export interface Auth0Config {
  */
 export const AUTH0_CONFIG: Auth0Config = {
   // TODO: Replace with your Auth0 domain
-  domain: 'YOUR_AUTH0_DOMAIN.auth0.com',
+  domain: 'dev-26sow24tone5na8a.us.auth0.com',//'YOUR_AUTH0_DOMAIN.auth0.com',
   
   // TODO: Replace with your Auth0 client ID
-  clientId: 'YOUR_AUTH0_CLIENT_ID',
+  clientId: 'lT0H33rFRamTUtbbXwPwO7M0SdT8Qq26',//'YOUR_AUTH0_CLIENT_ID',
   
   // TODO: Update to match your deployment URL
   redirectUri: 'https://opensourcekd.github.io/i17e/auth-callback',
