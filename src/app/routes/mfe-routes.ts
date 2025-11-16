@@ -33,3 +33,14 @@ export const MY_REPORT_ROUTES: Routes = [
         data: { mfeName: 'my-report' }
     }
 ];
+
+/**
+ * Routes for Users CRUD MFE (Admin only)
+ */
+export const CRUD_USERS_ROUTES: Routes = [
+    {
+        path: '',
+        component: MfeWrapperComponent,
+        data: { mfeName: 'users-crud' }
+    }
+];

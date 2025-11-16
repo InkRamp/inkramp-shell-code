@@ -1,0 +1,33 @@
+<div class="home-container">
+  <h1>Incentive Management System</h1>
+  <p class="welcome-text">Welcome! Here are all available routes in the system:</p>
+  
+  <div class="routes-section">
+    <h2>Available MFEs (Micro Frontend Applications)</h2>
+    <div class="routes-grid">
+      <div *ngFor="let mfe of allMfes" class="route-card">
+        <div class="route-icon" *ngIf="mfe.icon">
+          <span class="icon">{{ mfe.icon }}</span>
+        </div>
+        <h3>{{ mfe.displayName }}</h3>
+        <p class="route-path">Route: /{{ mfe.route }}</p>
+        <p class="route-roles">
+          <strong>Allowed Roles:</strong><br>
+          <span *ngFor="let role of mfe.allowedRoles; let last = last">
+            {{ role }}<span *ngIf="!last">, </span>
+          </span>
+        </p>
+        <a [routerLink]="'/' + mfe.route" class="btn-navigate">
+          Go to {{ mfe.displayName }}
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-section">
+    <p class="note">
+      <strong>Note:</strong> All routes are currently accessible for testing purposes. 
+      Role-based guards are temporarily disabled.
+    </p>
+  </div>
+</div>
