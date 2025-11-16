@@ -40,21 +40,23 @@ In your Auth0 Dashboard → Applications → Your App:
 
 1. **Application Settings**:
    - Application Type: Single Page Application
-   - Allowed Callback URLs: 
+   - **Allowed Callback URLs** (REQUIRED):
      ```
      https://opensourcekd.github.io/i17e/auth-callback,
      http://localhost:4200/auth-callback
      ```
-   - Allowed Logout URLs:
+   - **Allowed Logout URLs** (REQUIRED - fixes logout error):
      ```
      https://opensourcekd.github.io/i17e,
      http://localhost:4200
      ```
-   - Allowed Web Origins:
+   - **Allowed Web Origins** (REQUIRED):
      ```
      https://opensourcekd.github.io,
      http://localhost:4200
      ```
+
+   ⚠️ **Important**: If you skip "Allowed Logout URLs", you'll get an error page after clicking logout.
 
 2. **Copy your credentials**:
    - Domain (e.g., `your-tenant.us.auth0.com`)

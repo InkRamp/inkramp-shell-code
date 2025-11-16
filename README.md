@@ -78,6 +78,7 @@ npm test
 - [API Integration Guide](./docs/API_INTEGRATION_GUIDE.md) - How to use the new API services
 - [Migration Guide](./docs/MIGRATION_GUIDE.md) - Migrating from dummy data to real API
 - [Auth0 Integration](./AUTH0_INTEGRATION.md) - Authentication setup and security
+- [Debugging Guide](./DEBUGGING_GUIDE.md) - Testing with different users and debugging auth
 - [Multi-MFE Guide](./MULTI_MFE_GUIDE.md) - Loading multiple MFEs
 - [Developer Guide](./docs/DEVELOPER_GUIDE.md) - Development best practices
 

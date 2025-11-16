@@ -265,6 +265,29 @@ npm test
 - Check browser console for errors
 - Verify network connectivity to Auth0
 
+### Logout Error: "Oops! something went wrong"
+**Problem**: After clicking logout, Auth0 shows an error page instead of redirecting back.
+
+**Cause**: The `logoutUri` is not configured in Auth0's "Allowed Logout URLs".
+
+**Solution**:
+1. Go to Auth0 Dashboard → Applications → Your Application
+2. Scroll to "Application URIs" section
+3. Add your logout URI to **"Allowed Logout URLs"**:
+   - Production: `https://opensourcekd.github.io/i17e`
+   - Local dev: `http://localhost:4200`
+4. Save changes
+
+**Verification**:
+- After configuring, logout should redirect properly
+- If still failing, check the exact URL in browser address bar
+- Ensure the URL matches exactly (including https/http and trailing slashes)
+
+**Alternative Workaround** (if you can't access Auth0 dashboard):
+- Logout will clear local session but may show Auth0 error
+- User can manually navigate back to the app
+- Consider using local-only logout (skip Auth0 logout call)
+
 ### Wrong Role Assigned
 - Check email pattern in `setUserFromAuth()`
 - Verify Auth0 user email
@@ -293,6 +316,12 @@ To view all claims extracted from Auth0:
 5. Alternatively, check sessionStorage:
    - Key: `auth0_user_info`
    - Contains all extracted claims as JSON
+
+### Debugging with Different Users
+See [DEBUGGING_GUIDE.md](./DEBUGGING_GUIDE.md) for instructions on:
+- Testing with different users without logging in each time
+- Manually setting up sessionStorage for debugging
+- Quick commands for switching between user roles
 
 ## Migration from Zitadel
 
