@@ -6,22 +6,13 @@ export * from './lib/core-services.service';
 export * from './lib/auth.service';
 export * from './lib/core-services.component';
 
-// Services
+// Services - Only services used in shell application
 export * from './lib/role.service';
-export * from './lib/sales-data.service';
 export * from './lib/dummy-data.service';
 export * from './lib/mfe-loader.service';
 export * from './lib/event-bus.service';
 export * from './lib/sse-event-from.service';
 export * from './lib/sse-event-from.service2';
-export * from './lib/cache-api.service';
-export * from './lib/brand-context.service';
-
-// API Services
-export * from './lib/incentive-rules-api.service';
-export * from './lib/incentives-api.service';
-export * from './lib/targets-api.service';
-export * from './lib/tasks-api.service';
 
 // Interceptors
 export * from './lib/interceptors/auth.interceptor';
@@ -30,7 +21,6 @@ export * from './lib/interceptors/auth.interceptor';
 export * from './lib/models/roles.model';
 export * from './lib/models/data.model';
 export * from './lib/models/mfe.model';
-export * from './lib/models/api.model';
 
 // Config
-export * from './lib/config/api.config';
+export * from './lib/config/auth.config';

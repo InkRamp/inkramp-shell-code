@@ -1,7 +1,15 @@
-# Zitadel Authentication Integration Guide
+# ⚠️ DEPRECATED - Zitadel Authentication Integration Guide
+
+**This document is DEPRECATED. The application has been migrated to Auth0.**
+
+**Please see [AUTH0_INTEGRATION.md](./AUTH0_INTEGRATION.md) for current authentication documentation.**
+
+---
+
+## Historical Documentation (Zitadel - No Longer Used)
 
 ## Overview
-This document describes the Zitadel OAuth2 authentication integration with the RoleService and data contract standardization across services.
+This document describes the **previous** Zitadel OAuth2 authentication integration. The application now uses Auth0 instead.
 
 ## Authentication Flow
 

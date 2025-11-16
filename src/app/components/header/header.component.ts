@@ -39,7 +39,7 @@ export class HeaderComponent implements OnInit {
    * Sync authenticated user from auth service to role service if needed
    */
   private syncAuthenticatedUser(): void {
-    const isAuthenticated = this.auth.isAuthenticated();
+    const isAuthenticated = this.auth.isAuthenticatedSync();
     const userInfo = this.auth.getUser();
     const currentUser = this.roleService.getCurrentUser();
     

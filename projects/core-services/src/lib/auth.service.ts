@@ -3,20 +3,19 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { EventBusService } from './event-bus.service';
-
-/**
- * Token response from OAuth2 provider
- */
-interface TokenResponse {
-  access_token: string;
-  id_token: string;
-  token_type: string;
-  expires_in: number;
-}
+import { Auth0Client as Auth0ClientType, createAuth0Client } from '@auth0/auth0-spa-js';
+import { 
+  AUTH0_CONFIG, 
+  STORAGE_CONFIG, 
+  STORAGE_KEYS,
+  getStorageItem,
+  setStorageItem,
+  removeStorageItem 
+} from './config/auth.config';
 
 /**
  * User information from ID token
- * Extended to include all possible Zitadel claims
+ * Standard OIDC claims compatible with Auth0
  */
 export interface UserInfo {
   sub: string;
@@ -26,38 +25,23 @@ export interface UserInfo {
   preferred_username?: string;
   given_name?: string;
   family_name?: string;
+  nickname?: string;
   locale?: string;
   picture?: string;
   phone?: string;
   phone_verified?: boolean;
-  updated_at?: number;
-  // Zitadel-specific claims (URN format)
-  'urn:zitadel:iam:org:project:roles'?: Record<string, any>;
-  'urn:zitadel:iam:org:domain:primary'?: string;
-  'urn:zitadel:iam:user:metadata'?: Record<string, any>;
-  'urn:zitadel:iam:user:resourceowner:id'?: string;
-  'urn:zitadel:iam:user:resourceowner:name'?: string;
-  'urn:zitadel:iam:user:resourceowner:primary_domain'?: string;
-  // Additional Zitadel claims that might be present
+  updated_at?: string;
+  // Auth0 custom claims (namespace format)
+  // Example: 'https://your-domain.com/roles'?: string[];
   [key: string]: any; // Allow for dynamic claims
 }
 
 /**
- * Explicit Zitadel URN claims that should be logged
- */
-export const EXPLICIT_ZITADEL_CLAIMS = [
-  'urn:zitadel:iam:org:project:roles',
-  'urn:zitadel:iam:org:domain:primary',
-  'urn:zitadel:iam:user:metadata',
-  'urn:zitadel:iam:user:resourceowner:id',
-  'urn:zitadel:iam:user:resourceowner:name',
-  'urn:zitadel:iam:user:resourceowner:primary_domain'
-] as const;
-
-/**
- * Authentication service for Zitadel OAuth2 integration
+ * Authentication service for Auth0 integration
  * Handles login, logout, token management, and user session
- * Stores tokens in sessionStorage and emits authentication events for MicroApps
+ * Uses sessionStorage for sensitive data and emits authentication events for MicroApps
+ * 
+ * Configuration is centralized in config/auth.config.ts for easy management
  * 
  * NOTE: All navigation logic using setTimeout is commented out as per requirements.
  * To enable navigation after auth operations, uncomment the marked sections in consuming components.
@@ -71,19 +55,12 @@ export class AuthService {
   // Standard JWT claims that should be excluded from additional claims
   private readonly STANDARD_JWT_CLAIMS = [
     'sub', 'name', 'email', 'email_verified', 'preferred_username',
-    'given_name', 'family_name', 'locale', 'picture', 'phone',
+    'given_name', 'family_name', 'nickname', 'locale', 'picture', 'phone',
     'phone_verified', 'updated_at', 'iss', 'aud', 'exp', 'iat',
-    'auth_time', 'nonce', 'acr', 'amr', 'azp'
+    'auth_time', 'nonce', 'acr', 'amr', 'azp', 'at_hash', 'c_hash'
   ];
 
-  // Zitadel configuration
-  private readonly ISSUER_BASE_URL = 'https://topfix-wrczmn.us1.zitadel.cloud';
-  private readonly CLIENT_ID = '336777344075263315';
-  private readonly REDIRECT_URI = 'https://opensourcekd.github.io/i17e/auth-callback';
-  private readonly SCOPE = 'openid profile email urn:zitadel:iam:org:project:roles';
-  private readonly TOKEN_KEY = 'zitadel_token';
-  private readonly USER_INFO_KEY = 'zitadel_user_info';
-
+  private auth0Client: Auth0ClientType | null = null;
   private userSubject = new BehaviorSubject<UserInfo | null>(this.getUserInfoFromStorage());
   public user$: Observable<UserInfo | null> = this.userSubject.asObservable();
 
@@ -91,274 +68,238 @@ export class AuthService {
     private http: HttpClient,
     private eventBus: EventBusService
   ) {
-    console.log("In constructor of auth service in i17e");
-  }
-
-  login(user?: string) {
-    if (user) {
-      console.log(`in i17e [AuthService] Logged in: ${user}`);
-    }
-    this.redirectToZitadelLogin();
+    console.log("[AuthService] Initializing Auth0 authentication service");
+    this.initializeAuth0();
   }
 
   /**
-   * Redirect to Zitadel OAuth2 authorization endpoint
-   * Stores state and code verifier for PKCE flow validation
+   * Initialize Auth0 client
    */
-  private redirectToZitadelLogin(): void {
-    const authUrl = new URL(`${this.ISSUER_BASE_URL}/oauth/v2/authorize`);
-    const state = this.generateRandomState();
-    const codeVerifier = this.generateCodeVerifier();
+  private async initializeAuth0(): Promise<void> {
+    try {
+      this.auth0Client = await createAuth0Client({
+        domain: AUTH0_CONFIG.domain,
+        clientId: AUTH0_CONFIG.clientId,
+        authorizationParams: {
+          redirect_uri: AUTH0_CONFIG.redirectUri,
+          scope: AUTH0_CONFIG.scope,
+          ...(AUTH0_CONFIG.audience && { audience: AUTH0_CONFIG.audience }),
+        },
+        cacheLocation: 'memory', // Use memory cache instead of localStorage
+        useRefreshTokens: true, // Enable refresh tokens for better security
+      });
+      console.log("[AuthService] Auth0 client initialized successfully");
+    } catch (error) {
+      console.error("[AuthService] Failed to initialize Auth0 client:", error);
+    }
+  }
+
+  /**
+   * Login with Auth0
+   * Redirects to Auth0 Universal Login
+   */
+  async login(user?: string): Promise<void> {
+    if (user) {
+      console.log(`[AuthService] Logging in: ${user}`);
+    }
     
-    // Store state and code verifier for validation
-    sessionStorage.setItem('oauth_state', state);
-    sessionStorage.setItem('code_verifier', codeVerifier);
+    if (!this.auth0Client) {
+      console.error("[AuthService] Auth0 client not initialized");
+      return;
+    }
 
-    authUrl.searchParams.append('client_id', this.CLIENT_ID);
-    authUrl.searchParams.append('redirect_uri', this.REDIRECT_URI);
-    authUrl.searchParams.append('response_type', 'code');
-    authUrl.searchParams.append('scope', this.SCOPE);
-    authUrl.searchParams.append('state', state);
-
-    window.location.href = authUrl.toString();
+    try {
+      await this.auth0Client.loginWithRedirect({
+        authorizationParams: {
+          redirect_uri: AUTH0_CONFIG.redirectUri,
+          scope: AUTH0_CONFIG.scope,
+          ...(AUTH0_CONFIG.audience && { audience: AUTH0_CONFIG.audience }),
+          ...(AUTH0_CONFIG.connection && { connection: AUTH0_CONFIG.connection }),
+        }
+      });
+    } catch (error) {
+      console.error("[AuthService] Login failed:", error);
+    }
   }
 
   /**
    * Handle OAuth2 callback after successful authorization
-   * Validates state, exchanges code for tokens, and stores user info
+   * Processes the callback and retrieves user info
    * 
    * NOTE: Navigation after successful/failed authentication should be handled in the calling component
    * using setTimeout. See commented examples in app.component.ts
    * 
-   * @param code - Authorization code from OAuth2 provider
-   * @param state - State parameter for CSRF protection
    * @returns Promise<boolean> - True if authentication successful, false otherwise
    */
-  async handleCallback(code: string, state: string): Promise<boolean> {
-    const storedState = sessionStorage.getItem('oauth_state');
-    
-    if (state !== storedState) {
-      console.error('[AuthService] State mismatch - possible CSRF attack');
+  async handleCallback(): Promise<boolean> {
+    if (!this.auth0Client) {
+      console.error("[AuthService] Auth0 client not initialized");
       return false;
     }
 
     try {
-      const tokenResponse = await this.exchangeCodeForToken(code);
-      this.setToken(tokenResponse.access_token);
-      
-      // Decode and store user info from ID token
-      const userInfo = this.decodeIdToken(tokenResponse.id_token);
-      this.setUserInfo(userInfo);
-      
-      // Clean up
-      sessionStorage.removeItem('oauth_state');
-      sessionStorage.removeItem('code_verifier');
-      
-      console.log('[AuthService] Authentication successful');
+      // Process the callback
+      const result = await this.auth0Client.handleRedirectCallback();
+      console.log("[AuthService] Callback processed successfully");
+
+      // Get user info
+      const user = await this.auth0Client.getUser();
+      if (user) {
+        this.logUserClaims(user);
+        this.setUserInfo(user as UserInfo);
+      }
+
+      // Get and store access token
+      const token = await this.auth0Client.getTokenSilently();
+      this.setToken(token);
+
+      console.log("[AuthService] Authentication successful");
       return true;
     } catch (error) {
-      console.error('[AuthService] Error exchanging code for token:', error);
+      console.error("[AuthService] Error processing callback:", error);
       return false;
     }
   }
 
   /**
-   * Exchange authorization code for access token
-   * @param code - Authorization code
-   * @returns Promise<TokenResponse> - Token response from OAuth2 provider
+   * Log all user claims for debugging
+   * @param user - User info from Auth0
    */
-  private async exchangeCodeForToken(code: string): Promise<TokenResponse> {
-    const tokenUrl = `${this.ISSUER_BASE_URL}/oauth/v2/token`;
+  private logUserClaims(user: any): void {
+    console.log('='.repeat(80));
+    console.log('[AuthService] 🔍 AUTH0 ID TOKEN - ALL CLAIMS:');
+    console.log('='.repeat(80));
     
-    const body = new URLSearchParams({
-      grant_type: 'authorization_code',
-      code: code,
-      redirect_uri: this.REDIRECT_URI,
-      client_id: this.CLIENT_ID,
-    });
-
-    const response = await fetch(tokenUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: body.toString(),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Token exchange failed: ${response.statusText}`);
+    // Standard OIDC claims
+    console.log('\n📋 Standard OIDC Claims:');
+    console.log('  • sub (Subject/User ID):', user.sub);
+    console.log('  • name:', user.name);
+    console.log('  • email:', user.email);
+    console.log('  • email_verified:', user.email_verified);
+    console.log('  • preferred_username:', user.preferred_username);
+    console.log('  • given_name:', user.given_name);
+    console.log('  • family_name:', user.family_name);
+    console.log('  • nickname:', user.nickname);
+    console.log('  • locale:', user.locale);
+    console.log('  • picture:', user.picture);
+    console.log('  • phone:', user.phone);
+    console.log('  • phone_verified:', user.phone_verified);
+    console.log('  • updated_at:', user.updated_at);
+    
+    // Auth0 custom claims (namespaced)
+    console.log('\n🔑 Custom Claims (Auth0):');
+    const customClaims = Object.keys(user).filter(
+      key => !this.STANDARD_JWT_CLAIMS.includes(key) && (key.startsWith('http://') || key.startsWith('https://'))
+    );
+    
+    if (customClaims.length > 0) {
+      customClaims.forEach(claim => {
+        const value = user[claim];
+        if (typeof value === 'object') {
+          console.log(`  • ${claim}:`, JSON.stringify(value, null, 2));
+        } else {
+          console.log(`  • ${claim}:`, value);
+        }
+      });
+    } else {
+      console.log('  No custom claims found');
     }
-
-    return response.json();
-  }
-
-  /**
-   * Decode JWT ID token to extract user information
-   * Extracts and logs ALL claims from Zitadel including custom URN claims
-   * NOTE: Logging is verbose for development/debugging purposes
-   * @param idToken - JWT ID token from OAuth2 provider
-   * @returns UserInfo - Decoded user information with all available claims
-   */
-  private decodeIdToken(idToken: string): UserInfo {
-    try {
-      const payload = idToken.split('.')[1];
-      const decoded = JSON.parse(atob(payload));
-      
-      // Log all claims for debugging and visibility
-      // Note: In production, consider using a proper logging service with log levels
-      console.log('='.repeat(80));
-      console.log('[AuthService] 🔍 ZITADEL ID TOKEN - ALL CLAIMS:');
-      console.log('='.repeat(80));
-      
-      // Standard OIDC claims
-      console.log('\n📋 Standard OIDC Claims:');
-      console.log('  • sub (Subject/User ID):', decoded.sub);
-      console.log('  • name:', decoded.name);
-      console.log('  • email:', decoded.email);
-      console.log('  • email_verified:', decoded.email_verified);
-      console.log('  • preferred_username:', decoded.preferred_username);
-      console.log('  • given_name:', decoded.given_name);
-      console.log('  • family_name:', decoded.family_name);
-      console.log('  • locale:', decoded.locale);
-      console.log('  • picture:', decoded.picture);
-      console.log('  • phone:', decoded.phone);
-      console.log('  • phone_verified:', decoded.phone_verified);
-      console.log('  • updated_at:', decoded.updated_at);
-      
-      // Zitadel-specific URN claims - explicitly log each expected claim
-      console.log('\n🏢 Zitadel Organization Claims:');
-      
-      // Project-specific roles
-      console.log('  • urn:zitadel:iam:org:project:roles:', 
-        decoded['urn:zitadel:iam:org:project:roles'] || '(not present)');
-      
-      // Primary domain
-      console.log('  • urn:zitadel:iam:org:domain:primary:', 
-        decoded['urn:zitadel:iam:org:domain:primary'] || '(not present)');
-      
-      // Custom user metadata
-      console.log('  • urn:zitadel:iam:user:metadata:', 
-        decoded['urn:zitadel:iam:user:metadata'] || '(not present)');
-      
-      // Organization ID
-      console.log('  • urn:zitadel:iam:user:resourceowner:id:', 
-        decoded['urn:zitadel:iam:user:resourceowner:id'] || '(not present)');
-      
-      // Organization name
-      console.log('  • urn:zitadel:iam:user:resourceowner:name:', 
-        decoded['urn:zitadel:iam:user:resourceowner:name'] || '(not present)');
-      
-      // Organization primary domain
-      console.log('  • urn:zitadel:iam:user:resourceowner:primary_domain:', 
-        decoded['urn:zitadel:iam:user:resourceowner:primary_domain'] || '(not present)');
-      
-      // Log any additional Zitadel claims that weren't explicitly listed above
-      const orgClaims = Object.keys(decoded).filter(key => key.startsWith('urn:zitadel'));
-      const additionalZitadelClaims = orgClaims.filter(claim => !EXPLICIT_ZITADEL_CLAIMS.includes(claim as any));
-      
-      if (additionalZitadelClaims.length > 0) {
-        console.log('\n  Additional Zitadel claims:');
-        additionalZitadelClaims.forEach(claim => {
-          const value = decoded[claim];
-          if (typeof value === 'object') {
-            console.log(`  • ${claim}:`, JSON.stringify(value, null, 2));
-          } else {
-            console.log(`  • ${claim}:`, value);
-          }
-        });
-      }
-      
-      // Additional/custom claims
-      console.log('\n🔧 Additional Claims:');
-      const additionalClaims = Object.keys(decoded).filter(
-        key => !this.STANDARD_JWT_CLAIMS.includes(key) && !key.startsWith('urn:zitadel')
-      );
-      
-      if (additionalClaims.length > 0) {
-        additionalClaims.forEach(claim => {
-          const value = decoded[claim];
-          if (typeof value === 'object') {
-            console.log(`  • ${claim}:`, JSON.stringify(value, null, 2));
-          } else {
-            console.log(`  • ${claim}:`, value);
-          }
-        });
-      } else {
-        console.log('  No additional claims found');
-      }
-      
-      // Token metadata
-      console.log('\n🔐 Token Metadata:');
-      console.log('  • iss (Issuer):', decoded.iss);
-      console.log('  • aud (Audience):', decoded.aud);
-      console.log('  • exp (Expiration):', decoded.exp, decoded.exp ? `(${new Date(decoded.exp * 1000).toISOString()})` : '');
-      console.log('  • iat (Issued At):', decoded.iat, decoded.iat ? `(${new Date(decoded.iat * 1000).toISOString()})` : '');
-      console.log('  • auth_time:', decoded.auth_time);
-      console.log('  • nonce:', decoded.nonce);
-      console.log('  • azp (Authorized Party):', decoded.azp);
-      
-      // Complete claim dump
-      // WARNING: This logs the complete token which may contain sensitive data
-      // In production, consider removing or sanitizing this log
-      console.log('\n📦 Complete Token Payload (JSON):');
-      console.log(JSON.stringify(decoded, null, 2));
-      console.log('='.repeat(80));
-      
-      // Return the complete decoded object with all claims
-      return {
-        sub: decoded.sub,
-        name: decoded.name,
-        email: decoded.email,
-        email_verified: decoded.email_verified,
-        preferred_username: decoded.preferred_username,
-        given_name: decoded.given_name,
-        family_name: decoded.family_name,
-        locale: decoded.locale,
-        picture: decoded.picture,
-        phone: decoded.phone,
-        phone_verified: decoded.phone_verified,
-        updated_at: decoded.updated_at,
-        // Include all Zitadel-specific claims
-        ...Object.keys(decoded)
-          .filter(key => key.startsWith('urn:zitadel'))
-          .reduce((acc, key) => ({ ...acc, [key]: decoded[key] }), {}),
-        // Include any other claims (excluding standard JWT claims)
-        ...Object.keys(decoded)
-          .filter(key => !this.STANDARD_JWT_CLAIMS.includes(key) && !key.startsWith('urn:zitadel'))
-          .reduce((acc, key) => ({ ...acc, [key]: decoded[key] }), {})
-      };
-    } catch (error) {
-      console.error('[AuthService] Error decoding ID token:', error);
-      return { sub: '' };
+    
+    // Additional claims
+    console.log('\n🔧 Additional Claims:');
+    const additionalClaims = Object.keys(user).filter(
+      key => !this.STANDARD_JWT_CLAIMS.includes(key) && 
+             !key.startsWith('http://') && 
+             !key.startsWith('https://')
+    );
+    
+    if (additionalClaims.length > 0) {
+      additionalClaims.forEach(claim => {
+        const value = user[claim];
+        if (typeof value === 'object') {
+          console.log(`  • ${claim}:`, JSON.stringify(value, null, 2));
+        } else {
+          console.log(`  • ${claim}:`, value);
+        }
+      });
+    } else {
+      console.log('  No additional claims found');
     }
+    
+    // Complete claim dump
+    console.log('\n📦 Complete User Object (JSON):');
+    console.log(JSON.stringify(user, null, 2));
+    console.log('='.repeat(80));
   }
 
   /**
    * Logout user and clear authentication state
-   * Removes tokens and user info from storage and emits logout event
+   * Redirects to Auth0 logout endpoint and clears local state
    */
-  logout(): void {
-    sessionStorage.removeItem(this.TOKEN_KEY);
-    sessionStorage.removeItem(this.USER_INFO_KEY);
+  async logout(): Promise<void> {
+    // Clear local storage
+    removeStorageItem(STORAGE_KEYS.ACCESS_TOKEN, STORAGE_CONFIG.TOKEN_STORAGE);
+    removeStorageItem(STORAGE_KEYS.USER_INFO, STORAGE_CONFIG.USER_INFO_STORAGE);
     this.userSubject.next(null);
     this.emitAuthEvent('logout', null);
-    console.log('[AuthService] User logged out');
+    
+    console.log('[AuthService] User logged out, clearing Auth0 session');
+    
+    // Logout from Auth0
+    if (this.auth0Client) {
+      try {
+        await this.auth0Client.logout({
+          logoutParams: {
+            returnTo: AUTH0_CONFIG.logoutUri
+          }
+        });
+      } catch (error) {
+        console.error('[AuthService] Error during Auth0 logout:', error);
+      }
+    }
   }
 
   /**
-   * Get current access token from sessionStorage
+   * Get current access token from storage or Auth0 client
    * @returns string | null - Access token or null if not authenticated
    */
-  getToken(): string | null {
-    return sessionStorage.getItem(this.TOKEN_KEY);
+  async getToken(): Promise<string | null> {
+    // Try to get from storage first
+    const storedToken = getStorageItem(STORAGE_KEYS.ACCESS_TOKEN, STORAGE_CONFIG.TOKEN_STORAGE);
+    if (storedToken) {
+      return storedToken;
+    }
+
+    // If not in storage, try to get from Auth0 client
+    if (this.auth0Client) {
+      try {
+        const token = await this.auth0Client.getTokenSilently();
+        this.setToken(token);
+        return token;
+      } catch (error) {
+        console.error('[AuthService] Error getting token from Auth0:', error);
+        return null;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Get current access token synchronously from storage only
+   * Use this for synchronous operations like interceptors
+   * @returns string | null - Access token or null if not authenticated
+   */
+  getTokenSync(): string | null {
+    return getStorageItem(STORAGE_KEYS.ACCESS_TOKEN, STORAGE_CONFIG.TOKEN_STORAGE);
   }
 
   /**
    * Set access token in storage and emit event for MicroApps
    * @param token - Access token to store
    */
-  setToken(token: string): void {
-    sessionStorage.setItem(this.TOKEN_KEY, token);
+  private setToken(token: string): void {
+    setStorageItem(STORAGE_KEYS.ACCESS_TOKEN, token, STORAGE_CONFIG.TOKEN_STORAGE);
     this.emitAuthEvent('token_updated', { token });
   }
 
@@ -366,8 +307,26 @@ export class AuthService {
    * Check if user is authenticated
    * @returns boolean - True if user has valid token
    */
-  isAuthenticated(): boolean {
-    return !!this.getToken();
+  async isAuthenticated(): Promise<boolean> {
+    if (this.auth0Client) {
+      try {
+        return await this.auth0Client.isAuthenticated();
+      } catch (error) {
+        console.error('[AuthService] Error checking authentication status:', error);
+        return false;
+      }
+    }
+    // Fallback to checking storage
+    return !!getStorageItem(STORAGE_KEYS.ACCESS_TOKEN, STORAGE_CONFIG.TOKEN_STORAGE);
+  }
+
+  /**
+   * Check if user is authenticated synchronously
+   * Only checks storage, doesn't verify with Auth0
+   * @returns boolean - True if user has token in storage
+   */
+  isAuthenticatedSync(): boolean {
+    return !!getStorageItem(STORAGE_KEYS.ACCESS_TOKEN, STORAGE_CONFIG.TOKEN_STORAGE);
   }
 
   /**
@@ -379,21 +338,25 @@ export class AuthService {
   }
 
   /**
-   * Get user information from sessionStorage
+   * Get user information from storage
    * @returns UserInfo | null - Stored user info or null
    */
   private getUserInfoFromStorage(): UserInfo | null {
-    const userJson = sessionStorage.getItem(this.USER_INFO_KEY);
+    const userJson = getStorageItem(STORAGE_KEYS.USER_INFO, STORAGE_CONFIG.USER_INFO_STORAGE);
     return userJson ? JSON.parse(userJson) : null;
   }
 
   /**
    * Set user information in storage, update observable and emit event for MicroApps
-   * Logs all Zitadel claims for debugging
+   * Logs all Auth0 claims for debugging
    * @param userInfo - User information to store
    */
   private setUserInfo(userInfo: UserInfo): void {
-    sessionStorage.setItem(this.USER_INFO_KEY, JSON.stringify(userInfo));
+    setStorageItem(
+      STORAGE_KEYS.USER_INFO, 
+      JSON.stringify(userInfo), 
+      STORAGE_CONFIG.USER_INFO_STORAGE
+    );
     this.userSubject.next(userInfo);
     
     // Log stored user info with all claims
@@ -405,11 +368,13 @@ export class AuthService {
       email_verified: userInfo.email_verified
     });
     
-    // Log Zitadel-specific claims if present
-    const zitadelClaims = Object.keys(userInfo).filter(key => key.startsWith('urn:zitadel'));
-    if (zitadelClaims.length > 0) {
-      console.log('  Zitadel claims stored:');
-      zitadelClaims.forEach(claim => {
+    // Log Auth0 custom claims if present (namespaced with http:// or https://)
+    const customClaims = Object.keys(userInfo).filter(
+      key => key.startsWith('http://') || key.startsWith('https://')
+    );
+    if (customClaims.length > 0) {
+      console.log('  Custom claims stored:');
+      customClaims.forEach(claim => {
         console.log(`    • ${claim}:`, userInfo[claim]);
       });
     }
@@ -431,25 +396,5 @@ export class AuthService {
     };
     this.eventBus.sendEvent(JSON.stringify(event));
     console.log('[AuthService] Auth event emitted:', event.type);
-  }
-
-  /**
-   * Generate random state for CSRF protection
-   * @returns string - Random state string
-   */
-  private generateRandomState(): string {
-    const array = new Uint8Array(32);
-    crypto.getRandomValues(array);
-    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
-  }
-
-  /**
-   * Generate code verifier for PKCE flow
-   * @returns string - Random code verifier string
-   */
-  private generateCodeVerifier(): string {
-    const array = new Uint8Array(32);
-    crypto.getRandomValues(array);
-    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
   }
 }
