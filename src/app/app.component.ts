@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AuthService, UserInfo } from '@org/core-services'; 
-import { AuthenticationService } from './services/authentication.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -26,7 +25,6 @@ export class AppComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();
 
   constructor(
-    public auth2: AuthenticationService, 
     private auth: AuthService,
     private roleService: RoleService,
     private mfeLoader: MfeLoaderService

@@ -20,7 +20,7 @@ export class MfeWrapperComponent implements AfterViewInit{
   remoteContainer!:ViewContainerRef
 
   async ngAfterViewInit(){
-    const options:LoadRemoteModuleScriptOptions | undefined = MFE.map(({remoteName, exposedModule})=>({remoteName, exposedModule})).find(({remoteName})=>remoteName===this.name)
+    const options:LoadRemoteModuleScriptOptions | undefined = MFE.find(({remoteName})=>remoteName===this.name)
     if(!options) return;
     const remote = await loadRemoteModule(options)
     this.remoteContainer.createComponent(remote.AppComponent)

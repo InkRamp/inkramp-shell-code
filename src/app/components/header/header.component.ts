@@ -95,10 +95,13 @@ export class HeaderComponent implements OnInit {
 
   /**
    * Update available MFEs based on current user role
+   * TEMPORARILY showing all MFEs for testing - role filtering disabled
    */
   private updateAvailableMfes(): void {
+    // TODO: Re-enable role-based filtering when guards are restored
+    // Original code: this.mfeLoader.getConfigsForRole(this.currentUser.role)
     this.availableMfes = this.currentUser 
-      ? this.mfeLoader.getConfigsForRole(this.currentUser.role)
+      ? this.mfeLoader.getConfigs()  // Show ALL MFEs temporarily
       : [];
   }
 

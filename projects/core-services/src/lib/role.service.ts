@@ -23,31 +23,11 @@ export class RoleService {
   /**
    * Set user from Auth0 authentication
    * Maps Auth0 UserInfo to internal User model with role
-   * Logs all available Auth0 claims
+   * Extracts role from token claims instead of email patterns
    * @param userInfo User information from Auth0
    */
   setUserFromAuth(userInfo: UserInfo): void {
     console.log('[RoleService] Setting user from Auth0 auth:', userInfo);
-    
-    // Log Auth0 custom claims (namespaced with http:// or https://)
-    console.log('[RoleService] 🔑 Auth0 custom claims:');
-    const customClaims = Object.keys(userInfo).filter(
-      key => key.startsWith('http://') || key.startsWith('https://')
-    );
-    
-    if (customClaims.length > 0) {
-      customClaims.forEach(claim => {
-        console.log(`  • ${claim}:`, userInfo[claim]);
-      });
-    } else {
-      console.log('  No custom claims found');
-    }
-    
-    // Log roles if available (common Auth0 custom claim pattern)
-    const rolesClaim = customClaims.find(claim => claim.includes('roles'));
-    if (rolesClaim && userInfo[rolesClaim]) {
-      console.log('[RoleService] 👤 Auth0 roles:', userInfo[rolesClaim]);
-    }
     
     const user = this.mapUserInfoToUser(userInfo);
     console.log('[RoleService] Mapped user with role:', user);
@@ -56,20 +36,82 @@ export class RoleService {
 
   /**
    * Pure function to map UserInfo to User with role assignment
-   * @param userInfo User information from Zitadel
+   * Extracts role from token claims (top-level or namespaced custom claims)
+   * @param userInfo User information from Auth0
    * @returns Mapped User object with assigned role
    */
   private mapUserInfoToUser(userInfo: UserInfo): User {
+    const role = this.extractRoleFromToken(userInfo);
+    
     return {
       id: userInfo.sub,
       name: userInfo.name || userInfo.email || 'User',
       email: userInfo.email || '',
-      role: this.determineRoleFromEmail(userInfo.email || '')
+      role: role
     };
   }
 
   /**
-   * Pure function to determine user role from email pattern
+   * Extract user role from Auth0 token claims
+   * Checks both top-level claims and namespaced custom claims
+   * @param userInfo User information from Auth0 token
+   * @returns Assigned UserRole
+   */
+  private extractRoleFromToken(userInfo: UserInfo): UserRole {
+    // Check top-level role claim first
+    if (userInfo.role) {
+      return this.mapStringToUserRole(userInfo.role);
+    }
+    
+    // Check namespaced custom claims
+    const customClaims = Object.keys(userInfo).filter(
+      key => key.startsWith('http://') || key.startsWith('https://')
+    );
+    
+    // Look for role claim (e.g., https://your-domain.com/roles or https://your-domain.com/role)
+    const roleClaim = customClaims.find(claim => 
+      claim.toLowerCase().includes('role')
+    );
+    
+    if (roleClaim && userInfo[roleClaim]) {
+      const roleValue = userInfo[roleClaim];
+      // Handle both string and array values
+      const roleString = Array.isArray(roleValue) ? roleValue[0] : roleValue;
+      return this.mapStringToUserRole(roleString);
+    }
+    
+    // Fallback to email pattern matching if no role in token
+    console.warn('[RoleService] No role found in token, falling back to email pattern');
+    return this.determineRoleFromEmail(userInfo.email || '');
+  }
+
+  /**
+   * Map role string from token to UserRole enum
+   * @param roleString Role string from token
+   * @returns Mapped UserRole
+   */
+  private mapStringToUserRole(roleString: string): UserRole {
+    const normalized = roleString.toLowerCase().replace(/[-_\s]/g, '');
+    
+    const roleMap: { [key: string]: UserRole } = {
+      'superadmin': UserRole.SUPER_ADMIN,
+      'super': UserRole.SUPER_ADMIN,
+      'admin': UserRole.SUPER_ADMIN,
+      'orgadmin': UserRole.ORG_ADMIN,
+      'organizationadmin': UserRole.ORG_ADMIN,
+      'manager': UserRole.ORG_ADMIN,
+      'teamlead': UserRole.TEAM_LEAD,
+      'lead': UserRole.TEAM_LEAD,
+      'salesexecutive': UserRole.SALES_EXECUTIVE,
+      'sales': UserRole.SALES_EXECUTIVE,
+      'executive': UserRole.SALES_EXECUTIVE
+    };
+    
+    return roleMap[normalized] || UserRole.SALES_EXECUTIVE;
+  }
+
+  /**
+   * Pure function to determine user role from email pattern (fallback)
    * @param email User email address
    * @returns Assigned UserRole based on email pattern
    */

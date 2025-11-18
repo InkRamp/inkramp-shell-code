@@ -71,23 +71,23 @@ export interface Auth0Config {
  * - logoutUri: 'https://yourdomain.com'
  */
 export const AUTH0_CONFIG: Auth0Config = {
-  // TODO: Replace with your Auth0 domain
-  domain: 'dev-26sow24tone5na8a.us.auth0.com',//'YOUR_AUTH0_DOMAIN.auth0.com',
+  // Auth0 domain
+  domain: 'dev-26sow24tone5na8a.us.auth0.com',
   
-  // TODO: Replace with your Auth0 client ID
-  clientId: 'lT0H33rFRamTUtbbXwPwO7M0SdT8Qq26',//'YOUR_AUTH0_CLIENT_ID',
+  // Auth0 client ID
+  clientId: 'EsWeimwqRJu41QHEOADsAoFjhdsDrwPK',
   
-  // TODO: Update to match your deployment URL
+  // Callback URL after authentication
   redirectUri: 'https://opensourcekd.github.io/i17e/auth-callback',
   
-  // TODO: Update to match your deployment URL
+  // Logout redirect URL
   logoutUri: 'https://opensourcekd.github.io/i17e',
   
-  // Standard OpenID Connect scopes
+  // OpenID Connect scopes
   scope: 'openid profile email',
   
-  // TODO: Add your API audience if calling protected APIs
-  // audience: 'https://your-api-identifier',
+  // API audience for access tokens
+  audience: 'https://something',
   
   // Optional: Force a specific connection
   // connection: 'Username-Password-Authentication'

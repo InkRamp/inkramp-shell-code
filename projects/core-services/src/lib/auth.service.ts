@@ -31,9 +31,24 @@ export interface UserInfo {
   phone?: string;
   phone_verified?: boolean;
   updated_at?: string;
+  // Application-specific claims
+  role?: string;
+  org?: string;
+  organization?: string;
   // Auth0 custom claims (namespace format)
   // Example: 'https://your-domain.com/roles'?: string[];
   [key: string]: any; // Allow for dynamic claims
+}
+
+/**
+ * Simplified user data extracted from token
+ */
+export interface UserData {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  org: string;
 }
 
 /**
@@ -335,6 +350,68 @@ export class AuthService {
    */
   getUser(): UserInfo | null {
     return this.userSubject.value;
+  }
+
+  /**
+   * Get simplified user data from token
+   * Extracts user details, role, and organization from ID token claims
+   * Checks both top-level claims and namespaced custom claims
+   * @returns UserData | null - Simplified user data or null if not authenticated
+   */
+  getUserData(): UserData | null {
+    const userInfo = this.getUser();
+    if (!userInfo) {
+      return null;
+    }
+
+    // Extract role from various possible locations
+    let role = userInfo.role || '';
+    
+    // Check namespaced custom claims for role
+    if (!role) {
+      const customClaims = Object.keys(userInfo).filter(
+        key => key.startsWith('http://') || key.startsWith('https://')
+      );
+      
+      // Look for role in custom claims
+      const roleClaim = customClaims.find(claim => 
+        claim.toLowerCase().includes('role')
+      );
+      
+      if (roleClaim && userInfo[roleClaim]) {
+        // Handle both string and array values
+        const roleValue = userInfo[roleClaim];
+        role = Array.isArray(roleValue) ? roleValue[0] : roleValue;
+      }
+    }
+
+    // Extract organization from various possible locations
+    let org = userInfo.org || userInfo.organization || '';
+    
+    // Check namespaced custom claims for organization
+    if (!org) {
+      const customClaims = Object.keys(userInfo).filter(
+        key => key.startsWith('http://') || key.startsWith('https://')
+      );
+      
+      // Look for org/organization in custom claims
+      const orgClaim = customClaims.find(claim => 
+        claim.toLowerCase().includes('org') || 
+        claim.toLowerCase().includes('organization')
+      );
+      
+      if (orgClaim && userInfo[orgClaim]) {
+        org = userInfo[orgClaim];
+      }
+    }
+
+    return {
+      id: userInfo.sub,
+      name: userInfo.name || userInfo.email || 'User',
+      email: userInfo.email || '',
+      role: role || 'user',
+      org: org || 'default'
+    };
   }
 
   /**
