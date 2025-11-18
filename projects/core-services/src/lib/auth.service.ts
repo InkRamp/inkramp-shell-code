@@ -76,6 +76,7 @@ export class AuthService {
   ];
 
   private auth0Client: Auth0ClientType | null = null;
+  private initializationPromise: Promise<void>;
   private userSubject = new BehaviorSubject<UserInfo | null>(this.getUserInfoFromStorage());
   public user$: Observable<UserInfo | null> = this.userSubject.asObservable();
 
@@ -84,7 +85,7 @@ export class AuthService {
     private eventBus: EventBusService
   ) {
     console.log("[AuthService] Initializing Auth0 authentication service");
-    this.initializeAuth0();
+    this.initializationPromise = this.initializeAuth0();
   }
 
   /**
@@ -92,6 +93,7 @@ export class AuthService {
    */
   private async initializeAuth0(): Promise<void> {
     try {
+      console.log("[AuthService] Starting Auth0 client initialization...");
       this.auth0Client = await createAuth0Client({
         domain: AUTH0_CONFIG.domain,
         clientId: AUTH0_CONFIG.clientId,
@@ -106,6 +108,17 @@ export class AuthService {
       console.log("[AuthService] Auth0 client initialized successfully");
     } catch (error) {
       console.error("[AuthService] Failed to initialize Auth0 client:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Ensure Auth0 client is initialized before use
+   */
+  private async ensureInitialized(): Promise<void> {
+    await this.initializationPromise;
+    if (!this.auth0Client) {
+      throw new Error('[AuthService] Auth0 client failed to initialize');
     }
   }
 
@@ -119,12 +132,10 @@ export class AuthService {
       console.log(`[AuthService] Logging in: ${user}`);
     }
     
-    if (!this.auth0Client) {
-      console.error("[AuthService] Auth0 client not initialized");
-      return;
-    }
-
     try {
+      // Ensure Auth0 client is initialized
+      await this.ensureInitialized();
+      
       // Capture current URL search parameters to preserve through auth flow
       // Only capture if we're not already on the callback page
       const currentPath = window.location.pathname;
@@ -139,7 +150,7 @@ export class AuthService {
       }
 
       console.log('[AuthService] Starting Auth0 login redirect...');
-      await this.auth0Client.loginWithRedirect({
+      await this.auth0Client!.loginWithRedirect({
         authorizationParams: {
           redirect_uri: AUTH0_CONFIG.redirectUri,
           scope: AUTH0_CONFIG.scope,
@@ -164,16 +175,14 @@ export class AuthService {
    * @returns Promise<{ success: boolean, appState?: any }> - Success status and preserved appState
    */
   async handleCallback(): Promise<{ success: boolean, appState?: any }> {
-    if (!this.auth0Client) {
-      console.error("[AuthService] Auth0 client not initialized");
-      return { success: false };
-    }
-
     try {
       console.log("[AuthService] Processing Auth0 callback...");
       
+      // Ensure Auth0 client is initialized
+      await this.ensureInitialized();
+      
       // Process the callback
-      const result = await this.auth0Client.handleRedirectCallback();
+      const result = await this.auth0Client!.handleRedirectCallback();
       console.log("[AuthService] Callback processed successfully");
       
       // Log preserved appState if present
@@ -184,7 +193,7 @@ export class AuthService {
       }
 
       // Get user info
-      const user = await this.auth0Client.getUser();
+      const user = await this.auth0Client!.getUser();
       if (user) {
         this.logUserClaims(user);
         this.setUserInfo(user as UserInfo);
@@ -194,7 +203,7 @@ export class AuthService {
       }
 
       // Get and store access token
-      const token = await this.auth0Client.getTokenSilently();
+      const token = await this.auth0Client!.getTokenSilently();
       this.setToken(token);
 
       console.log("[AuthService] Authentication successful");
@@ -291,16 +300,15 @@ export class AuthService {
     console.log('[AuthService] User logged out, clearing Auth0 session');
     
     // Logout from Auth0
-    if (this.auth0Client) {
-      try {
-        await this.auth0Client.logout({
-          logoutParams: {
-            returnTo: AUTH0_CONFIG.logoutUri
-          }
-        });
-      } catch (error) {
-        console.error('[AuthService] Error during Auth0 logout:', error);
-      }
+    try {
+      await this.ensureInitialized();
+      await this.auth0Client!.logout({
+        logoutParams: {
+          returnTo: AUTH0_CONFIG.logoutUri
+        }
+      });
+    } catch (error) {
+      console.error('[AuthService] Error during Auth0 logout:', error);
     }
   }
 
@@ -316,18 +324,15 @@ export class AuthService {
     }
 
     // If not in storage, try to get from Auth0 client
-    if (this.auth0Client) {
-      try {
-        const token = await this.auth0Client.getTokenSilently();
-        this.setToken(token);
-        return token;
-      } catch (error) {
-        console.error('[AuthService] Error getting token from Auth0:', error);
-        return null;
-      }
+    try {
+      await this.ensureInitialized();
+      const token = await this.auth0Client!.getTokenSilently();
+      this.setToken(token);
+      return token;
+    } catch (error) {
+      console.error('[AuthService] Error getting token from Auth0:', error);
+      return null;
     }
-
-    return null;
   }
 
   /**
@@ -353,16 +358,14 @@ export class AuthService {
    * @returns boolean - True if user has valid token
    */
   async isAuthenticated(): Promise<boolean> {
-    if (this.auth0Client) {
-      try {
-        return await this.auth0Client.isAuthenticated();
-      } catch (error) {
-        console.error('[AuthService] Error checking authentication status:', error);
-        return false;
-      }
+    try {
+      await this.ensureInitialized();
+      return await this.auth0Client!.isAuthenticated();
+    } catch (error) {
+      console.error('[AuthService] Error checking authentication status:', error);
+      // Fallback to checking storage
+      return !!getStorageItem(STORAGE_KEYS.ACCESS_TOKEN, STORAGE_CONFIG.TOKEN_STORAGE);
     }
-    // Fallback to checking storage
-    return !!getStorageItem(STORAGE_KEYS.ACCESS_TOKEN, STORAGE_CONFIG.TOKEN_STORAGE);
   }
 
   /**
