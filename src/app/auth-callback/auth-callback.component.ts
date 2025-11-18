@@ -131,15 +131,16 @@ export class AuthCallbackComponent implements OnInit {
    */
   private scheduleRedirect(delayMs: number, appState?: any): void {
     setTimeout(() => {
-      let navigationPath = '/';
-      
       // Restore original query parameters if they were preserved
       if (appState?.returnTo) {
         console.log('[AuthCallbackComponent] Restoring original URL parameters:', appState.returnTo);
-        navigationPath = `/${appState.returnTo}`;
+        // Navigate to root with query parameters
+        // appState.returnTo already contains the '?' prefix
+        this.router.navigateByUrl('/' + appState.returnTo);
+      } else {
+        // Navigate to root without parameters
+        this.router.navigate(['/']);
       }
-      
-      this.router.navigateByUrl(navigationPath);
     }, delayMs);
   }
 }

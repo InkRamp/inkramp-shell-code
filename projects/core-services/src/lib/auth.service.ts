@@ -126,13 +126,19 @@ export class AuthService {
 
     try {
       // Capture current URL search parameters to preserve through auth flow
-      const currentSearchParams = window.location.search;
-      const appState = currentSearchParams ? { returnTo: currentSearchParams } : undefined;
+      // Only capture if we're not already on the callback page
+      const currentPath = window.location.pathname;
+      const isCallbackPage = currentPath.includes('auth-callback');
       
-      if (appState) {
+      let appState: any = undefined;
+      
+      if (!isCallbackPage && window.location.search) {
+        const currentSearchParams = window.location.search;
+        appState = { returnTo: currentSearchParams };
         console.log('[AuthService] Preserving URL parameters through auth flow:', currentSearchParams);
       }
 
+      console.log('[AuthService] Starting Auth0 login redirect...');
       await this.auth0Client.loginWithRedirect({
         authorizationParams: {
           redirect_uri: AUTH0_CONFIG.redirectUri,
@@ -140,10 +146,11 @@ export class AuthService {
           ...(AUTH0_CONFIG.audience && { audience: AUTH0_CONFIG.audience }),
           ...(AUTH0_CONFIG.connection && { connection: AUTH0_CONFIG.connection }),
         },
-        appState
+        ...(appState && { appState })
       });
     } catch (error) {
       console.error("[AuthService] Login failed:", error);
+      throw error; // Re-throw to allow caller to handle
     }
   }
 
@@ -163,13 +170,17 @@ export class AuthService {
     }
 
     try {
+      console.log("[AuthService] Processing Auth0 callback...");
+      
       // Process the callback
       const result = await this.auth0Client.handleRedirectCallback();
       console.log("[AuthService] Callback processed successfully");
       
       // Log preserved appState if present
       if (result.appState) {
-        console.log('[AuthService] Restored appState from auth flow:', result.appState);
+        console.log('[AuthService] Restored appState from auth flow:', JSON.stringify(result.appState));
+      } else {
+        console.log('[AuthService] No appState restored (user may not have started from invitation link)');
       }
 
       // Get user info
@@ -177,6 +188,9 @@ export class AuthService {
       if (user) {
         this.logUserClaims(user);
         this.setUserInfo(user as UserInfo);
+      } else {
+        console.warn('[AuthService] No user info returned from Auth0');
+        return { success: false };
       }
 
       // Get and store access token
@@ -187,6 +201,7 @@ export class AuthService {
       return { success: true, appState: result.appState };
     } catch (error) {
       console.error("[AuthService] Error processing callback:", error);
+      console.error("[AuthService] Error details:", JSON.stringify(error, null, 2));
       return { success: false };
     }
   }
