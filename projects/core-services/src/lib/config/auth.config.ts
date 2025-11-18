@@ -78,7 +78,7 @@ export const AUTH0_CONFIG: Auth0Config = {
   clientId: 'EdkPy5co65jESIAT8T9SBy5X4cmeolhl', // -> KD03_Single_Page_Web_App //'EsWeimwqRJu41QHEOADsAoFjhdsDrwPK',
   
   // Callback URL after authentication
-  redirectUri: 'https://opensourcekd.github.io/i17e/auth-callback',
+  redirectUri: 'https://opensourcekd.github.io/i17e',
   
   // Logout redirect URL
   logoutUri: 'https://opensourcekd.github.io/i17e',
