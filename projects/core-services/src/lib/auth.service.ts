@@ -112,6 +112,7 @@ export class AuthService {
   /**
    * Login with Auth0
    * Redirects to Auth0 Universal Login
+   * Preserves current URL parameters (like invitation tokens) through the auth flow
    */
   async login(user?: string): Promise<void> {
     if (user) {
@@ -124,13 +125,22 @@ export class AuthService {
     }
 
     try {
+      // Capture current URL search parameters to preserve through auth flow
+      const currentSearchParams = window.location.search;
+      const appState = currentSearchParams ? { returnTo: currentSearchParams } : undefined;
+      
+      if (appState) {
+        console.log('[AuthService] Preserving URL parameters through auth flow:', currentSearchParams);
+      }
+
       await this.auth0Client.loginWithRedirect({
         authorizationParams: {
           redirect_uri: AUTH0_CONFIG.redirectUri,
           scope: AUTH0_CONFIG.scope,
           ...(AUTH0_CONFIG.audience && { audience: AUTH0_CONFIG.audience }),
           ...(AUTH0_CONFIG.connection && { connection: AUTH0_CONFIG.connection }),
-        }
+        },
+        appState
       });
     } catch (error) {
       console.error("[AuthService] Login failed:", error);
@@ -144,18 +154,23 @@ export class AuthService {
    * NOTE: Navigation after successful/failed authentication should be handled in the calling component
    * using setTimeout. See commented examples in app.component.ts
    * 
-   * @returns Promise<boolean> - True if authentication successful, false otherwise
+   * @returns Promise<{ success: boolean, appState?: any }> - Success status and preserved appState
    */
-  async handleCallback(): Promise<boolean> {
+  async handleCallback(): Promise<{ success: boolean, appState?: any }> {
     if (!this.auth0Client) {
       console.error("[AuthService] Auth0 client not initialized");
-      return false;
+      return { success: false };
     }
 
     try {
       // Process the callback
       const result = await this.auth0Client.handleRedirectCallback();
       console.log("[AuthService] Callback processed successfully");
+      
+      // Log preserved appState if present
+      if (result.appState) {
+        console.log('[AuthService] Restored appState from auth flow:', result.appState);
+      }
 
       // Get user info
       const user = await this.auth0Client.getUser();
@@ -169,10 +184,10 @@ export class AuthService {
       this.setToken(token);
 
       console.log("[AuthService] Authentication successful");
-      return true;
+      return { success: true, appState: result.appState };
     } catch (error) {
       console.error("[AuthService] Error processing callback:", error);
-      return false;
+      return { success: false };
     }
   }
 

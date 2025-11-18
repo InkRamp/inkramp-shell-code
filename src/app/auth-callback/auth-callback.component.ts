@@ -49,13 +49,13 @@ export class AuthCallbackComponent implements OnInit {
    */
   private async processAuthCallback(): Promise<void> {
     try {
-      const success = await this.authService.handleCallback();
-      const authState = success 
-        ? this.handleAuthSuccess()
+      const result = await this.authService.handleCallback();
+      const authState = result.success 
+        ? this.handleAuthSuccess(result.appState)
         : this.createFailureState();
 
       this.applyAuthState(authState);
-      this.scheduleRedirect(authState.redirectDelayMs);
+      this.scheduleRedirect(authState.redirectDelayMs, result.appState);
     } catch (error) {
       console.error('[AuthCallbackComponent] Error processing callback:', error);
       const authState = this.createExceptionState();
@@ -67,7 +67,7 @@ export class AuthCallbackComponent implements OnInit {
   /**
    * Handle successful authentication
    */
-  private handleAuthSuccess(): AuthState {
+  private handleAuthSuccess(appState?: any): AuthState {
     const userInfo = this.authService.getUser();
     
     if (userInfo) {
@@ -127,8 +127,19 @@ export class AuthCallbackComponent implements OnInit {
 
   /**
    * Schedule redirect to home page
+   * If appState contains returnTo, restore those query parameters
    */
-  private scheduleRedirect(delayMs: number): void {
-    setTimeout(() => this.router.navigate(['/']), delayMs);
+  private scheduleRedirect(delayMs: number, appState?: any): void {
+    setTimeout(() => {
+      let navigationPath = '/';
+      
+      // Restore original query parameters if they were preserved
+      if (appState?.returnTo) {
+        console.log('[AuthCallbackComponent] Restoring original URL parameters:', appState.returnTo);
+        navigationPath = `/${appState.returnTo}`;
+      }
+      
+      this.router.navigateByUrl(navigationPath);
+    }, delayMs);
   }
 }
