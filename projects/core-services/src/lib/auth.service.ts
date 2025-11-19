@@ -242,65 +242,88 @@ export class AuthService {
     console.log('='.repeat(80));
     
     // Standard OIDC claims
-    console.log('\n📋 Standard OIDC Claims:');
-    console.log('  • sub (Subject/User ID):', user.sub);
-    console.log('  • name:', user.name);
-    console.log('  • email:', user.email);
-    console.log('  • email_verified:', user.email_verified);
-    console.log('  • preferred_username:', user.preferred_username);
-    console.log('  • given_name:', user.given_name);
-    console.log('  • family_name:', user.family_name);
-    console.log('  • nickname:', user.nickname);
-    console.log('  • locale:', user.locale);
-    console.log('  • picture:', user.picture);
-    console.log('  • phone:', user.phone);
-    console.log('  • phone_verified:', user.phone_verified);
-    console.log('  • updated_at:', user.updated_at);
+    this.logStandardClaims(user);
     
     // Auth0 custom claims (namespaced)
-    console.log('\n🔑 Custom Claims (Auth0):');
-    const customClaims = Object.keys(user).filter(
-      key => !this.STANDARD_JWT_CLAIMS.includes(key) && (key.startsWith('http://') || key.startsWith('https://'))
-    );
-    
-    if (customClaims.length > 0) {
-      customClaims.forEach(claim => {
-        const value = user[claim];
-        if (typeof value === 'object') {
-          console.log(`  • ${claim}:`, JSON.stringify(value, null, 2));
-        } else {
-          console.log(`  • ${claim}:`, value);
-        }
-      });
-    } else {
-      console.log('  No custom claims found');
-    }
+    const customClaims = this.getCustomClaims(user);
+    this.logClaims('\n🔑 Custom Claims (Auth0):', customClaims, user);
     
     // Additional claims
-    console.log('\n🔧 Additional Claims:');
-    const additionalClaims = Object.keys(user).filter(
-      key => !this.STANDARD_JWT_CLAIMS.includes(key) && 
-             !key.startsWith('http://') && 
-             !key.startsWith('https://')
-    );
-    
-    if (additionalClaims.length > 0) {
-      additionalClaims.forEach(claim => {
-        const value = user[claim];
-        if (typeof value === 'object') {
-          console.log(`  • ${claim}:`, JSON.stringify(value, null, 2));
-        } else {
-          console.log(`  • ${claim}:`, value);
-        }
-      });
-    } else {
-      console.log('  No additional claims found');
-    }
+    const additionalClaims = this.getAdditionalClaims(user);
+    this.logClaims('\n🔧 Additional Claims:', additionalClaims, user);
     
     // Complete claim dump
     console.log('\n📦 Complete User Object (JSON):');
     console.log(JSON.stringify(user, null, 2));
     console.log('='.repeat(80));
+  }
+
+  /**
+   * Log standard OIDC claims
+   * @param user - User info from Auth0
+   */
+  private logStandardClaims(user: any): void {
+    console.log('\n📋 Standard OIDC Claims:');
+    const standardClaimKeys = ['sub', 'name', 'email', 'email_verified', 'preferred_username', 
+                                'given_name', 'family_name', 'nickname', 'locale', 'picture', 
+                                'phone', 'phone_verified', 'updated_at'];
+    
+    standardClaimKeys.forEach(key => {
+      const displayKey = key === 'sub' ? `${key} (Subject/User ID)` : key;
+      console.log(`  • ${displayKey}:`, user[key]);
+    });
+  }
+
+  /**
+   * Log claims with consistent formatting
+   * @param header - Section header to display
+   * @param claims - Array of claim keys to log
+   * @param user - User info object
+   */
+  private logClaims(header: string, claims: string[], user: any): void {
+    console.log(header);
+    
+    if (claims.length === 0) {
+      console.log('  No custom claims found');
+      return;
+    }
+    
+    claims.forEach(claim => {
+      const value = user[claim];
+      const formattedValue = typeof value === 'object' ? JSON.stringify(value, null, 2) : value;
+      console.log(`  • ${claim}:`, formattedValue);
+    });
+  }
+
+  /**
+   * Get custom namespaced claims from user info
+   * @param user - User info object
+   * @returns Array of custom claim keys
+   */
+  private getCustomClaims(user: any): string[] {
+    return Object.keys(user).filter(
+      key => !this.STANDARD_JWT_CLAIMS.includes(key) && this.isNamespacedClaim(key)
+    );
+  }
+
+  /**
+   * Get additional non-namespaced claims from user info
+   * @param user - User info object
+   * @returns Array of additional claim keys
+   */
+  private getAdditionalClaims(user: any): string[] {
+    return Object.keys(user).filter(
+      key => !this.STANDARD_JWT_CLAIMS.includes(key) && !this.isNamespacedClaim(key)
+    );
+  }
+
+  /**
+   * Check if a claim key is namespaced
+   * @param key - Claim key to check
+   * @returns True if the key starts with http:// or https://
+   */
+  private isNamespacedClaim(key: string): boolean {
+    return key.startsWith('http://') || key.startsWith('https://');
   }
 
   /**
@@ -414,54 +437,51 @@ export class AuthService {
       return null;
     }
 
-    // Extract role from various possible locations
-    let role = userInfo.role || '';
-    
-    // Check namespaced custom claims for role
-    if (!role) {
-      const customClaims = Object.keys(userInfo).filter(
-        key => key.startsWith('http://') || key.startsWith('https://')
-      );
-      
-      // Look for role in custom claims
-      const roleClaim = customClaims.find(claim => 
-        claim.toLowerCase().includes('role')
-      );
-      
-      if (roleClaim && userInfo[roleClaim]) {
-        // Handle both string and array values
-        const roleValue = userInfo[roleClaim];
-        role = Array.isArray(roleValue) ? roleValue[0] : roleValue;
-      }
-    }
-
-    // Extract organization from various possible locations
-    let org = userInfo.org || userInfo.organization || '';
-    
-    // Check namespaced custom claims for organization
-    if (!org) {
-      const customClaims = Object.keys(userInfo).filter(
-        key => key.startsWith('http://') || key.startsWith('https://')
-      );
-      
-      // Look for org/organization in custom claims
-      const orgClaim = customClaims.find(claim => 
-        claim.toLowerCase().includes('org') || 
-        claim.toLowerCase().includes('organization')
-      );
-      
-      if (orgClaim && userInfo[orgClaim]) {
-        org = userInfo[orgClaim];
-      }
-    }
+    const role = this.extractClaimValue(userInfo, 'role', 'user');
+    const org = this.extractClaimValue(userInfo, ['org', 'organization'], 'default');
 
     return {
       id: userInfo.sub,
       name: userInfo.name || userInfo.email || 'User',
       email: userInfo.email || '',
-      role: role || 'user',
-      org: org || 'default'
+      role,
+      org
     };
+  }
+
+  /**
+   * Extract claim value from user info, checking both direct properties and namespaced custom claims
+   * @param userInfo - User info object
+   * @param claimNames - Single claim name or array of claim names to search for
+   * @param defaultValue - Default value if claim is not found
+   * @returns Extracted claim value or default value
+   */
+  private extractClaimValue(userInfo: UserInfo, claimNames: string | string[], defaultValue: string): string {
+    const names = Array.isArray(claimNames) ? claimNames : [claimNames];
+    
+    // Check direct properties first
+    for (const name of names) {
+      const directValue = (userInfo as any)[name];
+      if (directValue) {
+        return directValue;
+      }
+    }
+    
+    // Check namespaced custom claims
+    const customClaims = this.getCustomClaims(userInfo);
+    
+    for (const name of names) {
+      const matchingClaim = customClaims.find(claim => 
+        claim.toLowerCase().includes(name.toLowerCase())
+      );
+      
+      if (matchingClaim && userInfo[matchingClaim]) {
+        const value = userInfo[matchingClaim];
+        return Array.isArray(value) ? value[0] : value;
+      }
+    }
+    
+    return defaultValue;
   }
 
   /**
@@ -496,9 +516,7 @@ export class AuthService {
     });
     
     // Log Auth0 custom claims if present (namespaced with http:// or https://)
-    const customClaims = Object.keys(userInfo).filter(
-      key => key.startsWith('http://') || key.startsWith('https://')
-    );
+    const customClaims = this.getCustomClaims(userInfo);
     if (customClaims.length > 0) {
       console.log('  Custom claims stored:');
       customClaims.forEach(claim => {
