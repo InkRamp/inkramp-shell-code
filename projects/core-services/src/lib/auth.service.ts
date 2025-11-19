@@ -76,6 +76,7 @@ export class AuthService {
   ];
 
   private auth0Client: Auth0ClientType | null = null;
+  private initializationPromise: Promise<void>;
   private userSubject = new BehaviorSubject<UserInfo | null>(this.getUserInfoFromStorage());
   public user$: Observable<UserInfo | null> = this.userSubject.asObservable();
 
@@ -84,7 +85,7 @@ export class AuthService {
     private eventBus: EventBusService
   ) {
     console.log("[AuthService] Initializing Auth0 authentication service");
-    this.initializeAuth0();
+    this.initializationPromise = this.initializeAuth0();
   }
 
   /**
@@ -92,6 +93,7 @@ export class AuthService {
    */
   private async initializeAuth0(): Promise<void> {
     try {
+      console.log("[AuthService] Starting Auth0 client initialization...");
       this.auth0Client = await createAuth0Client({
         domain: AUTH0_CONFIG.domain,
         clientId: AUTH0_CONFIG.clientId,
@@ -106,34 +108,60 @@ export class AuthService {
       console.log("[AuthService] Auth0 client initialized successfully");
     } catch (error) {
       console.error("[AuthService] Failed to initialize Auth0 client:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Ensure Auth0 client is initialized before use
+   */
+  private async ensureInitialized(): Promise<void> {
+    await this.initializationPromise;
+    if (!this.auth0Client) {
+      throw new Error('[AuthService] Auth0 client failed to initialize');
     }
   }
 
   /**
    * Login with Auth0
    * Redirects to Auth0 Universal Login
+   * Preserves current URL parameters (like invitation tokens) through the auth flow
    */
   async login(user?: string): Promise<void> {
     if (user) {
       console.log(`[AuthService] Logging in: ${user}`);
     }
     
-    if (!this.auth0Client) {
-      console.error("[AuthService] Auth0 client not initialized");
-      return;
-    }
-
     try {
-      await this.auth0Client.loginWithRedirect({
+      // Ensure Auth0 client is initialized
+      await this.ensureInitialized();
+      
+      // Capture current URL search parameters to preserve through auth flow
+      // Only capture if we're not already on the callback page
+      const currentPath = window.location.pathname;
+      const isCallbackPage = currentPath.includes('auth-callback');
+      
+      let appState: any = undefined;
+      
+      if (!isCallbackPage && window.location.search) {
+        const currentSearchParams = window.location.search;
+        appState = { returnTo: currentSearchParams };
+        console.log('[AuthService] Preserving URL parameters through auth flow:', currentSearchParams);
+      }
+
+      console.log('[AuthService] Starting Auth0 login redirect...');
+      await this.auth0Client!.loginWithRedirect({
         authorizationParams: {
           redirect_uri: AUTH0_CONFIG.redirectUri,
           scope: AUTH0_CONFIG.scope,
           ...(AUTH0_CONFIG.audience && { audience: AUTH0_CONFIG.audience }),
           ...(AUTH0_CONFIG.connection && { connection: AUTH0_CONFIG.connection }),
-        }
+        },
+        ...(appState && { appState })
       });
     } catch (error) {
       console.error("[AuthService] Login failed:", error);
+      throw error; // Re-throw to allow caller to handle
     }
   }
 
@@ -144,35 +172,46 @@ export class AuthService {
    * NOTE: Navigation after successful/failed authentication should be handled in the calling component
    * using setTimeout. See commented examples in app.component.ts
    * 
-   * @returns Promise<boolean> - True if authentication successful, false otherwise
+   * @returns Promise<{ success: boolean, appState?: any }> - Success status and preserved appState
    */
-  async handleCallback(): Promise<boolean> {
-    if (!this.auth0Client) {
-      console.error("[AuthService] Auth0 client not initialized");
-      return false;
-    }
-
+  async handleCallback(): Promise<{ success: boolean, appState?: any }> {
     try {
+      console.log("[AuthService] Processing Auth0 callback...");
+      
+      // Ensure Auth0 client is initialized
+      await this.ensureInitialized();
+      
       // Process the callback
-      const result = await this.auth0Client.handleRedirectCallback();
+      const result = await this.auth0Client!.handleRedirectCallback();
       console.log("[AuthService] Callback processed successfully");
+      
+      // Log preserved appState if present
+      if (result.appState) {
+        console.log('[AuthService] Restored appState from auth flow:', JSON.stringify(result.appState));
+      } else {
+        console.log('[AuthService] No appState restored (user may not have started from invitation link)');
+      }
 
       // Get user info
-      const user = await this.auth0Client.getUser();
+      const user = await this.auth0Client!.getUser();
       if (user) {
         this.logUserClaims(user);
         this.setUserInfo(user as UserInfo);
+      } else {
+        console.warn('[AuthService] No user info returned from Auth0');
+        return { success: false };
       }
 
       // Get and store access token
-      const token = await this.auth0Client.getTokenSilently();
+      const token = await this.auth0Client!.getTokenSilently();
       this.setToken(token);
 
       console.log("[AuthService] Authentication successful");
-      return true;
+      return { success: true, appState: result.appState };
     } catch (error) {
       console.error("[AuthService] Error processing callback:", error);
-      return false;
+      console.error("[AuthService] Error details:", JSON.stringify(error, null, 2));
+      return { success: false };
     }
   }
 
@@ -261,16 +300,15 @@ export class AuthService {
     console.log('[AuthService] User logged out, clearing Auth0 session');
     
     // Logout from Auth0
-    if (this.auth0Client) {
-      try {
-        await this.auth0Client.logout({
-          logoutParams: {
-            returnTo: AUTH0_CONFIG.logoutUri
-          }
-        });
-      } catch (error) {
-        console.error('[AuthService] Error during Auth0 logout:', error);
-      }
+    try {
+      await this.ensureInitialized();
+      await this.auth0Client!.logout({
+        logoutParams: {
+          returnTo: AUTH0_CONFIG.logoutUri
+        }
+      });
+    } catch (error) {
+      console.error('[AuthService] Error during Auth0 logout:', error);
     }
   }
 
@@ -286,18 +324,15 @@ export class AuthService {
     }
 
     // If not in storage, try to get from Auth0 client
-    if (this.auth0Client) {
-      try {
-        const token = await this.auth0Client.getTokenSilently();
-        this.setToken(token);
-        return token;
-      } catch (error) {
-        console.error('[AuthService] Error getting token from Auth0:', error);
-        return null;
-      }
+    try {
+      await this.ensureInitialized();
+      const token = await this.auth0Client!.getTokenSilently();
+      this.setToken(token);
+      return token;
+    } catch (error) {
+      console.error('[AuthService] Error getting token from Auth0:', error);
+      return null;
     }
-
-    return null;
   }
 
   /**
@@ -323,16 +358,14 @@ export class AuthService {
    * @returns boolean - True if user has valid token
    */
   async isAuthenticated(): Promise<boolean> {
-    if (this.auth0Client) {
-      try {
-        return await this.auth0Client.isAuthenticated();
-      } catch (error) {
-        console.error('[AuthService] Error checking authentication status:', error);
-        return false;
-      }
+    try {
+      await this.ensureInitialized();
+      return await this.auth0Client!.isAuthenticated();
+    } catch (error) {
+      console.error('[AuthService] Error checking authentication status:', error);
+      // Fallback to checking storage
+      return !!getStorageItem(STORAGE_KEYS.ACCESS_TOKEN, STORAGE_CONFIG.TOKEN_STORAGE);
     }
-    // Fallback to checking storage
-    return !!getStorageItem(STORAGE_KEYS.ACCESS_TOKEN, STORAGE_CONFIG.TOKEN_STORAGE);
   }
 
   /**

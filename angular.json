@@ -35,7 +35,7 @@
 						"main": "src/main.ts",
 						"extraWebpackConfig": "webpack.config.js",
 						"commonChunk": false,
-						"baseHref": "https://opensourcekd.github.io/i17e/"
+						"baseHref": "/i17e/"
 					},
 					"configurations": {
 						"production": {

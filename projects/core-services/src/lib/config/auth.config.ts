@@ -75,7 +75,7 @@ export const AUTH0_CONFIG: Auth0Config = {
   domain: 'dev-26sow24tone5na8a.us.auth0.com',
   
   // Auth0 client ID
-  clientId: 'EsWeimwqRJu41QHEOADsAoFjhdsDrwPK',
+  clientId: 'EdkPy5co65jESIAT8T9SBy5X4cmeolhl', // -> KD03_Single_Page_Web_App //'EsWeimwqRJu41QHEOADsAoFjhdsDrwPK',
   
   // Callback URL after authentication
   redirectUri: 'https://opensourcekd.github.io/i17e/auth-callback',
