@@ -126,8 +126,11 @@ export class AuthService {
    * Login with Auth0
    * Redirects to Auth0 Universal Login
    * Preserves current URL parameters (like invitation tokens) through the auth flow
+   * 
+   * @param user - Optional user identifier for logging
+   * @param options - Optional login options including invitation and organization parameters
    */
-  async login(user?: string): Promise<void> {
+  async login(user?: string, options?: { invitation?: string; organization?: string }): Promise<void> {
     if (user) {
       console.log(`[AuthService] Logging in: ${user}`);
     }
@@ -149,14 +152,28 @@ export class AuthService {
         console.log('[AuthService] Preserving URL parameters through auth flow:', currentSearchParams);
       }
 
+      // Build authorization parameters
+      const authorizationParams: any = {
+        redirect_uri: AUTH0_CONFIG.redirectUri,
+        scope: AUTH0_CONFIG.scope,
+        ...(AUTH0_CONFIG.audience && { audience: AUTH0_CONFIG.audience }),
+        ...(AUTH0_CONFIG.connection && { connection: AUTH0_CONFIG.connection }),
+      };
+
+      // Add organization invitation parameters if provided
+      if (options?.invitation) {
+        authorizationParams.invitation = options.invitation;
+        console.log('[AuthService] Including invitation parameter:', options.invitation);
+      }
+
+      if (options?.organization) {
+        authorizationParams.organization = options.organization;
+        console.log('[AuthService] Including organization parameter:', options.organization);
+      }
+
       console.log('[AuthService] Starting Auth0 login redirect...');
       await this.auth0Client!.loginWithRedirect({
-        authorizationParams: {
-          redirect_uri: AUTH0_CONFIG.redirectUri,
-          scope: AUTH0_CONFIG.scope,
-          ...(AUTH0_CONFIG.audience && { audience: AUTH0_CONFIG.audience }),
-          ...(AUTH0_CONFIG.connection && { connection: AUTH0_CONFIG.connection }),
-        },
+        authorizationParams,
         ...(appState && { appState })
       });
     } catch (error) {
