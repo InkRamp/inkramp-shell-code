@@ -3,7 +3,7 @@ import { ActivatedRoute, RouterOutlet } from '@angular/router';
 import { AuthService, UserInfo } from '@org/core-services'; 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Subscription, firstValueFrom } from 'rxjs';
 import { RoleService, MfeLoaderService, User } from '@org/core-services';
 import { MFE_CONFIGS } from '../configs/mfe';
 import { HeaderComponent } from './components/header/header.component';
@@ -74,37 +74,55 @@ export class AppComponent implements OnInit, OnDestroy {
    * automatically trigger login with these parameters so Auth0 can accept the invitation
    */
   private async handleOrganizationInvitation(): Promise<void> {
-    this.route.queryParams.subscribe(async (params) => {
-      const invitation = params['invitation'];
-      const organization = params['organization'];
+    const params = await firstValueFrom(this.route.queryParams);
 
-      // If invitation and organization parameters are present, initiate Auth0 login
-      if (invitation && organization) {
-        console.log('[AppComponent] Organization invitation detected');
-        console.log('  Invitation:', invitation);
-        console.log('  Organization:', organization);
-        console.log('  Organization Name:', params['organization_name'] || 'Not specified');
+    const invitation = params['invitation'];
+    const organization = params['organization'];
 
-        // Check if user is already authenticated
-        const isAuthenticated = await this.auth.isAuthenticated();
+    // If invitation and organization parameters are present, initiate Auth0 login
+    if (!invitation || !organization) {
+      return;
+    }
 
-        if (!isAuthenticated) {
-          console.log('[AppComponent] User not authenticated, initiating login with invitation parameters...');
-          // Trigger login with invitation parameters
-          // Auth0 will accept the invitation and add user to the organization
-          await this.auth.login(undefined, {
-            invitation,
-            organization
-          });
-        } else {
-          console.log('[AppComponent] User already authenticated');
-          // If user is already authenticated, they may need to re-authenticate
-          // to accept the invitation for a different/new organization
-          console.log('[AppComponent] User may need to re-authenticate to accept invitation');
-          // Optionally, you could trigger a re-authentication here
-          // await this.auth.login(undefined, { invitation, organization });
-        }
-      }
+    this.logInvitationDetails(invitation, organization, params['organization_name']);
+
+    const isAuthenticated = await this.auth.isAuthenticated();
+
+    if (!isAuthenticated) {
+      await this.initiateInvitationLogin(invitation, organization);
+    } else {
+      this.logAlreadyAuthenticated();
+    }
+  }
+
+  /**
+   * Log invitation details for debugging
+   */
+  private logInvitationDetails(invitation: string, organization: string, organizationName?: string): void {
+    console.log('[AppComponent] Organization invitation detected');
+    console.log('  Invitation:', invitation);
+    console.log('  Organization:', organization);
+    console.log('  Organization Name:', organizationName || 'Not specified');
+  }
+
+  /**
+   * Initiate login with invitation parameters
+   */
+  private async initiateInvitationLogin(invitation: string, organization: string): Promise<void> {
+    console.log('[AppComponent] User not authenticated, initiating login with invitation parameters...');
+    await this.auth.login(undefined, {
+      invitation,
+      organization
     });
+  }
+
+  /**
+   * Log that user is already authenticated
+   */
+  private logAlreadyAuthenticated(): void {
+    console.log('[AppComponent] User already authenticated');
+    console.log('[AppComponent] User may need to re-authenticate to accept invitation');
+    // Optionally, you could trigger a re-authentication here
+    // await this.auth.login(undefined, { invitation, organization });
   }
 }
