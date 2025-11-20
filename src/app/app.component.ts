@@ -1,9 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute, RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { AuthService, UserInfo } from '@org/core-services'; 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subscription, firstValueFrom } from 'rxjs';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { RoleService, MfeLoaderService, User } from '@org/core-services';
 import { MFE_CONFIGS } from '../configs/mfe';
 import { HeaderComponent } from './components/header/header.component';
@@ -28,14 +29,14 @@ export class AppComponent implements OnInit, OnDestroy {
     private auth: AuthService,
     private roleService: RoleService,
     private mfeLoader: MfeLoaderService,
-    private route: ActivatedRoute
+    private router: Router
   ){
     // Initialize MFE configs
     this.mfeLoader.setConfigs(MFE_CONFIGS);
   }
 
   async ngOnInit(): Promise<void> {
-    await this.handleOrganizationInvitation();
+    this.handleOrganizationInvitation();
     await this.syncAuthenticatedUser();
   }
 
@@ -73,25 +74,51 @@ export class AppComponent implements OnInit, OnDestroy {
    * When user clicks on invitation link with ?invitation=...&organization=... parameters,
    * automatically trigger login with these parameters so Auth0 can accept the invitation
    */
-  private async handleOrganizationInvitation(): Promise<void> {
-    const params = await firstValueFrom(this.route.queryParams);
+  private handleOrganizationInvitation(): void {
+    // Subscribe to navigation events to check for invitation parameters
+    // This ensures we capture query params regardless of when component initializes
+    const subscription = this.router.events
+      .pipe(filter(event => event.constructor.name === 'NavigationEnd'))
+      .subscribe(async () => {
+        const urlTree = this.router.parseUrl(this.router.url);
+        const params = urlTree.queryParams;
 
+        const invitation = params['invitation'];
+        const organization = params['organization'];
+
+        // If invitation and organization parameters are present, initiate Auth0 login
+        if (invitation && organization) {
+          this.logInvitationDetails(invitation, organization, params['organization_name']);
+
+          const isAuthenticated = await this.auth.isAuthenticated();
+
+          if (!isAuthenticated) {
+            await this.initiateInvitationLogin(invitation, organization);
+          } else {
+            this.logAlreadyAuthenticated();
+          }
+        }
+      });
+
+    this.subscriptions.add(subscription);
+
+    // Also check immediately in case params are already present
+    const urlTree = this.router.parseUrl(this.router.url);
+    const params = urlTree.queryParams;
+    
     const invitation = params['invitation'];
     const organization = params['organization'];
 
-    // If invitation and organization parameters are present, initiate Auth0 login
-    if (!invitation || !organization) {
-      return;
-    }
+    if (invitation && organization) {
+      this.logInvitationDetails(invitation, organization, params['organization_name']);
 
-    this.logInvitationDetails(invitation, organization, params['organization_name']);
-
-    const isAuthenticated = await this.auth.isAuthenticated();
-
-    if (!isAuthenticated) {
-      await this.initiateInvitationLogin(invitation, organization);
-    } else {
-      this.logAlreadyAuthenticated();
+      this.auth.isAuthenticated().then(isAuthenticated => {
+        if (!isAuthenticated) {
+          this.initiateInvitationLogin(invitation, organization);
+        } else {
+          this.logAlreadyAuthenticated();
+        }
+      });
     }
   }
 
