@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { AuthService, UserInfo } from '@org/core-services'; 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -11,7 +11,7 @@ import { FooterComponent } from './components/footer/footer.component';
 
 /**
  * Root application component
- * Initializes MFE configuration and syncs authenticated user
+ * Initializes MFE configuration, syncs authenticated user, and handles Auth0 organization invitations
  */
 @Component({
   selector: 'app-root',
@@ -27,13 +27,15 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(
     private auth: AuthService,
     private roleService: RoleService,
-    private mfeLoader: MfeLoaderService
+    private mfeLoader: MfeLoaderService,
+    private router: Router
   ){
     // Initialize MFE configs
     this.mfeLoader.setConfigs(MFE_CONFIGS);
   }
 
   async ngOnInit(): Promise<void> {
+    this.handleOrganizationInvitation();
     await this.syncAuthenticatedUser();
   }
 
@@ -64,5 +66,34 @@ export class AppComponent implements OnInit, OnDestroy {
    */
   private shouldUpdateUser(currentUser: User | null, userInfo: UserInfo): boolean {
     return !currentUser || currentUser.id !== userInfo.sub;
+  }
+
+  /**
+   * Handle Auth0 organization invitation flow
+   * When user clicks on invitation link with ?invitation=...&organization=... parameters,
+   * automatically trigger login with these parameters so Auth0 can accept the invitation
+   */
+  private handleOrganizationInvitation(): void {
+    // Check immediately for invitation parameters
+    const urlTree = this.router.parseUrl(this.router.url);
+    const params = urlTree.queryParams;
+    
+    const invitation = params['invitation'];
+    const organization = params['organization'];
+
+    if (invitation && organization) {
+      console.log('[AppComponent] Organization invitation detected');
+      console.log('  Invitation:', invitation);
+      console.log('  Organization:', organization);
+      console.log('  Organization Name:', params['organization_name'] || 'Not specified');
+      console.log('[AppComponent] Automatically initiating login with invitation parameters...');
+      
+      // Immediately trigger login with invitation parameters
+      // This will redirect to Auth0's invitation acceptance screen
+      this.auth.login(undefined, {
+        invitation,
+        organization
+      });
+    }
   }
 }
