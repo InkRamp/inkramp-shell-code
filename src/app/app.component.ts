@@ -4,7 +4,6 @@ import { AuthService, UserInfo } from '@org/core-services';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { filter } from 'rxjs/operators';
 import { RoleService, MfeLoaderService, User } from '@org/core-services';
 import { MFE_CONFIGS } from '../configs/mfe';
 import { HeaderComponent } from './components/header/header.component';
@@ -75,34 +74,7 @@ export class AppComponent implements OnInit, OnDestroy {
    * automatically trigger login with these parameters so Auth0 can accept the invitation
    */
   private handleOrganizationInvitation(): void {
-    // Subscribe to navigation events to check for invitation parameters
-    // This ensures we capture query params regardless of when component initializes
-    const subscription = this.router.events
-      .pipe(filter(event => event.constructor.name === 'NavigationEnd'))
-      .subscribe(async () => {
-        const urlTree = this.router.parseUrl(this.router.url);
-        const params = urlTree.queryParams;
-
-        const invitation = params['invitation'];
-        const organization = params['organization'];
-
-        // If invitation and organization parameters are present, initiate Auth0 login
-        if (invitation && organization) {
-          this.logInvitationDetails(invitation, organization, params['organization_name']);
-
-          const isAuthenticated = await this.auth.isAuthenticated();
-
-          if (!isAuthenticated) {
-            await this.initiateInvitationLogin(invitation, organization);
-          } else {
-            this.logAlreadyAuthenticated();
-          }
-        }
-      });
-
-    this.subscriptions.add(subscription);
-
-    // Also check immediately in case params are already present
+    // Check immediately for invitation parameters
     const urlTree = this.router.parseUrl(this.router.url);
     const params = urlTree.queryParams;
     
@@ -110,46 +82,18 @@ export class AppComponent implements OnInit, OnDestroy {
     const organization = params['organization'];
 
     if (invitation && organization) {
-      this.logInvitationDetails(invitation, organization, params['organization_name']);
-
-      this.auth.isAuthenticated().then(isAuthenticated => {
-        if (!isAuthenticated) {
-          this.initiateInvitationLogin(invitation, organization);
-        } else {
-          this.logAlreadyAuthenticated();
-        }
+      console.log('[AppComponent] Organization invitation detected');
+      console.log('  Invitation:', invitation);
+      console.log('  Organization:', organization);
+      console.log('  Organization Name:', params['organization_name'] || 'Not specified');
+      console.log('[AppComponent] Automatically initiating login with invitation parameters...');
+      
+      // Immediately trigger login with invitation parameters
+      // This will redirect to Auth0's invitation acceptance screen
+      this.auth.login(undefined, {
+        invitation,
+        organization
       });
     }
-  }
-
-  /**
-   * Log invitation details for debugging
-   */
-  private logInvitationDetails(invitation: string, organization: string, organizationName?: string): void {
-    console.log('[AppComponent] Organization invitation detected');
-    console.log('  Invitation:', invitation);
-    console.log('  Organization:', organization);
-    console.log('  Organization Name:', organizationName || 'Not specified');
-  }
-
-  /**
-   * Initiate login with invitation parameters
-   */
-  private async initiateInvitationLogin(invitation: string, organization: string): Promise<void> {
-    console.log('[AppComponent] User not authenticated, initiating login with invitation parameters...');
-    await this.auth.login(undefined, {
-      invitation,
-      organization
-    });
-  }
-
-  /**
-   * Log that user is already authenticated
-   */
-  private logAlreadyAuthenticated(): void {
-    console.log('[AppComponent] User already authenticated');
-    console.log('[AppComponent] User may need to re-authenticate to accept invitation');
-    // Optionally, you could trigger a re-authentication here
-    // await this.auth.login(undefined, { invitation, organization });
   }
 }
