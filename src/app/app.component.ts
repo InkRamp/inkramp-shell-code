@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet, ActivatedRoute } from '@angular/router';
 import { AuthService, UserInfo } from '@org/core-services'; 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -28,7 +28,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private auth: AuthService,
     private roleService: RoleService,
     private mfeLoader: MfeLoaderService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ){
     // Initialize MFE configs
     this.mfeLoader.setConfigs(MFE_CONFIGS);
@@ -74,9 +75,8 @@ export class AppComponent implements OnInit, OnDestroy {
    * automatically trigger login with these parameters so Auth0 can accept the invitation
    */
   private async handleOrganizationInvitation(): Promise<void> {
-    // Check immediately for invitation parameters
-    const urlTree = this.router.parseUrl(this.router.url);
-    const params = urlTree.queryParams;
+    // Get query parameters from ActivatedRoute
+    const params = this.route.snapshot.queryParams;
     
     const invitation = params['invitation'];
     const organization = params['organization'];
