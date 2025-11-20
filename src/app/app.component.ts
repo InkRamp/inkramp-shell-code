@@ -35,7 +35,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
-    this.handleOrganizationInvitation();
+    await this.handleOrganizationInvitation();
     await this.syncAuthenticatedUser();
   }
 
@@ -73,7 +73,7 @@ export class AppComponent implements OnInit, OnDestroy {
    * When user clicks on invitation link with ?invitation=...&organization=... parameters,
    * automatically trigger login with these parameters so Auth0 can accept the invitation
    */
-  private handleOrganizationInvitation(): void {
+  private async handleOrganizationInvitation(): Promise<void> {
     // Check immediately for invitation parameters
     const urlTree = this.router.parseUrl(this.router.url);
     const params = urlTree.queryParams;
@@ -86,11 +86,19 @@ export class AppComponent implements OnInit, OnDestroy {
       console.log('  Invitation:', invitation);
       console.log('  Organization:', organization);
       console.log('  Organization Name:', params['organization_name'] || 'Not specified');
+      
+      // Check if user is already authenticated
+      const isAuthenticated = await this.auth.isAuthenticated();
+      if (isAuthenticated) {
+        console.log('[AppComponent] User already authenticated, skipping invitation login');
+        return;
+      }
+      
       console.log('[AppComponent] Automatically initiating login with invitation parameters...');
       
       // Immediately trigger login with invitation parameters
       // This will redirect to Auth0's invitation acceptance screen
-      this.auth.login(undefined, {
+      await this.auth.login(undefined, {
         invitation,
         organization
       });
