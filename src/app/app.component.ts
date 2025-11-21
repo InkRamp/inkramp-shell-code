@@ -73,6 +73,9 @@ export class AppComponent implements OnInit, OnDestroy {
    * Handle Auth0 organization invitation flow
    * When user clicks on invitation link with ?invitation=...&organization=... parameters,
    * automatically trigger login with these parameters so Auth0 can accept the invitation
+   * 
+   * Note: We always trigger login with invitation parameters, even if user appears authenticated,
+   * because Auth0 needs to process the invitation acceptance flow.
    */
   private async handleOrganizationInvitation(): Promise<void> {
     // Try multiple approaches to get query parameters
@@ -103,18 +106,11 @@ export class AppComponent implements OnInit, OnDestroy {
       console.log('  Invitation:', invitation);
       console.log('  Organization:', organization);
       console.log('  Organization Name:', windowOrgName || routeParams['organization_name'] || 'Not specified');
-      
-      // Check if user is already authenticated
-      const isAuthenticated = await this.auth.isAuthenticated();
-      if (isAuthenticated) {
-        console.log('[AppComponent] User already authenticated, skipping invitation login');
-        return;
-      }
-      
       console.log('[AppComponent] Automatically initiating login with invitation parameters...');
       
       // Immediately trigger login with invitation parameters
       // This will redirect to Auth0's invitation acceptance screen
+      // We don't check if user is authenticated because Auth0 needs to process the invitation
       await this.auth.login(undefined, {
         invitation,
         organization
