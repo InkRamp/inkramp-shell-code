@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { RoleService, DummyDataService, MfeLoaderService, User, SalesExecutive, MfeConfig, UserInfo } from '@org/core-services';
 import { AuthService } from '@org/core-services';
 
@@ -27,7 +27,8 @@ export class HeaderComponent implements OnInit {
     private roleService: RoleService,
     private dummyDataService: DummyDataService,
     private mfeLoader: MfeLoaderService,
-    private auth: AuthService
+    private auth: AuthService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -148,8 +149,25 @@ export class HeaderComponent implements OnInit {
 
   /**
    * Handle login action
+   * Checks for invitation parameters in URL and passes them to Auth0 if present
    */
   login(): void {
-    this.auth.login();
+    // Check if invitation parameters are present in the URL
+    const urlTree = this.router.parseUrl(this.router.url);
+    const params = urlTree.queryParams;
+    
+    const invitation = params['invitation'];
+    const organization = params['organization'];
+
+    // If invitation parameters exist, pass them to login
+    if (invitation && organization) {
+      console.log('[HeaderComponent] Invitation parameters detected, initiating invitation login');
+      this.auth.login(undefined, {
+        invitation,
+        organization
+      });
+    } else {
+      this.auth.login();
+    }
   }
 }
