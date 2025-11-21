@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet, ActivatedRoute } from '@angular/router';
 import { AuthService, UserInfo } from '@org/core-services'; 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -28,14 +28,15 @@ export class AppComponent implements OnInit, OnDestroy {
     private auth: AuthService,
     private roleService: RoleService,
     private mfeLoader: MfeLoaderService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ){
     // Initialize MFE configs
     this.mfeLoader.setConfigs(MFE_CONFIGS);
   }
 
   async ngOnInit(): Promise<void> {
-    this.handleOrganizationInvitation();
+    await this.handleOrganizationInvitation();
     await this.syncAuthenticatedUser();
   }
 
@@ -72,28 +73,50 @@ export class AppComponent implements OnInit, OnDestroy {
    * Handle Auth0 organization invitation flow
    * When user clicks on invitation link with ?invitation=...&organization=... parameters,
    * automatically trigger login with these parameters so Auth0 can accept the invitation
+   * 
+   * Note: We always trigger login with invitation parameters, even if user appears authenticated,
+   * because Auth0 needs to process the invitation acceptance flow.
    */
-  private handleOrganizationInvitation(): void {
-    // Check immediately for invitation parameters
-    const urlTree = this.router.parseUrl(this.router.url);
-    const params = urlTree.queryParams;
+  private async handleOrganizationInvitation(): Promise<void> {
+    // Try multiple approaches to get query parameters
+    console.log('[AppComponent] handleOrganizationInvitation() called');
     
-    const invitation = params['invitation'];
-    const organization = params['organization'];
+    // Approach 1: ActivatedRoute snapshot
+    const routeParams = this.route.snapshot.queryParams;
+    console.log('[AppComponent] Route snapshot queryParams:', routeParams);
+    
+    // Approach 2: Router state
+    const routerParams = this.router.routerState.root.snapshot.queryParams;
+    console.log('[AppComponent] Router state queryParams:', routerParams);
+    
+    // Approach 3: window.location (most reliable for initial load)
+    const urlParams = new URLSearchParams(window.location.search);
+    const windowInvitation = urlParams.get('invitation');
+    const windowOrganization = urlParams.get('organization');
+    const windowOrgName = urlParams.get('organization_name');
+    console.log('[AppComponent] Window location search:', window.location.search);
+    console.log('[AppComponent] URLSearchParams - invitation:', windowInvitation, 'organization:', windowOrganization);
+    
+    // Use window.location as the most reliable source
+    const invitation = windowInvitation || routeParams['invitation'];
+    const organization = windowOrganization || routeParams['organization'];
 
     if (invitation && organization) {
       console.log('[AppComponent] Organization invitation detected');
       console.log('  Invitation:', invitation);
       console.log('  Organization:', organization);
-      console.log('  Organization Name:', params['organization_name'] || 'Not specified');
+      console.log('  Organization Name:', windowOrgName || routeParams['organization_name'] || 'Not specified');
       console.log('[AppComponent] Automatically initiating login with invitation parameters...');
       
       // Immediately trigger login with invitation parameters
       // This will redirect to Auth0's invitation acceptance screen
-      this.auth.login(undefined, {
+      // We don't check if user is authenticated because Auth0 needs to process the invitation
+      await this.auth.login(undefined, {
         invitation,
         organization
       });
+    } else {
+      console.log('[AppComponent] No invitation parameters found');
     }
   }
 }
