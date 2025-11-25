@@ -240,7 +240,7 @@ roleService.hasCapability('rule.create');
 
 **Decision**: Use three breakpoints: small (mobile), medium (tablet), large (desktop).
 
-**Breakpoints**:
+**Breakpoints** (defined in `src/styles.scss` or shared tokens file):
 - `--bp-sm`: up to 480px (mobile)
 - `--bp-md`: 481px — 768px (tablet)  
 - `--bp-lg`: 769px and above (desktop)
@@ -254,6 +254,7 @@ roleService.hasCapability('rule.create');
 **Consequences**:
 - Must test at all three sizes
 - Complex layouts may need additional breakpoints
+- All breakpoint values defined in single source of truth
 
 ---
 

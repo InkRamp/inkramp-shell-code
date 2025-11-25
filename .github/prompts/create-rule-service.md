@@ -269,6 +269,8 @@ export class RulesService {
 
   /**
    * Handle HTTP errors and convert to ServiceError
+   * Note: Consider extracting this to a shared utility (e.g., http-error.util.ts)
+   * if this pattern is reused across multiple services.
    */
   private handleError(defaultMessage: string) {
     return (error: unknown): Observable<never> => {
