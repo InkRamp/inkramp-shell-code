@@ -55,9 +55,10 @@ All AI/Copilot context is centralized in `.github/`:
 - **Event-driven communication** between MFEs
 - **Dev user mimicking** for testing different roles
 
-### Dev User Mimicking
+### Dev User Mimicking (Development Only)
 ```typescript
-// In browser console
+// In browser console - uses localStorage intentionally to persist across dev sessions
+// (unlike tokens which use sessionStorage and are cleared on tab close)
 localStorage.setItem('dev_mimic_user', JSON.stringify({
   id: 'dev-1',
   name: 'Dev Admin',

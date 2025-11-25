@@ -268,6 +268,11 @@ inconsistencies:
     area: "User model"
     issue: "Code missing orgId property for multi-tenancy"
     priority: "medium"
+  - id: "INC-004"
+    area: "RoleService storage"
+    issue: "dev_mimic_user uses localStorage instead of sessionStorage"
+    note: "Intentional - dev convenience feature to persist across sessions (not a token)"
+    priority: "low"
 
 # =============================================================================
 # PROMPT TEMPLATES (Essential ones only for MVP)
