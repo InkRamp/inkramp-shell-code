@@ -1,17 +1,15 @@
 # Copilot Context Configuration
-# This file centralizes all AI assistant context for the i17e-code repository
-# Version: 1.0.0
+# This file is the SINGLE SOURCE OF TRUTH for all AI assistant context.
+# All domain models, event schemas, roles, and configuration are centralized here.
+# Version: 2.0.0 (MVP - Centralized)
 # Last Updated: 2024
 
-# =============================================================================
-# CONTEXT MANIFEST
-# =============================================================================
-# This file serves as the single source of truth for all Copilot/AI context
-# configuration. It references all relevant documentation and context files.
+version: "2.0"
 
-version: "1.0"
+# =============================================================================
+# PROJECT METADATA
+# =============================================================================
 
-# Project metadata
 project:
   name: "i17e Incentive Management System"
   type: "Angular 18 Micro Frontend Shell"
@@ -22,110 +20,28 @@ project:
     Uses Module Federation for micro-frontend architecture.
 
 # =============================================================================
-# CONTEXT FILES REGISTRY
+# TECH STACK
 # =============================================================================
-# All context files that Copilot should be aware of
 
-context:
-  # Primary instruction file (GitHub Copilot reads this automatically)
-  instructions: ".github/copilot-instructions.md"
-  
-  # Machine-readable context
-  domain_models: "context/domain-models.json"
-  event_schemas:
-    - "context/event-schemas/auth-events.json"
-    - "context/event-schemas/user-events.json"
-    - "context/event-schemas/nav-events.json"
-    - "context/event-schemas/rule-created.json"
-    - "context/event-schemas/rule-evaluated.json"
-
-  # Documentation
-  docs:
-    architecture: "docs/ARCHITECTURE.md"
-    design_decisions: "docs/DESIGN_DECISIONS.md"
-    roles: "docs/ROLES.md"
-    api_contracts: "docs/API_CONTRACTS.md"
-
-  # Prompt templates
-  prompts:
-    generate_mfe: ".github/prompts/generate-mfe.md"
-    create_api_service: ".github/prompts/create-api-service.md"
-    create_rule_service: ".github/prompts/create-rule-service.md"
-    create_component: ".github/prompts/create-component.md"
-    cross_mfe_communication: ".github/prompts/cross-mfe-communication.md"
-    banking_compliance: ".github/prompts/banking-compliance.md"
+tech_stack:
+  core:
+    angular: "18.2.x"
+    typescript: "~5.4.x"
+    rxjs: "~7.8.x"
+  auth:
+    provider: "Auth0"
+    library: "@auth0/auth0-spa-js@^2.8.0"
+    storage: "sessionStorage"  # NOT localStorage - tokens cleared on tab close
+  micro_frontends:
+    library: "@angular-architects/module-federation@^18.0.6"
+    event_bus: "mitt@^3.0.1"
+  testing:
+    unit: "Jasmine/Karma"
 
 # =============================================================================
-# CODE REVIEW CONFIGURATION
+# ROLE HIERARCHY & CAPABILITIES
 # =============================================================================
-# Settings for AI-assisted code reviews
-
-code_review:
-  enabled: true
-  
-  # Review scope
-  include_patterns:
-    - "src/**/*.ts"
-    - "src/**/*.html"
-    - "src/**/*.scss"
-    - "projects/**/*.ts"
-    - "projects/**/*.html"
-  
-  exclude_patterns:
-    - "**/*.spec.ts"
-    - "**/node_modules/**"
-    - "**/dist/**"
-    - "**/*.d.ts"
-
-  # Review criteria
-  criteria:
-    # Angular best practices
-    angular:
-      - "Use standalone components over NgModules"
-      - "Prefer signals for reactive state"
-      - "Use OnPush change detection when possible"
-      - "Use inject() over constructor injection"
-      - "Use takeUntilDestroyed for subscription cleanup"
-    
-    # Security
-    security:
-      - "Never store tokens in localStorage"
-      - "Do not log sensitive data (passwords, tokens, account numbers)"
-      - "Use centralized AuthService for API calls"
-      - "Mask PII in logs and telemetry"
-    
-    # TypeScript
-    typescript:
-      - "No use of 'any' type without justification"
-      - "Explicit types for all public APIs"
-      - "Use interfaces for data contracts"
-      - "Prefer async/await with typed results"
-    
-    # Architecture
-    architecture:
-      - "No direct cross-MFE imports - use EventBusService"
-      - "Keep functions under 40 lines when possible"
-      - "Prefer composition over inheritance"
-      - "Use folder-per-feature structure in MFEs"
-
-  # Severity levels
-  severity:
-    error:
-      - "Security vulnerabilities"
-      - "Direct localStorage token storage"
-      - "Logging sensitive data"
-    warning:
-      - "Missing TypeScript types"
-      - "Functions over 50 lines"
-      - "Missing JSDoc for public APIs"
-    info:
-      - "Style suggestions"
-      - "Performance optimizations"
-
-# =============================================================================
-# ROLE HIERARCHY
-# =============================================================================
-# Concentric role model for RBAC
+# Concentric role model: Super-Admin ⊃ Org-Admin ⊃ Team Lead ⊃ Sales Executive
 
 roles:
   hierarchy:
@@ -134,7 +50,6 @@ roles:
     - team-lead        # Team management
     - sales-executive  # Personal data only
   
-  # Role capabilities (for quick reference)
   capabilities:
     super-admin:
       - "org.*"
@@ -165,27 +80,127 @@ roles:
       - "incentive.view"
 
 # =============================================================================
-# TECH STACK QUICK REFERENCE
+# DOMAIN MODELS (Consolidated from context/domain-models.json)
 # =============================================================================
 
-tech_stack:
-  core:
-    angular: "18.2.x"
-    typescript: "~5.4.x"
-    rxjs: "~7.8.x"
-  
+domain_models:
+  User:
+    description: "User entity with role and organizational context"
+    properties:
+      id: { type: "string", required: true }
+      name: { type: "string", required: true }
+      email: { type: "string", format: "email", required: true }
+      role: { type: "string", enum: ["super-admin", "org-admin", "team-lead", "sales-executive"], required: true }
+      orgId: { type: "string" }
+      teamId: { type: "string" }
+      managerId: { type: "string" }
+
+  Rule:
+    description: "Incentive rule definition"
+    properties:
+      id: { type: "string", required: true }
+      name: { type: "string", required: true }
+      description: { type: "string" }
+      orgId: { type: "string", required: true }
+      createdBy: { type: "string", required: true }
+      conditions: { type: "array", items: "RuleCondition", required: true }
+      actions: { type: "array", items: "RuleAction", required: true }
+      status: { type: "string", enum: ["active", "paused", "archived"], required: true }
+      effectiveFrom: { type: "date-time" }
+      effectiveTo: { type: "date-time" }
+      version: { type: "integer", required: true }
+
+  RuleCondition:
+    description: "Condition within a rule"
+    properties:
+      field: { type: "string", required: true }
+      operator: { type: "string", enum: ["eq", "neq", "gt", "gte", "lt", "lte", "in", "nin", "contains"], required: true }
+      value: { type: "any", required: true }
+
+  RuleAction:
+    description: "Action to execute when rule conditions are met"
+    properties:
+      type: { type: "string", enum: ["bonus", "multiplier", "tier", "notification", "badge"], required: true }
+      params: { type: "object", required: true }
+
+  Incentive:
+    description: "Calculated incentive for a user"
+    properties:
+      id: { type: "string", required: true }
+      userId: { type: "string", required: true }
+      ruleId: { type: "string", required: true }
+      amount: { type: "number", required: true }
+      currency: { type: "string", required: true }
+      status: { type: "string", enum: ["pending", "approved", "paid", "rejected"], required: true }
+      period: { type: "string", required: true }
+
+  Target:
+    description: "Sales or performance target"
+    properties:
+      id: { type: "string", required: true }
+      userId: { type: "string", required: true }
+      type: { type: "string", enum: ["sales", "units", "customers", "custom"], required: true }
+      metric: { type: "string", required: true }
+      targetValue: { type: "number", required: true }
+      currentValue: { type: "number" }
+      status: { type: "string", enum: ["active", "completed", "missed"], required: true }
+
+# =============================================================================
+# EVENT SCHEMAS (Consolidated from context/event-schemas/)
+# =============================================================================
+
+event_schemas:
   auth:
-    provider: "Auth0"
-    library: "@auth0/auth0-spa-js@^2.8.0"
-    storage: "sessionStorage"  # NOT localStorage
-  
-  micro_frontends:
-    library: "@angular-architects/module-federation@^18.0.6"
-    event_bus: "mitt@^3.0.1"
-  
-  testing:
-    unit: "Jasmine/Karma"
-    e2e: "Cypress (optional)"
+    - event: "auth:login"
+      payload: { userId: "string", email: "string", role: "string", orgId: "string?" }
+    - event: "auth:logout"
+      payload: { userId: "string", reason: "user-initiated|session-expired|forced" }
+    - event: "auth:token-refreshed"
+      payload: { userId: "string", expiresAt: "date-time" }
+    - event: "auth:session-expired"
+      payload: { userId: "string" }
+
+  user:
+    - event: "user:updated"
+      payload: { userId: "string", changes: "object" }
+    - event: "user:preferences-changed"
+      payload: { userId: "string", preferences: { language: "string", theme: "light|dark|system", timezone: "string" } }
+    - event: "user:role-changed"
+      payload: { userId: "string", previousRole: "string", newRole: "string", changedBy: "string" }
+
+  navigation:
+    - event: "nav:requested"
+      payload: { path: "string", params: "object?", source: "string?" }
+    - event: "mfe:loaded"
+      payload: { mfeId: "string", route: "string", loadTime: "number" }
+    - event: "mfe:error"
+      payload: { mfeId: "string", error: "string", retryCount: "number?" }
+    - event: "mfe:ready"
+      payload: { mfeId: "string", version: "string?" }
+
+  rules:
+    - event: "rule.created"
+      payload: { ruleId: "string", name: "string", orgId: "string", createdBy: "string", status: "string", effectiveFrom: "date-time" }
+    - event: "rule.evaluated"
+      payload: { ruleId: "string", userId: "string", matched: "boolean", context: "object?", result: "object?" }
+
+# =============================================================================
+# SERVICE REGISTRY
+# =============================================================================
+
+services:
+  auth_service:
+    path: "projects/core-services/src/lib/auth.service.ts"
+    description: "Auth0 OAuth2/OIDC authentication"
+  role_service:
+    path: "projects/core-services/src/lib/role.service.ts"
+    description: "RBAC and user permissions"
+  event_bus_service:
+    path: "projects/core-services/src/lib/event-bus.service.ts"
+    description: "Cross-MFE communication via mitt"
+  mfe_loader_service:
+    path: "projects/core-services/src/lib/mfe-loader.service.ts"
+    description: "Dynamic MFE loading with Module Federation"
 
 # =============================================================================
 # UI DESIGN TOKENS
@@ -196,7 +211,6 @@ design_tokens:
     sm: "480px"   # Mobile
     md: "768px"   # Tablet
     lg: "1024px"  # Desktop
-  
   spacing:
     space-1: "4px"
     space-2: "8px"
@@ -205,58 +219,60 @@ design_tokens:
     space-5: "32px"
 
 # =============================================================================
-# SERVICE REGISTRY
+# CODE REVIEW CRITERIA
 # =============================================================================
-# Core services and their locations
 
-services:
-  auth_service:
-    path: "projects/core-services/src/lib/auth.service.ts"
-    description: "Auth0 OAuth2/OIDC authentication"
+code_review:
+  enabled: true
+  include_patterns:
+    - "src/**/*.ts"
+    - "src/**/*.html"
+    - "src/**/*.scss"
+    - "projects/**/*.ts"
+  exclude_patterns:
+    - "**/*.spec.ts"
+    - "**/node_modules/**"
+    - "**/dist/**"
   
-  role_service:
-    path: "projects/core-services/src/lib/role.service.ts"
-    description: "RBAC and user permissions"
-  
-  event_bus_service:
-    path: "projects/core-services/src/lib/event-bus.service.ts"
-    description: "Cross-MFE communication via mitt"
-  
-  mfe_loader_service:
-    path: "projects/core-services/src/lib/mfe-loader.service.ts"
-    description: "Dynamic MFE loading with Module Federation"
+  rules:
+    security:
+      - "Never store tokens in localStorage - use sessionStorage"
+      - "Do not log sensitive data (passwords, tokens, account numbers)"
+      - "Use centralized AuthService for API calls"
+    angular:
+      - "Use standalone components over NgModules"
+      - "Prefer signals for reactive state"
+      - "Use OnPush change detection when possible"
+      - "Use takeUntilDestroyed for subscription cleanup"
+    typescript:
+      - "No use of 'any' type without justification"
+      - "Explicit types for all public APIs"
+    architecture:
+      - "No direct cross-MFE imports - use EventBusService"
+      - "Keep functions under 40 lines when possible"
 
 # =============================================================================
-# KNOWN INCONSISTENCIES (as of last review)
+# KNOWN INCONSISTENCIES (MVP: Track and fix incrementally)
 # =============================================================================
-# These are documented discrepancies between code and context docs.
-# Review and resolve by updating either code or documentation.
 
 inconsistencies:
   - id: "INC-001"
-    description: "EventBusService API mismatch"
-    code_uses: "sendEvent(s: string)"
-    docs_describe: "emit('event:name', payload) and on('event:name', handler)"
-    resolution: "Update either EventBusService or documentation"
+    area: "EventBusService"
+    issue: "API uses sendEvent(s: string), docs describe emit('event:name', payload)"
     priority: "high"
-  
   - id: "INC-002"
-    description: "RoleService missing hasCapability() method"
-    code_has: "hasRole(), isAdmin(), isTeamLeadOrHigher()"
-    docs_describe: "hasCapability('rule.create') for capability-based checks"
-    resolution: "Add hasCapability() method or update docs to reflect current API"
+    area: "RoleService"
+    issue: "Missing hasCapability() method documented in examples"
     priority: "high"
-  
   - id: "INC-003"
-    description: "User model missing orgId in code"
-    code_defines: "id, name, email, role, teamId?, managerId?"
-    docs_define: "id, name, email, role, orgId, teamId?, managerId?"
-    resolution: "Add orgId to User interface if multi-tenancy is required"
+    area: "User model"
+    issue: "Code missing orgId property for multi-tenancy"
     priority: "medium"
-  
-  - id: "INC-004"
-    description: "RoleService uses localStorage for dev mimic user"
-    code_uses: "localStorage.setItem('dev_mimic_user', ...)"
-    docs_state: "Use sessionStorage for all sensitive data"
-    resolution: "Change to sessionStorage or document as dev-only exception"
-    priority: "low"
+
+# =============================================================================
+# PROMPT TEMPLATES (Essential ones only for MVP)
+# =============================================================================
+
+prompts:
+  create_api_service: ".github/prompts/create-api-service.md"
+  create_component: ".github/prompts/create-component.md"
