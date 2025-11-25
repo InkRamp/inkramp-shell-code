@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Auth Events",
+  "description": "Authentication and authorization related events",
+  "definitions": {
+    "auth.login": {
+      "type": "object",
+      "description": "User successfully logged in",
+      "properties": {
+        "event": { "const": "auth:login" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "userId": { "type": "string" },
+            "email": { "type": "string" },
+            "role": { "type": "string" },
+            "orgId": { "type": "string" }
+          },
+          "required": ["userId", "email", "role"]
+        }
+      }
+    },
+    "auth.logout": {
+      "type": "object",
+      "description": "User logged out",
+      "properties": {
+        "event": { "const": "auth:logout" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "userId": { "type": "string" },
+            "reason": {
+              "type": "string",
+              "enum": ["user-initiated", "session-expired", "forced"]
+            }
+          },
+          "required": ["userId", "reason"]
+        }
+      }
+    },
+    "auth.token-refreshed": {
+      "type": "object",
+      "description": "Access token was refreshed",
+      "properties": {
+        "event": { "const": "auth:token-refreshed" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "userId": { "type": "string" },
+            "expiresAt": { "type": "string", "format": "date-time" }
+          },
+          "required": ["userId", "expiresAt"]
+        }
+      }
+    },
+    "auth.session-expired": {
+      "type": "object",
+      "description": "User session has expired",
+      "properties": {
+        "event": { "const": "auth:session-expired" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "userId": { "type": "string" },
+            "lastActivity": { "type": "string", "format": "date-time" }
+          },
+          "required": ["userId"]
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "event": "auth:login",
+      "timestamp": "2024-01-15T09:00:00Z",
+      "payload": {
+        "userId": "user-123",
+        "email": "john@company.com",
+        "role": "team-lead",
+        "orgId": "org-456"
+      }
+    },
+    {
+      "event": "auth:logout",
+      "timestamp": "2024-01-15T17:30:00Z",
+      "payload": {
+        "userId": "user-123",
+        "reason": "user-initiated"
+      }
+    }
+  ]
+}

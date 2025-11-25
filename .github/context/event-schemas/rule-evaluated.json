@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Rule Evaluated Event",
+  "description": "Event emitted when an incentive rule is evaluated against data",
+  "type": "object",
+  "properties": {
+    "event": {
+      "type": "string",
+      "const": "rule.evaluated",
+      "description": "Event type identifier"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Event timestamp in ISO 8601 format"
+    },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "ruleId": {
+          "type": "string",
+          "description": "Unique identifier of the evaluated rule"
+        },
+        "userId": {
+          "type": "string",
+          "description": "User ID for whom the rule was evaluated"
+        },
+        "matched": {
+          "type": "boolean",
+          "description": "Whether the rule conditions were matched"
+        },
+        "context": {
+          "type": "object",
+          "description": "Evaluation context data",
+          "additionalProperties": true
+        },
+        "result": {
+          "type": "object",
+          "description": "Evaluation result if matched",
+          "properties": {
+            "actions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "Action type"
+                  },
+                  "outcome": {
+                    "type": "object",
+                    "description": "Action outcome details"
+                  }
+                }
+              }
+            },
+            "incentiveId": {
+              "type": "string",
+              "description": "Generated incentive ID if applicable"
+            }
+          }
+        }
+      },
+      "required": ["ruleId", "userId", "matched"]
+    }
+  },
+  "required": ["event", "timestamp", "payload"],
+  "examples": [
+    {
+      "event": "rule.evaluated",
+      "timestamp": "2024-01-15T14:00:00Z",
+      "payload": {
+        "ruleId": "rule-123-abc",
+        "userId": "user-456",
+        "matched": true,
+        "context": {
+          "salesAmount": 150000,
+          "period": "Q1-2024"
+        },
+        "result": {
+          "actions": [
+            {
+              "type": "bonus",
+              "outcome": {
+                "amount": 5000,
+                "currency": "USD"
+              }
+            }
+          ],
+          "incentiveId": "inc-789-xyz"
+        }
+      }
+    }
+  ]
+}

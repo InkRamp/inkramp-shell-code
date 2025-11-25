@@ -55,8 +55,17 @@ projects/core-services/       # Shared library (@org/core-services)
       ├── models/             # TypeScript interfaces
       └── api/                # API service classes
 .github/
-  ├── copilot-context.yml     # Centralized context (domain models, events, roles)
+  ├── copilot-context.yml     # Centralized context manifest
   ├── copilot-instructions.md # This file
+  ├── context/                # Machine-readable context
+  │   ├── domain-models.json
+  │   └── event-schemas/
+  ├── docs/                   # Documentation
+  │   ├── ARCHITECTURE.md
+  │   ├── DESIGN_DECISIONS.md
+  │   ├── ROLES.md
+  │   ├── API_CONTRACTS.md
+  │   └── INCONSISTENCIES.md
   └── prompts/                # Prompt templates
 ```
 
@@ -122,6 +131,11 @@ export class MyComponent {
 | API calls | `projects/core-services/src/lib/api/` |
 | Cross-MFE events | `EventBusService` |
 | User roles/permissions | `RoleService` |
-| Domain models | `.github/copilot-context.yml` |
-| Event schemas | `.github/copilot-context.yml` |
+| Domain models | `.github/context/domain-models.json` |
+| Event schemas | `.github/context/event-schemas/` |
+| Architecture | `.github/docs/ARCHITECTURE.md` |
+| Design decisions | `.github/docs/DESIGN_DECISIONS.md` |
+| Roles & permissions | `.github/docs/ROLES.md` |
+| API contracts | `.github/docs/API_CONTRACTS.md` |
+| Known issues | `.github/docs/INCONSISTENCIES.md` |
 | Prompt templates | `.github/prompts/`

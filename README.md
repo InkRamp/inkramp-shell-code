@@ -39,8 +39,10 @@ Super-Admin ⊃ Org-Admin ⊃ Team Lead ⊃ Sales Executive
 ## 📚 Documentation
 
 All AI/Copilot context is centralized in `.github/`:
-- `.github/copilot-context.yml` - Domain models, event schemas, roles, configuration
+- `.github/copilot-context.yml` - Centralized context manifest
 - `.github/copilot-instructions.md` - Development guidelines
+- `.github/context/` - Machine-readable context (domain models, event schemas)
+- `.github/docs/` - Documentation (ARCHITECTURE, DESIGN_DECISIONS, ROLES, API_CONTRACTS, INCONSISTENCIES)
 - `.github/prompts/` - Prompt templates
 
 ### Key Files

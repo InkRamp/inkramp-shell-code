@@ -275,9 +275,32 @@ inconsistencies:
     priority: "low"
 
 # =============================================================================
-# PROMPT TEMPLATES (Essential ones only for MVP)
+# CONTEXT FILES REGISTRY (All centralized in .github/)
 # =============================================================================
 
-prompts:
-  create_api_service: ".github/prompts/create-api-service.md"
-  create_component: ".github/prompts/create-component.md"
+context_files:
+  # Machine-readable context
+  domain_models: ".github/context/domain-models.json"
+  event_schemas:
+    - ".github/context/event-schemas/auth-events.json"
+    - ".github/context/event-schemas/user-events.json"
+    - ".github/context/event-schemas/nav-events.json"
+    - ".github/context/event-schemas/rule-created.json"
+    - ".github/context/event-schemas/rule-evaluated.json"
+
+  # Documentation (all moved to .github/docs/)
+  docs:
+    architecture: ".github/docs/ARCHITECTURE.md"
+    design_decisions: ".github/docs/DESIGN_DECISIONS.md"
+    roles: ".github/docs/ROLES.md"
+    api_contracts: ".github/docs/API_CONTRACTS.md"
+    inconsistencies: ".github/docs/INCONSISTENCIES.md"
+
+  # Prompt templates
+  prompts:
+    generate_mfe: ".github/prompts/generate-mfe.md"
+    create_api_service: ".github/prompts/create-api-service.md"
+    create_rule_service: ".github/prompts/create-rule-service.md"
+    create_component: ".github/prompts/create-component.md"
+    cross_mfe_communication: ".github/prompts/cross-mfe-communication.md"
+    banking_compliance: ".github/prompts/banking-compliance.md"
