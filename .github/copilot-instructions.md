@@ -54,7 +54,7 @@ This is an **Angular 18 Micro Frontend (MFE) shell application** using **Module 
 - **Standalone components** preferred over NgModules
 - Lazy loading for all routes and MFEs
 - OnPush change detection strategy when possible
-- Use signals for new reactive state (Angular 17+)
+- Use signals for new reactive state (stable in Angular 17+)
 
 ### Security
 - **sessionStorage** for tokens (NOT localStorage)
