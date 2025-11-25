@@ -1,0 +1,262 @@
+# Copilot Context Configuration
+# This file centralizes all AI assistant context for the i17e-code repository
+# Version: 1.0.0
+# Last Updated: 2024
+
+# =============================================================================
+# CONTEXT MANIFEST
+# =============================================================================
+# This file serves as the single source of truth for all Copilot/AI context
+# configuration. It references all relevant documentation and context files.
+
+version: "1.0"
+
+# Project metadata
+project:
+  name: "i17e Incentive Management System"
+  type: "Angular 18 Micro Frontend Shell"
+  framework: "Angular"
+  version: "18.2.x"
+  description: |
+    Multi-tenant SaaS platform for incentive rules management.
+    Uses Module Federation for micro-frontend architecture.
+
+# =============================================================================
+# CONTEXT FILES REGISTRY
+# =============================================================================
+# All context files that Copilot should be aware of
+
+context:
+  # Primary instruction file (GitHub Copilot reads this automatically)
+  instructions: ".github/copilot-instructions.md"
+  
+  # Machine-readable context
+  domain_models: "context/domain-models.json"
+  event_schemas:
+    - "context/event-schemas/auth-events.json"
+    - "context/event-schemas/user-events.json"
+    - "context/event-schemas/nav-events.json"
+    - "context/event-schemas/rule-created.json"
+    - "context/event-schemas/rule-evaluated.json"
+
+  # Documentation
+  docs:
+    architecture: "docs/ARCHITECTURE.md"
+    design_decisions: "docs/DESIGN_DECISIONS.md"
+    roles: "docs/ROLES.md"
+    api_contracts: "docs/API_CONTRACTS.md"
+
+  # Prompt templates
+  prompts:
+    generate_mfe: ".github/prompts/generate-mfe.md"
+    create_api_service: ".github/prompts/create-api-service.md"
+    create_rule_service: ".github/prompts/create-rule-service.md"
+    create_component: ".github/prompts/create-component.md"
+    cross_mfe_communication: ".github/prompts/cross-mfe-communication.md"
+    banking_compliance: ".github/prompts/banking-compliance.md"
+
+# =============================================================================
+# CODE REVIEW CONFIGURATION
+# =============================================================================
+# Settings for AI-assisted code reviews
+
+code_review:
+  enabled: true
+  
+  # Review scope
+  include_patterns:
+    - "src/**/*.ts"
+    - "src/**/*.html"
+    - "src/**/*.scss"
+    - "projects/**/*.ts"
+    - "projects/**/*.html"
+  
+  exclude_patterns:
+    - "**/*.spec.ts"
+    - "**/node_modules/**"
+    - "**/dist/**"
+    - "**/*.d.ts"
+
+  # Review criteria
+  criteria:
+    # Angular best practices
+    angular:
+      - "Use standalone components over NgModules"
+      - "Prefer signals for reactive state"
+      - "Use OnPush change detection when possible"
+      - "Use inject() over constructor injection"
+      - "Use takeUntilDestroyed for subscription cleanup"
+    
+    # Security
+    security:
+      - "Never store tokens in localStorage"
+      - "Do not log sensitive data (passwords, tokens, account numbers)"
+      - "Use centralized AuthService for API calls"
+      - "Mask PII in logs and telemetry"
+    
+    # TypeScript
+    typescript:
+      - "No use of 'any' type without justification"
+      - "Explicit types for all public APIs"
+      - "Use interfaces for data contracts"
+      - "Prefer async/await with typed results"
+    
+    # Architecture
+    architecture:
+      - "No direct cross-MFE imports - use EventBusService"
+      - "Keep functions under 40 lines when possible"
+      - "Prefer composition over inheritance"
+      - "Use folder-per-feature structure in MFEs"
+
+  # Severity levels
+  severity:
+    error:
+      - "Security vulnerabilities"
+      - "Direct localStorage token storage"
+      - "Logging sensitive data"
+    warning:
+      - "Missing TypeScript types"
+      - "Functions over 50 lines"
+      - "Missing JSDoc for public APIs"
+    info:
+      - "Style suggestions"
+      - "Performance optimizations"
+
+# =============================================================================
+# ROLE HIERARCHY
+# =============================================================================
+# Concentric role model for RBAC
+
+roles:
+  hierarchy:
+    - super-admin      # Full platform control
+    - org-admin        # Organization control
+    - team-lead        # Team management
+    - sales-executive  # Personal data only
+  
+  # Role capabilities (for quick reference)
+  capabilities:
+    super-admin:
+      - "org.*"
+      - "user.*"
+      - "rule.*"
+      - "settings.*"
+      - "audit.*"
+    org-admin:
+      - "user.create"
+      - "user.manage"
+      - "team.*"
+      - "rule.create"
+      - "rule.update"
+      - "rule.delete"
+      - "report.view.org"
+    team-lead:
+      - "team.view"
+      - "rule.create"
+      - "rule.update"
+      - "rule.view"
+      - "report.view.team"
+      - "target.assign"
+    sales-executive:
+      - "rule.view"
+      - "report.view.personal"
+      - "dashboard.personal"
+      - "target.view"
+      - "incentive.view"
+
+# =============================================================================
+# TECH STACK QUICK REFERENCE
+# =============================================================================
+
+tech_stack:
+  core:
+    angular: "18.2.x"
+    typescript: "~5.4.x"
+    rxjs: "~7.8.x"
+  
+  auth:
+    provider: "Auth0"
+    library: "@auth0/auth0-spa-js@^2.8.0"
+    storage: "sessionStorage"  # NOT localStorage
+  
+  micro_frontends:
+    library: "@angular-architects/module-federation@^18.0.6"
+    event_bus: "mitt@^3.0.1"
+  
+  testing:
+    unit: "Jasmine/Karma"
+    e2e: "Cypress (optional)"
+
+# =============================================================================
+# UI DESIGN TOKENS
+# =============================================================================
+
+design_tokens:
+  breakpoints:
+    sm: "480px"   # Mobile
+    md: "768px"   # Tablet
+    lg: "1024px"  # Desktop
+  
+  spacing:
+    space-1: "4px"
+    space-2: "8px"
+    space-3: "16px"
+    space-4: "24px"
+    space-5: "32px"
+
+# =============================================================================
+# SERVICE REGISTRY
+# =============================================================================
+# Core services and their locations
+
+services:
+  auth_service:
+    path: "projects/core-services/src/lib/auth.service.ts"
+    description: "Auth0 OAuth2/OIDC authentication"
+  
+  role_service:
+    path: "projects/core-services/src/lib/role.service.ts"
+    description: "RBAC and user permissions"
+  
+  event_bus_service:
+    path: "projects/core-services/src/lib/event-bus.service.ts"
+    description: "Cross-MFE communication via mitt"
+  
+  mfe_loader_service:
+    path: "projects/core-services/src/lib/mfe-loader.service.ts"
+    description: "Dynamic MFE loading with Module Federation"
+
+# =============================================================================
+# KNOWN INCONSISTENCIES (as of last review)
+# =============================================================================
+# These are documented discrepancies between code and context docs.
+# Review and resolve by updating either code or documentation.
+
+inconsistencies:
+  - id: "INC-001"
+    description: "EventBusService API mismatch"
+    code_uses: "sendEvent(s: string)"
+    docs_describe: "emit('event:name', payload) and on('event:name', handler)"
+    resolution: "Update either EventBusService or documentation"
+    priority: "high"
+  
+  - id: "INC-002"
+    description: "RoleService missing hasCapability() method"
+    code_has: "hasRole(), isAdmin(), isTeamLeadOrHigher()"
+    docs_describe: "hasCapability('rule.create') for capability-based checks"
+    resolution: "Add hasCapability() method or update docs to reflect current API"
+    priority: "high"
+  
+  - id: "INC-003"
+    description: "User model missing orgId in code"
+    code_defines: "id, name, email, role, teamId?, managerId?"
+    docs_define: "id, name, email, role, orgId, teamId?, managerId?"
+    resolution: "Add orgId to User interface if multi-tenancy is required"
+    priority: "medium"
+  
+  - id: "INC-004"
+    description: "RoleService uses localStorage for dev mimic user"
+    code_uses: "localStorage.setItem('dev_mimic_user', ...)"
+    docs_state: "Use sessionStorage for all sensitive data"
+    resolution: "Change to sessionStorage or document as dev-only exception"
+    priority: "low"

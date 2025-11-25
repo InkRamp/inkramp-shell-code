@@ -2,7 +2,13 @@
 
 ## Project Overview
 
-This is an **Angular 18 Micro Frontend (MFE) shell application** using **Module Federation** for a banking/incentive management domain. The shell dynamically loads remote MFEs and provides shared services for authentication, state management, and cross-MFE communication.
+This is an **Angular 18 Micro Frontend (MFE) shell application** using **Module Federation** for a multi-tenant SaaS incentive rules platform. The shell dynamically loads remote MFEs and provides shared services for authentication, state management, and cross-MFE communication.
+
+### Domain Context
+Multi-tenant SaaS for incentive rules management with concentric role hierarchy:
+- **Super-Admin** ⊃ **Org-Admin** ⊃ **Team Lead** ⊃ **Sales Executive**
+
+See `docs/ROLES.md` for detailed role permissions and capability-based access model.
 
 ---
 
@@ -23,9 +29,11 @@ This is an **Angular 18 Micro Frontend (MFE) shell application** using **Module 
 
 ### Design Principles
 - **SOLID**: Single responsibility, Open/closed, Liskov substitution, Interface segregation, Dependency inversion
+- **DRY**: Don't repeat yourself, but favor clarity when trade-offs arise
 - **YAGNI**: Don't implement features until needed
 - **High Cohesion, Low Coupling**: No direct cross-MFE imports; use EventBus
 - **Observable-driven state**: RxJS for reactive programming
+- **Composition over Inheritance**: Prefer small, composable utilities and components
 
 ---
 
@@ -49,12 +57,21 @@ This is an **Angular 18 Micro Frontend (MFE) shell application** using **Module 
 - Explicit types for all public APIs
 - No `any` unless absolutely necessary
 - Use interfaces for data contracts
+- Use async/await with typed results
 
 ### Angular
 - **Standalone components** preferred over NgModules
 - Lazy loading for all routes and MFEs
 - OnPush change detection strategy when possible
 - Use signals for new reactive state (stable in Angular 17+)
+- Keep functions < 40 lines when possible
+- Prefer simple, declarative code over nested conditionals
+
+### Code Style
+- Prefer array helpers and declarative abstractions over imperative loops
+- Keep UI stateless except in MFE local state; lift state to shell only if cross-MFE communication required
+- Use folder-per-feature structure in MFEs
+- Use typed interfaces defined in `projects/core-services/src/lib/models/`
 
 ### Security
 - **sessionStorage** for tokens (NOT localStorage)
@@ -67,6 +84,34 @@ This is an **Angular 18 Micro Frontend (MFE) shell application** using **Module 
 - Web Workers for heavy processing
 - Skeleton loaders for perceived performance
 - Predictive prefetching based on user navigation
+
+---
+
+## Responsive Design & UI Tokens
+
+### Breakpoints
+- `--bp-sm`: up to 480px (mobile)
+- `--bp-md`: 481px — 768px (tablet)
+- `--bp-lg`: 769px and above (desktop)
+
+### Spacing Tokens
+- `--space-1`: 4px
+- `--space-2`: 8px
+- `--space-3`: 16px
+- `--space-4`: 24px
+- `--space-5`: 32px
+
+### Usage
+```scss
+// Use tokens, not hardcoded values
+.container {
+  padding: var(--space-3);
+  
+  @media (max-width: var(--bp-sm)) {
+    padding: var(--space-2);
+  }
+}
+```
 
 ---
 
@@ -103,6 +148,9 @@ This application operates in the **banking/financial services domain**:
 5. Add **JSDoc comments** for public APIs and complex logic
 6. Use **RxJS operators** correctly (takeUntilDestroyed, async pipe)
 7. Implement **loading states** and error states for async operations
+8. Add unit tests (Jasmine/Karma) for all business logic
+9. Use capability-based permission checks over role string checks
+10. Reference domain models from `context/domain-models.json`
 
 ### Never Do
 1. Direct cross-MFE imports - use EventBusService
@@ -110,6 +158,8 @@ This application operates in the **banking/financial services domain**:
 3. Log sensitive data (account numbers, passwords, tokens)
 4. Bypass AuthService for API calls
 5. Use synchronous operations for large datasets
+6. Hardcode styles - use SCSS tokens
+7. Add try/catch at UI level - bubble errors to error boundary
 
 ---
 
@@ -128,9 +178,39 @@ projects/
 │       ├── auth.service.ts
 │       ├── role.service.ts
 │       ├── event-bus.service.ts
+│       ├── models/           # TypeScript interfaces
 │       └── api/              # API service classes
 docs/                         # Documentation (not bundled)
+├── ARCHITECTURE.md
+├── DESIGN_DECISIONS.md
+├── ROLES.md
+├── API_CONTRACTS.md
+context/                      # Machine-readable context
+├── domain-models.json
+└── event-schemas/
+.github/
+├── copilot-instructions.md   # This file
+└── prompts/                  # Prompt templates
 ```
+
+---
+
+## Shell Responsibilities
+
+- **Authentication**: OIDC/JWT via Auth0, token refresh
+- **Routing**: Route guards, lazy loading MFEs
+- **Theme**: SCSS tokens, brand context
+- **Event Bus**: Cross-MFE communication via EventBusService
+- **Error Boundary**: Global error handling and notifications
+- **PWA**: Service worker, offline caching (future)
+
+## MFE Responsibilities
+
+- **Own UI views**: Fetch business data via centralized services
+- **Export**: Mount function and route metadata
+- **Local state**: Keep state local; use EventBus for cross-MFE ops
+- **Tests**: Business logic must have unit tests
+- **Standalone**: Must be runnable independently for development
 
 ---
 
@@ -251,6 +331,22 @@ export class MyComponent {
 | Authentication | `AuthService` in `@org/core-services` |
 | API calls | Create service in `projects/core-services/src/lib/api/` |
 | Cross-MFE events | `EventBusService.emit()` / `.on()` |
-| User roles | `RoleService.hasPermission()` |
+| User roles | `RoleService.hasRole()` / `.hasCapability()` |
 | Large lists | `<cdk-virtual-scroll-viewport>` |
 | Loading states | Use signals: `loading`, `error`, `data` |
+| New MFE | See `.github/prompts/generate-mfe.md` |
+| New API service | See `.github/prompts/create-api-service.md` |
+| Rule service | See `.github/prompts/create-rule-service.md` |
+| Domain models | `context/domain-models.json` |
+| Event schemas | `context/event-schemas/` |
+
+---
+
+## Related Documentation
+
+- `.github/copilot-context.yml` - **Centralized context manifest** (start here)
+- `docs/ARCHITECTURE.md` - System architecture and patterns
+- `docs/DESIGN_DECISIONS.md` - ADRs and design rationale
+- `docs/ROLES.md` - Role hierarchy and capabilities
+- `docs/API_CONTRACTS.md` - API endpoint documentation
+- `docs/INCONSISTENCIES.md` - Known discrepancies between docs and code

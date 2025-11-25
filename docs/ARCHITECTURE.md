@@ -301,3 +301,13 @@ i17e-code/
 - **Server-Side Rendering**: For SEO if customer-facing pages needed
 - **PWA**: Offline support with Service Workers
 - **Micro-Frontend Orchestrator**: For complex routing scenarios
+
+---
+
+## Related Documentation
+
+- `docs/ROLES.md` - Detailed role hierarchy and capabilities
+- `docs/DESIGN_DECISIONS.md` - Architectural Decision Records
+- `docs/API_CONTRACTS.md` - API endpoint documentation
+- `context/domain-models.json` - Domain model schemas
+- `context/event-schemas/` - Event payload schemas
