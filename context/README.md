@@ -1,59 +1,77 @@
-# Context Directory
+# AI Context Directory
 
-This directory contains machine-readable context files for GitHub Copilot and other AI assistants.
+This directory contains **machine-readable context files** for GitHub Copilot and other AI assistants. It is part of the centralized context system for the i17e Incentive Management Platform.
 
-## Files
+## 📋 Context Organization
+
+All AI/Copilot context is centralized and managed through:
+
+| File | Purpose |
+|------|---------|
+| `.github/copilot-instructions.md` | Primary Copilot instructions (auto-read by Copilot) |
+| `.github/copilot-context.yml` | **Centralized manifest** - references all context files |
+| `context/` | Machine-readable schemas (this directory) |
+| `docs/` | Human-readable documentation |
+| `.github/prompts/` | Reusable prompt templates |
+
+## 📁 Files in This Directory
 
 ### domain-models.json
 
 JSON Schema definitions for all domain entities:
 
-- **User**: User with role and organizational context
-- **Organization**: Multi-tenant organization
-- **Team**: Team within an organization
-- **Rule**: Incentive rule definition
-- **RuleCondition**: Condition within a rule
-- **RuleAction**: Action to execute when conditions are met
-- **Incentive**: Calculated incentive for a user
-- **Target**: Sales or performance target
+| Entity | Description |
+|--------|-------------|
+| **User** | User with role and organizational context |
+| **Organization** | Multi-tenant organization |
+| **Team** | Team within an organization |
+| **Rule** | Incentive rule definition |
+| **RuleCondition** | Condition within a rule |
+| **RuleAction** | Action to execute when conditions are met |
+| **Incentive** | Calculated incentive for a user |
+| **Target** | Sales or performance target |
 
 ### event-schemas/
 
-Event schema definitions for cross-MFE communication via EventBusService.
+Event schema definitions for cross-MFE communication via EventBusService:
 
-#### Rule Events
-- `rule-created.json`: Emitted when a new rule is created
-- `rule-evaluated.json`: Emitted when a rule is evaluated
+| File | Events |
+|------|--------|
+| `auth-events.json` | `auth:login`, `auth:logout`, `auth:token-refreshed`, `auth:session-expired` |
+| `user-events.json` | `user:updated`, `user:preferences-changed`, `user:role-changed` |
+| `nav-events.json` | `nav:requested`, `mfe:loaded`, `mfe:error`, `mfe:ready` |
+| `rule-created.json` | `rule.created` |
+| `rule-evaluated.json` | `rule.evaluated` |
 
-#### Auth Events
-- `auth-events.json`: Login, logout, token refresh, session expiry
+## 🔗 Related Files
 
-#### User Events
-- `user-events.json`: Profile updates, preference changes, role changes
+| Location | Description |
+|----------|-------------|
+| `docs/ARCHITECTURE.md` | System architecture and patterns |
+| `docs/DESIGN_DECISIONS.md` | Architectural Decision Records (ADRs) |
+| `docs/ROLES.md` | Role hierarchy and capabilities |
+| `docs/API_CONTRACTS.md` | REST API documentation |
+| `.github/prompts/` | Prompt templates for common tasks |
 
-#### Navigation Events
-- `nav-events.json`: Route navigation, MFE lifecycle (loaded, error, ready)
-
-## Usage with Copilot
+## 🤖 Usage with Copilot
 
 These files provide context for code generation:
 
-1. **Type Generation**: Use domain-models.json to generate TypeScript interfaces
+1. **Type Generation**: Use `domain-models.json` to generate TypeScript interfaces
 2. **Event Handling**: Reference event schemas when implementing EventBusService handlers
 3. **Validation**: Use schemas for runtime validation of event payloads
+4. **Prompt Templates**: Use `.github/prompts/` for consistent code generation
 
-## Updating Context
+## ⚠️ Known Inconsistencies
+
+See `.github/copilot-context.yml` section `inconsistencies` for documented discrepancies between code and documentation that need resolution.
+
+## 🔄 Updating Context
 
 When adding new domain models or events:
 
-1. Add/update the appropriate JSON file
+1. Add/update the appropriate JSON file in this directory
 2. Ensure the schema follows JSON Schema draft-07
 3. Include examples where helpful
-4. Update this README if adding new files
-
-## Integration Scripts
-
-Future: Add scripts to:
-- Generate TypeScript types from domain-models.json
-- Validate events against schemas at runtime
-- Fetch API contracts from OpenAPI spec
+4. Update `.github/copilot-context.yml` manifest
+5. If there are code/doc mismatches, document them in the `inconsistencies` section

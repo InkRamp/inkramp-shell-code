@@ -344,7 +344,9 @@ export class MyComponent {
 
 ## Related Documentation
 
+- `.github/copilot-context.yml` - **Centralized context manifest** (start here)
 - `docs/ARCHITECTURE.md` - System architecture and patterns
 - `docs/DESIGN_DECISIONS.md` - ADRs and design rationale
 - `docs/ROLES.md` - Role hierarchy and capabilities
 - `docs/API_CONTRACTS.md` - API endpoint documentation
+- `docs/INCONSISTENCIES.md` - Known discrepancies between docs and code

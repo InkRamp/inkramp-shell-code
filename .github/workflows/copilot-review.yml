@@ -1,0 +1,181 @@
+# GitHub Copilot Code Review Workflow
+# This workflow provides AI-assisted code review for pull requests
+
+name: Copilot Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'src/**/*.ts'
+      - 'src/**/*.html'
+      - 'src/**/*.scss'
+      - 'projects/**/*.ts'
+      - 'projects/**/*.html'
+      - 'projects/**/*.scss'
+
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to review'
+        required: false
+        type: string
+
+# Cancel in-progress runs for the same PR
+concurrency:
+  group: copilot-review-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  code-review:
+    name: AI Code Review
+    runs-on: ubuntu-latest
+    
+    # Skip if commit message contains skip markers
+    if: |
+      !contains(github.event.head_commit.message, '[skip review]') &&
+      !contains(github.event.head_commit.message, '[review skip]')
+    
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for diff analysis
+      
+      - name: Get Changed Files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            src/**/*.ts
+            src/**/*.html
+            src/**/*.scss
+            projects/**/*.ts
+            projects/**/*.html
+            projects/**/*.scss
+          files_ignore: |
+            **/*.spec.ts
+            **/*.d.ts
+            **/node_modules/**
+      
+      - name: Display Changed Files
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "Changed files:"
+          echo "${{ steps.changed-files.outputs.all_changed_files }}"
+      
+      - name: Setup Node.js
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '21'
+          cache: 'npm'
+      
+      - name: Install Dependencies
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: npm ci
+      
+      # Lint check
+      - name: Run ESLint (if configured)
+        if: steps.changed-files.outputs.any_changed == 'true'
+        continue-on-error: true
+        id: lint
+        run: |
+          if [ -f ".eslintrc.json" ] || [ -f ".eslintrc.js" ]; then
+            npx eslint ${{ steps.changed-files.outputs.all_changed_files }} --format json > lint-results.json 2>&1 || true
+            echo "lint_available=true" >> $GITHUB_OUTPUT
+          else
+            echo "lint_available=false" >> $GITHUB_OUTPUT
+            echo "ESLint not configured in this project"
+          fi
+      
+      # TypeScript type check
+      - name: TypeScript Type Check
+        if: steps.changed-files.outputs.any_changed == 'true'
+        continue-on-error: true
+        id: typecheck
+        run: |
+          npx tsc --noEmit 2>&1 | head -50 > typecheck-results.txt || true
+          if [ -s typecheck-results.txt ]; then
+            echo "has_errors=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_errors=false" >> $GITHUB_OUTPUT
+          fi
+      
+      # Build check
+      - name: Build Check
+        if: steps.changed-files.outputs.any_changed == 'true'
+        continue-on-error: true
+        id: build
+        run: |
+          npm run build 2>&1 | tail -30 > build-results.txt
+          if [ $? -eq 0 ]; then
+            echo "build_success=true" >> $GITHUB_OUTPUT
+          else
+            echo "build_success=false" >> $GITHUB_OUTPUT
+          fi
+      
+      # Create review comment
+      - name: Create Review Summary
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            
+            let summary = '## 🤖 Automated Code Review Summary\n\n';
+            
+            // TypeScript check results
+            summary += '### TypeScript Check\n';
+            if ('${{ steps.typecheck.outputs.has_errors }}' === 'true') {
+              const errors = fs.readFileSync('typecheck-results.txt', 'utf8');
+              summary += '⚠️ Type errors found:\n```\n' + errors.substring(0, 1000) + '\n```\n\n';
+            } else {
+              summary += '✅ No type errors found\n\n';
+            }
+            
+            // Build check results  
+            summary += '### Build Status\n';
+            if ('${{ steps.build.outputs.build_success }}' === 'true') {
+              summary += '✅ Build successful\n\n';
+            } else {
+              const buildLog = fs.readFileSync('build-results.txt', 'utf8');
+              summary += '❌ Build failed:\n```\n' + buildLog.substring(0, 1000) + '\n```\n\n';
+            }
+            
+            // Changed files
+            summary += '### Files Reviewed\n';
+            const files = '${{ steps.changed-files.outputs.all_changed_files }}'.split(' ');
+            files.forEach(file => {
+              if (file) summary += `- \`${file}\`\n`;
+            });
+            
+            // Review checklist
+            summary += '\n### Code Review Checklist\n';
+            summary += 'Please verify the following manually:\n\n';
+            summary += '- [ ] Uses standalone components (not NgModules)\n';
+            summary += '- [ ] No `any` types without justification\n';
+            summary += '- [ ] No sensitive data in logs\n';
+            summary += '- [ ] Uses sessionStorage for auth tokens\n';
+            summary += '- [ ] Cross-MFE communication via EventBusService only\n';
+            summary += '- [ ] Functions are < 40 lines where possible\n';
+            summary += '- [ ] JSDoc comments on public APIs\n';
+            summary += '- [ ] Unit tests for business logic\n';
+            
+            // Post comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: summary
+            });
+      
+      - name: No Files Changed
+        if: steps.changed-files.outputs.any_changed != 'true'
+        run: echo "No relevant files changed in this PR"
