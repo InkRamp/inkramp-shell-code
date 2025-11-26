@@ -4,6 +4,16 @@ import { User, UserRole, hasRequiredRole } from './models/roles.model';
 import { UserInfo } from './auth.service';
 
 /**
+ * Capability definitions for role-based access control
+ */
+const ROLE_CAPABILITIES: Record<UserRole, string[]> = {
+  [UserRole.SUPER_ADMIN]: ['org.*', 'user.*', 'rule.*', 'settings.*', 'dashboard.*', 'team.*', 'target.*'],
+  [UserRole.ORG_ADMIN]: ['user.create', 'user.manage', 'user.view', 'rule.create', 'rule.update', 'rule.view', 'dashboard.view', 'team.view', 'target.view', 'target.assign'],
+  [UserRole.TEAM_LEAD]: ['team.view', 'rule.create', 'rule.view', 'target.assign', 'target.view', 'dashboard.team', 'user.view'],
+  [UserRole.SALES_EXECUTIVE]: ['rule.view', 'dashboard.personal', 'target.view']
+};
+
+/**
  * Service to manage user roles and permissions
  */
 @Injectable({
@@ -148,13 +158,14 @@ export class RoleService {
   }
 
   /**
-   * Get dev mimic user from localStorage
+   * Get dev mimic user from sessionStorage
    * This allows developers to mimic different users locally
-   * Set by calling: localStorage.setItem('dev_mimic_user', JSON.stringify(user))
+   * Set by calling: sessionStorage.setItem('dev_mimic_user', JSON.stringify(user))
+   * Note: Using sessionStorage instead of localStorage for security consistency
    */
   private getDevMimicUser(): User | null {
     try {
-      const mimicUserJson = localStorage.getItem('dev_mimic_user');
+      const mimicUserJson = sessionStorage.getItem('dev_mimic_user');
       if (mimicUserJson) {
         const user = JSON.parse(mimicUserJson);
         // Validate it's a proper user object
@@ -171,15 +182,16 @@ export class RoleService {
   /**
    * Set dev mimic user for local development
    * This allows testing different user roles without authentication
+   * Note: Using sessionStorage instead of localStorage for security consistency
    * @param user - User to mimic (or null to clear)
    */
   setDevMimicUser(user: User | null): void {
     if (user) {
-      localStorage.setItem('dev_mimic_user', JSON.stringify(user));
+      sessionStorage.setItem('dev_mimic_user', JSON.stringify(user));
       this.currentUserSubject.next(user);
       console.log('[RoleService] Dev mimic user set:', user);
     } else {
-      localStorage.removeItem('dev_mimic_user');
+      sessionStorage.removeItem('dev_mimic_user');
       this.loadDummyUser();
       console.log('[RoleService] Dev mimic user cleared');
     }
@@ -267,6 +279,35 @@ export class RoleService {
     const hasAccess = hasRequiredRole(currentRole, requiredRole);
     // DEBUG_LOG: Role check result
     console.log(`[RoleService] hasRole() - Checking if ${currentRole} has ${requiredRole}:`, hasAccess);
+    return hasAccess;
+  }
+
+  /**
+   * Check if current user has a specific capability
+   * Supports wildcard matching (e.g., 'rule.*' matches 'rule.create')
+   * @param capability - Capability to check (e.g., 'rule.create', 'user.manage')
+   * @returns true if user has the capability
+   */
+  hasCapability(capability: string): boolean {
+    const role = this.getCurrentUserRole();
+    if (!role) {
+      console.log('[RoleService] hasCapability() - No current role, access denied');
+      return false;
+    }
+    
+    const capabilities = ROLE_CAPABILITIES[role] || [];
+    const hasAccess = capabilities.some(cap => {
+      // Exact match
+      if (cap === capability) return true;
+      // Wildcard match (e.g., 'rule.*' matches 'rule.create')
+      if (cap.endsWith('.*')) {
+        const prefix = cap.slice(0, -1); // Remove '*' to get 'rule.'
+        return capability.startsWith(prefix);
+      }
+      return false;
+    });
+    
+    console.log(`[RoleService] hasCapability() - Checking if ${role} has ${capability}:`, hasAccess);
     return hasAccess;
   }
 

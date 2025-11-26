@@ -199,4 +199,104 @@ describe('RoleService', () => {
 
     expect(user?.name).toBe('User');
   });
+
+  describe('hasCapability()', () => {
+    it('should return true for exact capability match', () => {
+      const user: User = {
+        id: '1',
+        name: 'Team Lead',
+        email: 'lead@example.com',
+        role: UserRole.TEAM_LEAD
+      };
+      service.setCurrentUser(user);
+
+      expect(service.hasCapability('rule.create')).toBe(true);
+      expect(service.hasCapability('rule.view')).toBe(true);
+      expect(service.hasCapability('team.view')).toBe(true);
+    });
+
+    it('should return false for capabilities not assigned to role', () => {
+      const user: User = {
+        id: '1',
+        name: 'Sales Executive',
+        email: 'sales@example.com',
+        role: UserRole.SALES_EXECUTIVE
+      };
+      service.setCurrentUser(user);
+
+      expect(service.hasCapability('rule.create')).toBe(false);
+      expect(service.hasCapability('user.manage')).toBe(false);
+    });
+
+    it('should support wildcard capabilities for super admin', () => {
+      const user: User = {
+        id: '1',
+        name: 'Super Admin',
+        email: 'superadmin@example.com',
+        role: UserRole.SUPER_ADMIN
+      };
+      service.setCurrentUser(user);
+
+      expect(service.hasCapability('rule.create')).toBe(true);
+      expect(service.hasCapability('rule.update')).toBe(true);
+      expect(service.hasCapability('rule.delete')).toBe(true);
+      expect(service.hasCapability('user.manage')).toBe(true);
+      expect(service.hasCapability('org.settings')).toBe(true);
+    });
+
+    it('should return false when no user is set', () => {
+      service.setCurrentUser(null);
+      expect(service.hasCapability('rule.view')).toBe(false);
+    });
+
+    it('should support org admin capabilities', () => {
+      const user: User = {
+        id: '1',
+        name: 'Org Admin',
+        email: 'orgadmin@example.com',
+        role: UserRole.ORG_ADMIN
+      };
+      service.setCurrentUser(user);
+
+      expect(service.hasCapability('user.create')).toBe(true);
+      expect(service.hasCapability('user.manage')).toBe(true);
+      expect(service.hasCapability('rule.create')).toBe(true);
+      expect(service.hasCapability('rule.update')).toBe(true);
+    });
+  });
+
+  describe('dev mimic user with sessionStorage', () => {
+    beforeEach(() => {
+      sessionStorage.clear();
+    });
+
+    it('should store dev mimic user in sessionStorage', () => {
+      const mimicUser: User = {
+        id: 'mimic-1',
+        name: 'Mimic User',
+        email: 'mimic@example.com',
+        role: UserRole.SUPER_ADMIN
+      };
+
+      service.setDevMimicUser(mimicUser);
+
+      const stored = sessionStorage.getItem('dev_mimic_user');
+      expect(stored).toBeTruthy();
+      expect(JSON.parse(stored!)).toEqual(mimicUser);
+    });
+
+    it('should clear dev mimic user from sessionStorage', () => {
+      const mimicUser: User = {
+        id: 'mimic-1',
+        name: 'Mimic User',
+        email: 'mimic@example.com',
+        role: UserRole.SUPER_ADMIN
+      };
+
+      service.setDevMimicUser(mimicUser);
+      service.setDevMimicUser(null);
+
+      expect(sessionStorage.getItem('dev_mimic_user')).toBeNull();
+    });
+  });
 });

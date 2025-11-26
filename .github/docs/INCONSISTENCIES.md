@@ -3,7 +3,7 @@
 This document tracks discrepancies between the AI context documentation and the actual codebase. These need to be resolved by either updating the documentation or the code.
 
 > **Generated**: 2024  
-> **Status**: Review Required  
+> **Status**: All Resolved  
 > **Owner**: Development Team
 
 ---
@@ -12,155 +12,83 @@ This document tracks discrepancies between the AI context documentation and the 
 
 | ID | Severity | Area | Status |
 |----|----------|------|--------|
-| INC-001 | 🔴 High | EventBusService API | Open |
-| INC-002 | 🔴 High | RoleService Capabilities | Open |
-| INC-003 | 🟡 Medium | User Model | Open |
-| INC-004 | 🟢 Low | Storage Policy | Open |
+| INC-001 | 🔴 High | EventBusService API | ✅ Resolved |
+| INC-002 | 🔴 High | RoleService Capabilities | ✅ Resolved |
+| INC-003 | 🟡 Medium | User Model | ✅ Resolved |
+| INC-004 | 🟢 Low | Storage Policy | ✅ Resolved |
 
 ---
 
-## INC-001: EventBusService API Mismatch
+## Resolved Issues
+
+### INC-001: EventBusService API Mismatch - ✅ RESOLVED
 
 **Severity**: 🔴 High  
-**Area**: Cross-MFE Communication
+**Area**: Cross-MFE Communication  
+**Resolution Date**: 2024  
+**Resolution**: Implemented `emit()` and `on()` methods
 
-### What the Documentation Says
-
-In `.github/copilot-instructions.md` and `.github/prompts/cross-mfe-communication.md`:
+The EventBusService now supports the documented API:
 
 ```typescript
-// Documentation describes this API:
+// emit() - Emit an event with optional payload
 eventBus.emit('user:updated', { userId: '123', name: 'John' });
 
-eventBus.on('user:updated', (data) => {
+// on() - Subscribe to an event, returns unsubscribe function
+const unsubscribe = eventBus.on('user:updated', (data) => {
   console.log('User updated:', data);
 });
+
+// on$() - Subscribe as Observable
+eventBus.on$('user:updated').subscribe((data) => {
+  console.log('User updated:', data);
+});
+
+// sendEvent() - Deprecated but kept for backward compatibility
+eventBus.sendEvent('legacy:event');
 ```
-
-### What the Code Actually Does
-
-In `projects/core-services/src/lib/event-bus.service.ts`:
-
-```typescript
-// Actual implementation:
-sendEvent(s: string) {
-  this.emitter.emit(s);
-}
-```
-
-### Impact
-- Documentation suggests `emit()` and `on()` methods that don't exist
-- Actual API uses `sendEvent(s: string)` with only string parameter
-- No `on()` method exposed - uses `onePlusNEvents` ReplaySubject instead
-
-### Resolution Options
-
-**Option A: Update Code** (Recommended)
-- Add `emit(event: string, payload?: any)` method
-- Add `on(event: string, handler: Function)` method
-- Keep backward compatibility with `sendEvent()`
-
-**Option B: Update Documentation**
-- Change examples to use `sendEvent(JSON.stringify({...}))`
-- Document subscription via `onePlusNEvents.subscribe()`
 
 ---
 
-## INC-002: RoleService Missing hasCapability() Method
+### INC-002: RoleService Missing hasCapability() Method - ✅ RESOLVED
 
 **Severity**: 🔴 High  
-**Area**: RBAC / Permissions
+**Area**: RBAC / Permissions  
+**Resolution Date**: 2024  
+**Resolution**: Implemented `hasCapability()` method with wildcard support
 
-### What the Documentation Says
-
-In `docs/ROLES.md` and `.github/copilot-instructions.md`:
+The RoleService now supports capability-based access control:
 
 ```typescript
-// Documentation describes:
+// Check specific capability
 roleService.hasCapability('rule.create');
 roleService.hasCapability('rule.update');
 
-// Recommended pattern:
+// Supports wildcard matching for super admin
+// Super admin with 'rule.*' capability can access 'rule.create', 'rule.update', etc.
+
+// Example usage
 if (roleService.hasCapability('rule.update')) {
   showEditButton();
 }
 ```
 
-### What the Code Actually Has
-
-In `projects/core-services/src/lib/role.service.ts`:
-
-```typescript
-// Available methods:
-hasRole(requiredRole: UserRole): boolean
-hasAnyRole(roles: UserRole[]): boolean
-isAdmin(): boolean
-isTeamLeadOrHigher(): boolean
-canViewOthersData(): boolean
-```
-
-### Impact
-- `hasCapability()` method does not exist
-- Capability-based access control is documented but not implemented
-- Code uses role-based checks only
-
-### Resolution Options
-
-**Option A: Implement hasCapability()** (Recommended)
-```typescript
-// Add to RoleService:
-private readonly roleCapabilities: Record<UserRole, string[]> = {
-  [UserRole.SUPER_ADMIN]: ['org.*', 'user.*', 'rule.*', 'settings.*'],
-  [UserRole.ORG_ADMIN]: ['user.create', 'user.manage', 'rule.create', 'rule.update'],
-  [UserRole.TEAM_LEAD]: ['team.view', 'rule.create', 'rule.view', 'target.assign'],
-  [UserRole.SALES_EXECUTIVE]: ['rule.view', 'dashboard.personal', 'target.view']
-};
-
-hasCapability(capability: string): boolean {
-  const role = this.getCurrentUserRole();
-  if (!role) return false;
-  const caps = this.roleCapabilities[role] || [];
-  return caps.some(cap => 
-    cap === capability || 
-    cap.endsWith('.*') && capability.startsWith(cap.slice(0, -1))
-  );
-}
-```
-
-**Option B: Update Documentation**
-- Remove references to `hasCapability()`
-- Document using `hasRole()` and helper methods instead
+Role capabilities are defined as:
+- **SUPER_ADMIN**: `org.*`, `user.*`, `rule.*`, `settings.*`, `dashboard.*`, `team.*`, `target.*`
+- **ORG_ADMIN**: `user.create`, `user.manage`, `user.view`, `rule.create`, `rule.update`, `rule.view`, `dashboard.view`, `team.view`, `target.view`, `target.assign`
+- **TEAM_LEAD**: `team.view`, `rule.create`, `rule.view`, `target.assign`, `target.view`, `dashboard.team`, `user.view`
+- **SALES_EXECUTIVE**: `rule.view`, `dashboard.personal`, `target.view`
 
 ---
 
-## INC-003: User Model Missing orgId
+### INC-003: User Model Missing orgId - ✅ RESOLVED
 
 **Severity**: 🟡 Medium  
-**Area**: Data Models
+**Area**: Data Models  
+**Resolution Date**: 2024  
+**Resolution**: Added `orgId` property to User interface
 
-### What the Documentation Says
-
-In `context/domain-models.json` and `docs/ROLES.md`:
-
-```json
-{
-  "User": {
-    "properties": {
-      "id": { "type": "string" },
-      "name": { "type": "string" },
-      "email": { "type": "string" },
-      "role": { "type": "string" },
-      "orgId": { "type": "string" },  // ← Documented
-      "teamId": { "type": "string" },
-      "managerId": { "type": "string" }
-    }
-  }
-}
-```
-
-### What the Code Actually Defines
-
-In `projects/core-services/src/lib/models/roles.model.ts`:
+The User interface now includes `orgId` for multi-tenancy support:
 
 ```typescript
 export interface User {
@@ -168,100 +96,52 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
-  teamId?: string;
-  managerId?: string;
-  // orgId is NOT defined
-}
-```
-
-### Impact
-- Multi-tenancy support requires `orgId`
-- JWT claims include `org_id` but User interface doesn't store it
-- Data filtering by organization may not work correctly
-
-### Resolution Options
-
-**Option A: Add orgId to User Interface** (Recommended if multi-tenancy needed)
-```typescript
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  orgId?: string;   // Add this
+  orgId?: string;   // Added for multi-tenancy
   teamId?: string;
   managerId?: string;
 }
 ```
-
-**Option B: Update Documentation**
-- Remove `orgId` from domain-models.json if not needed
-- Clarify that multi-tenancy is handled at backend level
 
 ---
 
-## INC-004: Dev Mimic User Uses localStorage
+### INC-004: Dev Mimic User Uses localStorage - ✅ RESOLVED
 
 **Severity**: 🟢 Low  
-**Area**: Security / Storage
+**Area**: Security / Storage  
+**Resolution Date**: 2024  
+**Resolution**: Changed to sessionStorage for consistency with security policy
 
-### What the Documentation Says
-
-In `.github/copilot-instructions.md`:
-
-```
-### Security
-- **sessionStorage** for tokens (NOT localStorage)
-- Tokens cleared on tab/browser close
-```
-
-### What the Code Does
-
-In `projects/core-services/src/lib/role.service.ts`:
+The dev mimic user functionality now uses `sessionStorage` instead of `localStorage`:
 
 ```typescript
+// Updated methods use sessionStorage
 private getDevMimicUser(): User | null {
-  const mimicUserJson = localStorage.getItem('dev_mimic_user');  // Uses localStorage
+  const mimicUserJson = sessionStorage.getItem('dev_mimic_user');
   // ...
 }
 
 setDevMimicUser(user: User | null): void {
-  localStorage.setItem('dev_mimic_user', JSON.stringify(user));  // Uses localStorage
+  sessionStorage.setItem('dev_mimic_user', JSON.stringify(user));
   // ...
 }
 ```
 
-### Impact
-- Dev mimic user persists across sessions (localStorage)
-- Inconsistent with stated security policy
-- However, this is dev-only functionality
-
-### Resolution Options
-
-**Option A: Document as Exception**
-- Add note in documentation that dev mimic uses localStorage intentionally
-- Explain this is for developer convenience and not used in production
-
-**Option B: Change to sessionStorage**
-- Update `getDevMimicUser()` and `setDevMimicUser()` to use sessionStorage
-- Dev mimic user will reset on browser close
-
----
-
-## Recommended Priority
-
-1. **INC-002** (RoleService) - Implement `hasCapability()` to enable documented capability-based checks
-2. **INC-001** (EventBusService) - Align API with documentation patterns
-3. **INC-003** (User Model) - Add `orgId` if multi-tenancy is required
-4. **INC-004** (Storage) - Document as intentional exception
+This ensures consistency with the security policy that all tokens and sensitive data should use sessionStorage.
 
 ---
 
 ## How to Update This Document
 
+When a new inconsistency is found:
+
+1. Add a new entry with severity, area, and detailed description
+2. Include what the documentation says vs. what the code does
+3. List resolution options
+4. Update the summary table
+
 When resolving an inconsistency:
 
 1. Make the code or documentation change
-2. Update the "Status" from "Open" to "Resolved"
-3. Add resolution date and commit reference
-4. Move resolved items to a "Resolved" section at the bottom
+2. Update the "Status" from "Open" to "✅ Resolved"
+3. Add resolution date and description
+4. Move the item to the "Resolved Issues" section

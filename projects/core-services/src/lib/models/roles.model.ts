@@ -16,6 +16,7 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
+  orgId?: string;
   teamId?: string;
   managerId?: string;
 }
