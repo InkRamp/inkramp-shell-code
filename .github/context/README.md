@@ -4,14 +4,14 @@ This directory contains **machine-readable context files** for GitHub Copilot an
 
 ## 📋 Context Organization
 
-All AI/Copilot context is centralized and managed through:
+All AI/Copilot context is centralized in `.github/`:
 
 | File | Purpose |
 |------|---------|
 | `.github/copilot-instructions.md` | Primary Copilot instructions (auto-read by Copilot) |
 | `.github/copilot-context.yml` | **Centralized manifest** - references all context files |
-| `context/` | Machine-readable schemas (this directory) |
-| `docs/` | Human-readable documentation |
+| `.github/context/` | Machine-readable schemas (this directory) |
+| `.github/docs/` | Human-readable documentation |
 | `.github/prompts/` | Reusable prompt templates |
 
 ## 📁 Files in This Directory
@@ -47,10 +47,11 @@ Event schema definitions for cross-MFE communication via EventBusService:
 
 | Location | Description |
 |----------|-------------|
-| `docs/ARCHITECTURE.md` | System architecture and patterns |
-| `docs/DESIGN_DECISIONS.md` | Architectural Decision Records (ADRs) |
-| `docs/ROLES.md` | Role hierarchy and capabilities |
-| `docs/API_CONTRACTS.md` | REST API documentation |
+| `.github/docs/ARCHITECTURE.md` | System architecture and patterns |
+| `.github/docs/DESIGN_DECISIONS.md` | Architectural Decision Records (ADRs) |
+| `.github/docs/ROLES.md` | Role hierarchy and capabilities |
+| `.github/docs/API_CONTRACTS.md` | REST API documentation |
+| `.github/docs/INCONSISTENCIES.md` | Known discrepancies between code and docs |
 | `.github/prompts/` | Prompt templates for common tasks |
 
 ## 🤖 Usage with Copilot
@@ -64,7 +65,7 @@ These files provide context for code generation:
 
 ## ⚠️ Known Inconsistencies
 
-See `.github/copilot-context.yml` section `inconsistencies` for documented discrepancies between code and documentation that need resolution.
+See `.github/docs/INCONSISTENCIES.md` for documented discrepancies between code and documentation that need resolution.
 
 ## 🔄 Updating Context
 
@@ -74,4 +75,4 @@ When adding new domain models or events:
 2. Ensure the schema follows JSON Schema draft-07
 3. Include examples where helpful
 4. Update `.github/copilot-context.yml` manifest
-5. If there are code/doc mismatches, document them in the `inconsistencies` section
+5. If there are code/doc mismatches, document them in `.github/docs/INCONSISTENCIES.md`
