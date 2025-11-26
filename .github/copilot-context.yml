@@ -1,0 +1,306 @@
+# Copilot Context Configuration
+# This file is the SINGLE SOURCE OF TRUTH for all AI assistant context.
+# All domain models, event schemas, roles, and configuration are centralized here.
+# Version: 2.0.0 (MVP - Centralized)
+# Last Updated: 2024
+
+version: "2.0"
+
+# =============================================================================
+# PROJECT METADATA
+# =============================================================================
+
+project:
+  name: "i17e Incentive Management System"
+  type: "Angular 18 Micro Frontend Shell"
+  framework: "Angular"
+  version: "18.2.x"
+  description: |
+    Multi-tenant SaaS platform for incentive rules management.
+    Uses Module Federation for micro-frontend architecture.
+
+# =============================================================================
+# TECH STACK
+# =============================================================================
+
+tech_stack:
+  core:
+    angular: "18.2.x"
+    typescript: "~5.4.x"
+    rxjs: "~7.8.x"
+  auth:
+    provider: "Auth0"
+    library: "@auth0/auth0-spa-js@^2.8.0"
+    storage: "sessionStorage"  # NOT localStorage - tokens cleared on tab close
+  micro_frontends:
+    library: "@angular-architects/module-federation@^18.0.6"
+    event_bus: "mitt@^3.0.1"
+  testing:
+    unit: "Jasmine/Karma"
+
+# =============================================================================
+# ROLE HIERARCHY & CAPABILITIES
+# =============================================================================
+# Concentric role model: Super-Admin ⊃ Org-Admin ⊃ Team Lead ⊃ Sales Executive
+
+roles:
+  hierarchy:
+    - super-admin      # Full platform control
+    - org-admin        # Organization control
+    - team-lead        # Team management
+    - sales-executive  # Personal data only
+  
+  capabilities:
+    super-admin:
+      - "org.*"
+      - "user.*"
+      - "rule.*"
+      - "settings.*"
+      - "audit.*"
+    org-admin:
+      - "user.create"
+      - "user.manage"
+      - "team.*"
+      - "rule.create"
+      - "rule.update"
+      - "rule.delete"
+      - "report.view.org"
+    team-lead:
+      - "team.view"
+      - "rule.create"
+      - "rule.update"
+      - "rule.view"
+      - "report.view.team"
+      - "target.assign"
+    sales-executive:
+      - "rule.view"
+      - "report.view.personal"
+      - "dashboard.personal"
+      - "target.view"
+      - "incentive.view"
+
+# =============================================================================
+# DOMAIN MODELS (Consolidated from context/domain-models.json)
+# =============================================================================
+
+domain_models:
+  User:
+    description: "User entity with role and organizational context"
+    properties:
+      id: { type: "string", required: true }
+      name: { type: "string", required: true }
+      email: { type: "string", format: "email", required: true }
+      role: { type: "string", enum: ["super-admin", "org-admin", "team-lead", "sales-executive"], required: true }
+      orgId: { type: "string" }
+      teamId: { type: "string" }
+      managerId: { type: "string" }
+
+  Rule:
+    description: "Incentive rule definition"
+    properties:
+      id: { type: "string", required: true }
+      name: { type: "string", required: true }
+      description: { type: "string" }
+      orgId: { type: "string", required: true }
+      createdBy: { type: "string", required: true }
+      conditions: { type: "array", items: "RuleCondition", required: true }
+      actions: { type: "array", items: "RuleAction", required: true }
+      status: { type: "string", enum: ["active", "paused", "archived"], required: true }
+      effectiveFrom: { type: "date-time" }
+      effectiveTo: { type: "date-time" }
+      version: { type: "integer", required: true }
+
+  RuleCondition:
+    description: "Condition within a rule"
+    properties:
+      field: { type: "string", required: true }
+      operator: { type: "string", enum: ["eq", "neq", "gt", "gte", "lt", "lte", "in", "nin", "contains"], required: true }
+      value: { type: "any", required: true }
+
+  RuleAction:
+    description: "Action to execute when rule conditions are met"
+    properties:
+      type: { type: "string", enum: ["bonus", "multiplier", "tier", "notification", "badge"], required: true }
+      params: { type: "object", required: true }
+
+  Incentive:
+    description: "Calculated incentive for a user"
+    properties:
+      id: { type: "string", required: true }
+      userId: { type: "string", required: true }
+      ruleId: { type: "string", required: true }
+      amount: { type: "number", required: true }
+      currency: { type: "string", required: true }
+      status: { type: "string", enum: ["pending", "approved", "paid", "rejected"], required: true }
+      period: { type: "string", required: true }
+
+  Target:
+    description: "Sales or performance target"
+    properties:
+      id: { type: "string", required: true }
+      userId: { type: "string", required: true }
+      type: { type: "string", enum: ["sales", "units", "customers", "custom"], required: true }
+      metric: { type: "string", required: true }
+      targetValue: { type: "number", required: true }
+      currentValue: { type: "number" }
+      status: { type: "string", enum: ["active", "completed", "missed"], required: true }
+
+# =============================================================================
+# EVENT SCHEMAS (Consolidated from context/event-schemas/)
+# =============================================================================
+
+event_schemas:
+  auth:
+    - event: "auth:login"
+      payload: { userId: "string", email: "string", role: "string", orgId: "string?" }
+    - event: "auth:logout"
+      payload: { userId: "string", reason: "user-initiated|session-expired|forced" }
+    - event: "auth:token-refreshed"
+      payload: { userId: "string", expiresAt: "date-time" }
+    - event: "auth:session-expired"
+      payload: { userId: "string" }
+
+  user:
+    - event: "user:updated"
+      payload: { userId: "string", changes: "object" }
+    - event: "user:preferences-changed"
+      payload: { userId: "string", preferences: { language: "string", theme: "light|dark|system", timezone: "string" } }
+    - event: "user:role-changed"
+      payload: { userId: "string", previousRole: "string", newRole: "string", changedBy: "string" }
+
+  navigation:
+    - event: "nav:requested"
+      payload: { path: "string", params: "object?", source: "string?" }
+    - event: "mfe:loaded"
+      payload: { mfeId: "string", route: "string", loadTime: "number" }
+    - event: "mfe:error"
+      payload: { mfeId: "string", error: "string", retryCount: "number?" }
+    - event: "mfe:ready"
+      payload: { mfeId: "string", version: "string?" }
+
+  rules:
+    - event: "rule.created"
+      payload: { ruleId: "string", name: "string", orgId: "string", createdBy: "string", status: "string", effectiveFrom: "date-time" }
+    - event: "rule.evaluated"
+      payload: { ruleId: "string", userId: "string", matched: "boolean", context: "object?", result: "object?" }
+
+# =============================================================================
+# SERVICE REGISTRY
+# =============================================================================
+
+services:
+  auth_service:
+    path: "projects/core-services/src/lib/auth.service.ts"
+    description: "Auth0 OAuth2/OIDC authentication"
+  role_service:
+    path: "projects/core-services/src/lib/role.service.ts"
+    description: "RBAC and user permissions"
+  event_bus_service:
+    path: "projects/core-services/src/lib/event-bus.service.ts"
+    description: "Cross-MFE communication via mitt"
+  mfe_loader_service:
+    path: "projects/core-services/src/lib/mfe-loader.service.ts"
+    description: "Dynamic MFE loading with Module Federation"
+
+# =============================================================================
+# UI DESIGN TOKENS
+# =============================================================================
+
+design_tokens:
+  breakpoints:
+    sm: "480px"   # Mobile
+    md: "768px"   # Tablet
+    lg: "1024px"  # Desktop
+  spacing:
+    space-1: "4px"
+    space-2: "8px"
+    space-3: "16px"
+    space-4: "24px"
+    space-5: "32px"
+
+# =============================================================================
+# CODE REVIEW CRITERIA
+# =============================================================================
+
+code_review:
+  enabled: true
+  include_patterns:
+    - "src/**/*.ts"
+    - "src/**/*.html"
+    - "src/**/*.scss"
+    - "projects/**/*.ts"
+  exclude_patterns:
+    - "**/*.spec.ts"
+    - "**/node_modules/**"
+    - "**/dist/**"
+  
+  rules:
+    security:
+      - "Never store tokens in localStorage - use sessionStorage"
+      - "Do not log sensitive data (passwords, tokens, account numbers)"
+      - "Use centralized AuthService for API calls"
+    angular:
+      - "Use standalone components over NgModules"
+      - "Prefer signals for reactive state"
+      - "Use OnPush change detection when possible"
+      - "Use takeUntilDestroyed for subscription cleanup"
+    typescript:
+      - "No use of 'any' type without justification"
+      - "Explicit types for all public APIs"
+    architecture:
+      - "No direct cross-MFE imports - use EventBusService"
+      - "Keep functions under 40 lines when possible"
+
+# =============================================================================
+# KNOWN INCONSISTENCIES (MVP: Track and fix incrementally)
+# =============================================================================
+
+inconsistencies:
+  - id: "INC-001"
+    area: "EventBusService"
+    issue: "API uses sendEvent(s: string), docs describe emit('event:name', payload)"
+    priority: "high"
+  - id: "INC-002"
+    area: "RoleService"
+    issue: "Missing hasCapability() method documented in examples"
+    priority: "high"
+  - id: "INC-003"
+    area: "User model"
+    issue: "Code missing orgId property for multi-tenancy"
+    priority: "medium"
+  - id: "INC-004"
+    area: "RoleService storage"
+    issue: "dev_mimic_user uses localStorage instead of sessionStorage"
+    note: "Intentional - dev convenience feature to persist across sessions (not a token)"
+    priority: "low"
+
+# =============================================================================
+# CONTEXT FILES REGISTRY (All centralized in .github/)
+# =============================================================================
+
+context_files:
+  # Machine-readable context
+  domain_models: ".github/context/domain-models.json"
+  event_schemas:
+    - ".github/context/event-schemas/auth-events.json"
+    - ".github/context/event-schemas/user-events.json"
+    - ".github/context/event-schemas/nav-events.json"
+    - ".github/context/event-schemas/rule-created.json"
+    - ".github/context/event-schemas/rule-evaluated.json"
+
+  # Documentation (all moved to .github/docs/)
+  docs:
+    architecture: ".github/docs/ARCHITECTURE.md"
+    design_decisions: ".github/docs/DESIGN_DECISIONS.md"
+    roles: ".github/docs/ROLES.md"
+    api_contracts: ".github/docs/API_CONTRACTS.md"
+    inconsistencies: ".github/docs/INCONSISTENCIES.md"
+
+  # Prompt templates
+  prompts:
+    generate_mfe: ".github/prompts/generate-mfe.md"
+    create_api_service: ".github/prompts/create-api-service.md"
+    create_rule_service: ".github/prompts/create-rule-service.md"
+    create_component: ".github/prompts/create-component.md"
+    cross_mfe_communication: ".github/prompts/cross-mfe-communication.md"
+    banking_compliance: ".github/prompts/banking-compliance.md"

@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "User Events",
+  "description": "User-related events for cross-MFE communication",
+  "definitions": {
+    "user.updated": {
+      "type": "object",
+      "description": "User profile was updated",
+      "properties": {
+        "event": { "const": "user:updated" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "userId": { "type": "string" },
+            "changes": {
+              "type": "object",
+              "description": "Fields that were changed"
+            }
+          },
+          "required": ["userId", "changes"]
+        }
+      }
+    },
+    "user.preferences-changed": {
+      "type": "object",
+      "description": "User preferences were updated",
+      "properties": {
+        "event": { "const": "user:preferences-changed" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "userId": { "type": "string" },
+            "preferences": {
+              "type": "object",
+              "properties": {
+                "language": { "type": "string" },
+                "theme": { "type": "string", "enum": ["light", "dark", "system"] },
+                "timezone": { "type": "string" },
+                "dateFormat": { "type": "string" },
+                "numberFormat": { "type": "string" }
+              }
+            }
+          },
+          "required": ["userId", "preferences"]
+        }
+      }
+    },
+    "user.role-changed": {
+      "type": "object",
+      "description": "User's role was changed",
+      "properties": {
+        "event": { "const": "user:role-changed" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "userId": { "type": "string" },
+            "previousRole": { "type": "string" },
+            "newRole": { "type": "string" },
+            "changedBy": { "type": "string" }
+          },
+          "required": ["userId", "previousRole", "newRole", "changedBy"]
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "event": "user:updated",
+      "timestamp": "2024-01-15T11:00:00Z",
+      "payload": {
+        "userId": "user-123",
+        "changes": {
+          "name": "John Smith",
+          "phone": "+1234567890"
+        }
+      }
+    },
+    {
+      "event": "user:preferences-changed",
+      "timestamp": "2024-01-15T11:30:00Z",
+      "payload": {
+        "userId": "user-123",
+        "preferences": {
+          "language": "en-US",
+          "theme": "dark",
+          "timezone": "America/New_York"
+        }
+      }
+    }
+  ]
+}

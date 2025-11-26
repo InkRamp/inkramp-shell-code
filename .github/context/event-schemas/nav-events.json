@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Navigation Events",
+  "description": "Navigation and MFE lifecycle events",
+  "definitions": {
+    "nav.requested": {
+      "type": "object",
+      "description": "Navigation to a route was requested",
+      "properties": {
+        "event": { "const": "nav:requested" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string", "description": "Target route path" },
+            "params": { "type": "object", "description": "Route parameters" },
+            "source": { "type": "string", "description": "MFE that requested navigation" }
+          },
+          "required": ["path"]
+        }
+      }
+    },
+    "mfe.loaded": {
+      "type": "object",
+      "description": "A Micro Frontend was successfully loaded",
+      "properties": {
+        "event": { "const": "mfe:loaded" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "mfeId": { "type": "string", "description": "MFE identifier" },
+            "route": { "type": "string", "description": "Route that triggered loading" },
+            "loadTime": { "type": "number", "description": "Load time in milliseconds" }
+          },
+          "required": ["mfeId", "route", "loadTime"]
+        }
+      }
+    },
+    "mfe.error": {
+      "type": "object",
+      "description": "Error occurred loading a Micro Frontend",
+      "properties": {
+        "event": { "const": "mfe:error" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "mfeId": { "type": "string", "description": "MFE identifier" },
+            "error": { "type": "string", "description": "Error message" },
+            "retryCount": { "type": "number", "description": "Number of retry attempts" }
+          },
+          "required": ["mfeId", "error"]
+        }
+      }
+    },
+    "mfe.ready": {
+      "type": "object",
+      "description": "A Micro Frontend is fully initialized and ready",
+      "properties": {
+        "event": { "const": "mfe:ready" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "mfeId": { "type": "string", "description": "MFE identifier" },
+            "version": { "type": "string", "description": "MFE version" }
+          },
+          "required": ["mfeId"]
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "event": "nav:requested",
+      "timestamp": "2024-01-15T10:00:00Z",
+      "payload": {
+        "path": "/rules/create",
+        "params": {},
+        "source": "dashboard-mfe"
+      }
+    },
+    {
+      "event": "mfe:loaded",
+      "timestamp": "2024-01-15T10:00:01Z",
+      "payload": {
+        "mfeId": "rule-editor",
+        "route": "/rules/create",
+        "loadTime": 450
+      }
+    }
+  ]
+}
