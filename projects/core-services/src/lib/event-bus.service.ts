@@ -22,10 +22,17 @@ export class EventBusService {
     const e: Event = new Event('EventBusServiceCreated');
     this.onePlusNEvents = new ReplaySubject<EventType>(100);
     this.onePlusNEvents.next(e.type);
-    this.emitter.on('*', (event) => {
+    // Mitt wildcard handler receives (eventName, payload) - we forward the payload to the subject
+    this.emitter.on('*', (eventName, payload) => {
       // DEBUG_LOG: Event received
-      console.log('[EventBusService] Event received and forwarded to ReplaySubject:', event);
-      this.onePlusNEvents.next(event);
+      console.log('[EventBusService] Event received and forwarded to ReplaySubject:', eventName, payload);
+      // Forward payload to the ReplaySubject (payload is EventPayload for emit() calls)
+      if (payload !== undefined && payload !== null) {
+        this.onePlusNEvents.next(payload as EventType);
+      } else {
+        // For legacy sendEvent() calls, just forward the event name
+        this.onePlusNEvents.next(eventName);
+      }
     });
     // DEBUG_LOG: Event listener registered
     console.log('[EventBusService] Event listener registered for all events');
