@@ -1,16 +1,66 @@
 /**
  * Application version and build information
  * 
- * This file can be updated during CI/CD build process.
- * Use build scripts to replace these values with actual build info:
- * - version: from package.json
- * - buildNumber: from CI build number
- * - buildDate: actual build timestamp
+ * This file provides version info loaded from build-info.json which is updated
+ * during CI/CD deployment. Falls back to defaults if the file is unavailable.
  */
-export const APP_VERSION = {
-  version: '0.0.1',
-  buildNumber: '1',
-  // This should be replaced during CI/CD build with actual build timestamp
-  buildDate: '2025-01-01T00:00:00.000Z',
+
+interface BuildInfo {
+  version: string;
+  buildNumber: string;
+  buildDate: string;
+  environment: string;
+}
+
+// Default values when build-info.json is unavailable
+const DEFAULT_BUILD_INFO: BuildInfo = {
+  version: '0.0.0',
+  buildNumber: '0',
+  buildDate: '',
   environment: 'development'
 };
+
+// Cached build info
+let cachedBuildInfo: BuildInfo | null = null;
+
+/**
+ * Load build info from assets/build-info.json
+ * This is called asynchronously and caches the result
+ */
+export async function loadBuildInfo(): Promise<BuildInfo> {
+  if (cachedBuildInfo) {
+    return cachedBuildInfo;
+  }
+
+  try {
+    const response = await fetch('/i17e/assets/build-info.json');
+    if (!response.ok) {
+      console.warn('[Version] build-info.json not found, using defaults');
+      cachedBuildInfo = DEFAULT_BUILD_INFO;
+      return cachedBuildInfo;
+    }
+    const data = await response.json();
+    cachedBuildInfo = {
+      version: data?.version ?? DEFAULT_BUILD_INFO.version,
+      buildNumber: data?.buildNumber ?? DEFAULT_BUILD_INFO.buildNumber,
+      buildDate: data?.buildDate ?? DEFAULT_BUILD_INFO.buildDate,
+      environment: data?.environment ?? DEFAULT_BUILD_INFO.environment
+    };
+    return cachedBuildInfo;
+  } catch (error) {
+    console.warn('[Version] Failed to load build-info.json, using defaults:', error);
+    cachedBuildInfo = DEFAULT_BUILD_INFO;
+    return cachedBuildInfo;
+  }
+}
+
+/**
+ * Get cached build info synchronously
+ * Returns defaults if not yet loaded
+ */
+export function getBuildInfo(): BuildInfo {
+  return cachedBuildInfo ?? DEFAULT_BUILD_INFO;
+}
+
+// Export for backward compatibility
+export const APP_VERSION = DEFAULT_BUILD_INFO;

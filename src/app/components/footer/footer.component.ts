@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { APP_VERSION } from '../../version';
+import { Component, OnInit } from '@angular/core';
+import { loadBuildInfo, getBuildInfo } from '../../version';
 
 /**
  * Footer component for the application
@@ -11,8 +11,19 @@ import { APP_VERSION } from '../../version';
   templateUrl: './footer.component.html',
   styleUrl: './footer.component.scss'
 })
-export class FooterComponent {
+export class FooterComponent implements OnInit {
   currentYear = new Date().getFullYear();
-  version = APP_VERSION.version;
-  buildNumber = APP_VERSION.buildNumber;
+  version = '0.0.0';
+  buildNumber = '0';
+
+  async ngOnInit(): Promise<void> {
+    try {
+      const buildInfo = await loadBuildInfo();
+      this.version = buildInfo?.version ?? '0.0.0';
+      this.buildNumber = buildInfo?.buildNumber ?? '0';
+    } catch (error) {
+      console.warn('[FooterComponent] Failed to load build info:', error);
+      // Keep default values
+    }
+  }
 }

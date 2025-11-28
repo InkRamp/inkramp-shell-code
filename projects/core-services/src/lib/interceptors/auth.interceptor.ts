@@ -40,16 +40,24 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 };
 
 /**
- * Pure function to check if URL is an auth endpoint
+ * Pure function to check if URL is an OAuth/Auth0 endpoint that should NOT receive bearer token
+ * Note: Our backend API endpoints like /auth/me SHOULD receive the bearer token
  * @param url - Request URL
- * @returns true if URL is an auth endpoint
+ * @returns true if URL is an OAuth/Auth0 endpoint (not our API)
  */
 const isAuthEndpoint = (url: string): boolean => {
   const authPatterns = [
     '/oauth',
-    '/auth',
-    'auth0.com'
+    'auth0.com',
+    '/authorize',
+    '/token'
   ];
+  
+  // Our API endpoints should receive the token, so check it's not our API
+  const isOurApi = url.includes('execute-api') || url.includes('amazonaws.com');
+  if (isOurApi) {
+    return false; // Always add token to our API requests
+  }
   
   return authPatterns.some(pattern => url.includes(pattern));
 };
