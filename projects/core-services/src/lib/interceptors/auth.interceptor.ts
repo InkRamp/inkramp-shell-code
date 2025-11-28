@@ -1,6 +1,7 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from '../auth.service';
+import { API_CONFIG } from '../config/api.config';
 
 /**
  * Authentication HTTP Interceptor
@@ -46,6 +47,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
  * @returns true if URL is an OAuth/Auth0 endpoint (not our API)
  */
 const isAuthEndpoint = (url: string): boolean => {
+  // OAuth/Auth0 patterns that should NOT receive our bearer token
   const authPatterns = [
     '/oauth',
     'auth0.com',
@@ -53,9 +55,8 @@ const isAuthEndpoint = (url: string): boolean => {
     '/token'
   ];
   
-  // Our API endpoints should receive the token, so check it's not our API
-  const isOurApi = url.includes('execute-api') || url.includes('amazonaws.com');
-  if (isOurApi) {
+  // Check if request is to our configured API - these SHOULD receive the token
+  if (API_CONFIG?.baseUrl && url.startsWith(API_CONFIG.baseUrl)) {
     return false; // Always add token to our API requests
   }
   

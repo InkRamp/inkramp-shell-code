@@ -26,6 +26,7 @@ let cachedBuildInfo: BuildInfo | null = null;
 /**
  * Load build info from assets/build-info.json
  * This is called asynchronously and caches the result
+ * Uses document.baseURI to handle different base paths across environments
  */
 export async function loadBuildInfo(): Promise<BuildInfo> {
   if (cachedBuildInfo) {
@@ -33,7 +34,11 @@ export async function loadBuildInfo(): Promise<BuildInfo> {
   }
 
   try {
-    const response = await fetch('/i17e/assets/build-info.json');
+    // Use relative path from base URI to handle different deployment paths
+    const baseUri = typeof document !== 'undefined' ? document.baseURI : '/';
+    const buildInfoUrl = new URL('assets/build-info.json', baseUri).href;
+    
+    const response = await fetch(buildInfoUrl);
     if (!response.ok) {
       console.warn('[Version] build-info.json not found, using defaults');
       cachedBuildInfo = DEFAULT_BUILD_INFO;
