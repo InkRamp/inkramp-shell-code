@@ -2,11 +2,22 @@
   background: var(--gray-900);
   color: white;
   padding: 1rem 2rem;
-  text-align: center;
-  font-size: 0.875rem;
   margin-top: auto;
 
-  p {
+  .footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .copyright {
     margin: 0;
+    font-size: 0.875rem;
+  }
+
+  .build-info {
+    font-size: 0.75rem;
+    color: var(--gray-400);
+    opacity: 0.8;
   }
 }

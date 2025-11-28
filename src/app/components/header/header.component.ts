@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { RoleService, DummyDataService, MfeLoaderService, User, SalesExecutive, MfeConfig, UserInfo } from '@org/core-services';
+import { RoleService, DummyDataService, MfeLoaderService, User, SalesExecutive, MfeConfig, UserInfo, UserProfileService, UserProfileData } from '@org/core-services';
 import { AuthService } from '@org/core-services';
+import { Subscription } from 'rxjs';
 
 /**
  * Header component for the application
@@ -16,18 +17,21 @@ import { AuthService } from '@org/core-services';
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;
+  userProfile: UserProfileData | null = null;
   availableMfes: MfeConfig[] = [];
   salesExecutives: SalesExecutive[] = [];
   selectedSalesExecutiveId: string = '';
   canViewOthers: boolean = false;
+  private subscriptions = new Subscription();
 
   constructor(
     private roleService: RoleService,
     private dummyDataService: DummyDataService,
     private mfeLoader: MfeLoaderService,
     private auth: AuthService,
+    private userProfileService: UserProfileService,
     private router: Router
   ) {}
 
@@ -36,8 +40,13 @@ export class HeaderComponent implements OnInit {
     this.subscribeToUserChanges();
   }
 
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
+
   /**
    * Sync authenticated user from auth service to role service if needed
+   * Also fetches user profile from API for organization and role data
    */
   private syncAuthenticatedUser(): void {
     const isAuthenticated = this.auth.isAuthenticatedSync();
@@ -51,6 +60,31 @@ export class HeaderComponent implements OnInit {
     if (shouldSync) {
       this.roleService.setUserFromAuth(userInfo);
     }
+
+    // Fetch user profile from API if authenticated
+    if (isAuthenticated) {
+      this.fetchUserProfile();
+    }
+  }
+
+  /**
+   * Fetch user profile from backend API
+   */
+  private fetchUserProfile(): void {
+    const sub = this.userProfileService.fetchUserProfile().subscribe({
+      next: (profile) => {
+        if (profile) {
+          console.log('[HeaderComponent] User profile loaded:', profile);
+          this.userProfile = profile;
+          // Update role service with API profile data
+          this.roleService.setUserFromProfile(profile);
+        }
+      },
+      error: (error) => {
+        console.error('[HeaderComponent] Error fetching user profile:', error);
+      }
+    });
+    this.subscriptions.add(sub);
   }
 
   /**
@@ -64,10 +98,11 @@ export class HeaderComponent implements OnInit {
    * Subscribe to user changes and update component state
    */
   private subscribeToUserChanges(): void {
-    this.roleService.currentUser$.subscribe(user => {
+    const sub = this.roleService.currentUser$.subscribe(user => {
       this.currentUser = user;
       this.updateComponentState(user);
     });
+    this.subscriptions.add(sub);
   }
 
   /**
@@ -92,6 +127,7 @@ export class HeaderComponent implements OnInit {
     this.availableMfes = [];
     this.salesExecutives = [];
     this.canViewOthers = false;
+    this.userProfile = null;
   }
 
   /**
@@ -145,6 +181,7 @@ export class HeaderComponent implements OnInit {
   logout(): void {
     this.auth.logout();
     this.roleService.setCurrentUser(null);
+    this.userProfileService.clearProfile();
   }
 
   /**
@@ -169,5 +206,26 @@ export class HeaderComponent implements OnInit {
     } else {
       this.auth.login();
     }
+  }
+
+  /**
+   * Get display name for the user
+   * Shows name from profile or current user
+   */
+  getDisplayName(): string {
+    if (this.userProfile?.name) {
+      return this.userProfile.name;
+    }
+    return this.currentUser?.name || '';
+  }
+
+  /**
+   * Get organization display name
+   */
+  getOrganizationName(): string {
+    if (this.userProfile?.organizations?.length) {
+      return this.userProfile.organizations[0].displayName;
+    }
+    return '';
   }
 }

@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { APP_VERSION } from '../../version';
 
 /**
  * Footer component for the application
@@ -12,4 +13,6 @@ import { Component } from '@angular/core';
 })
 export class FooterComponent {
   currentYear = new Date().getFullYear();
+  version = APP_VERSION.version;
+  buildNumber = APP_VERSION.buildNumber;
 }
