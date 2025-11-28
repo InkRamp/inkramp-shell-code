@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
+import { API_CONFIG } from './config/api.config';
 
 /**
  * Organization information from API
@@ -55,8 +56,6 @@ export interface UserProfileResponse {
   providedIn: 'root'
 })
 export class UserProfileService {
-  private readonly API_BASE_URL = 'https://5rkqypjiml.execute-api.us-east-1.amazonaws.com';
-  
   private profileSubject = new BehaviorSubject<UserProfileData | null>(null);
   public profile$: Observable<UserProfileData | null> = this.profileSubject.asObservable();
 
@@ -71,12 +70,10 @@ export class UserProfileService {
   fetchUserProfile(): Observable<UserProfileData | null> {
     console.log('[UserProfileService] Fetching user profile from API');
     
-    return this.http.get<UserProfileResponse>(`${this.API_BASE_URL}/auth/me`).pipe(
-      tap(response => {
-        console.log('[UserProfileService] Profile response received:', response);
-      }),
+    return this.http.get<UserProfileResponse>(`${API_CONFIG.baseUrl}/auth/me`).pipe(
       map(response => {
         if (response.success && response.data) {
+          console.log('[UserProfileService] Profile loaded successfully');
           this.profileSubject.next(response.data);
           return response.data;
         }

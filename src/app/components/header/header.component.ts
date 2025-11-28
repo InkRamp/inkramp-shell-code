@@ -210,17 +210,20 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   /**
    * Get display name for the user
-   * Shows name from profile or current user
+   * Priority: API profile name (most authoritative) > Auth0 token name (fallback)
+   * The API profile contains the official user data from the backend
    */
   getDisplayName(): string {
+    // API profile is the authoritative source for user data
     if (this.userProfile?.name) {
       return this.userProfile.name;
     }
+    // Fallback to Auth0 token data when API profile is not yet loaded
     return this.currentUser?.name || '';
   }
 
   /**
-   * Get organization display name
+   * Get organization display name from API profile
    */
   getOrganizationName(): string {
     if (this.userProfile?.organizations?.length) {
