@@ -1,9 +1,8 @@
 <header class="app-header">
   <div class="header-left">
     <h1 class="app-title">Incentive Management System</h1>
-    <span *ngIf="currentUser" class="user-display-name">
-      {{ getDisplayName() }}
-      <span *ngIf="getOrganizationName()" class="org-badge">{{ getOrganizationName() }}</span>
+    <span *ngIf="currentUser && getOrganizationName()" class="org-display">
+      {{ getOrganizationName() }}
     </span>
   </div>
   

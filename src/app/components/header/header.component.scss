@@ -21,21 +21,9 @@
   font-weight: 600;
 }
 
-.user-display-name {
+.org-display {
   font-size: 0.875rem;
-  color: var(--gray-700);
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.org-badge {
-  background: var(--bright-blue);
-  color: white;
-  padding: 0.125rem 0.5rem;
-  border-radius: 0.25rem;
-  font-size: 0.75rem;
+  color: var(--bright-blue);
   font-weight: 600;
   text-transform: uppercase;
 }

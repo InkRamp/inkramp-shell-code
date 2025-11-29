@@ -3,21 +3,10 @@
   color: white;
   padding: 1rem 2rem;
   margin-top: auto;
-
-  .footer-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+  text-align: center;
 
   .copyright {
     margin: 0;
     font-size: 0.875rem;
-  }
-
-  .build-info {
-    font-size: 0.75rem;
-    color: var(--gray-400);
-    opacity: 0.8;
   }
 }
