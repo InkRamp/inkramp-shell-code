@@ -20,5 +20,5 @@ export interface ApiConfig {
  */
 export const API_CONFIG: ApiConfig = {
   // Backend API base URL
-  baseUrl: 'https://5rkqypjiml.execute-api.us-east-1.amazonaws.com'
+  baseUrl: 'https://qpdlveqmfb.execute-api.us-east-1.amazonaws.com'
 };
