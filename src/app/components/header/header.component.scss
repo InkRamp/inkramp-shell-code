@@ -9,6 +9,9 @@
 
 .header-left {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .app-title {
@@ -16,6 +19,13 @@
   font-size: 1.5rem;
   color: var(--gray-900);
   font-weight: 600;
+}
+
+.org-display {
+  font-size: 0.875rem;
+  color: var(--bright-blue);
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .header-center {
