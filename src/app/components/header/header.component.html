@@ -1,6 +1,9 @@
 <header class="app-header">
   <div class="header-left">
     <h1 class="app-title">Incentive Management System</h1>
+    <span *ngIf="currentUser && getOrganizationName()" class="org-display">
+      {{ getOrganizationName() }}
+    </span>
   </div>
   
   <div class="header-center" *ngIf="currentUser && canViewOthers">
