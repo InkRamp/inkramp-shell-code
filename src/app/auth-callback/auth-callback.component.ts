@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService, RoleService } from '@org/core-services';
+import { AuthService, RoleService, UserProfileService } from '@org/core-services';
 
 interface AuthState {
   message: string;
@@ -37,7 +37,8 @@ export class AuthCallbackComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService,
-    private roleService: RoleService
+    private roleService: RoleService,
+    private userProfileService: UserProfileService
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -86,6 +87,19 @@ export class AuthCallbackComponent implements OnInit {
       }
       
       this.roleService.setUserFromAuth(userInfo);
+      
+      // Fetch user profile from backend API to get organization and role data
+      this.userProfileService.fetchUserProfile().subscribe({
+        next: (profile) => {
+          if (profile) {
+            console.log('[AuthCallbackComponent] User profile loaded from API');
+            this.roleService.setUserFromProfile(profile);
+          }
+        },
+        error: (error) => {
+          console.error('[AuthCallbackComponent] Error fetching user profile:', error);
+        }
+      });
     }
 
     return {
