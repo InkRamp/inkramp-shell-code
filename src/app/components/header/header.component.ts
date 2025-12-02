@@ -70,14 +70,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   /**
    * Fetch user profile from backend API
+   * Note: Profile updates are handled via subscribeToProfileChanges() subscription
    */
   private fetchUserProfile(): void {
     const sub = this.userProfileService.fetchUserProfile().subscribe({
       next: (profile) => {
         if (profile) {
           console.log('[HeaderComponent] User profile loaded:', profile);
-          this.userProfile = profile;
           // Update role service with API profile data
+          // Note: userProfile is updated via profile$ subscription in subscribeToProfileChanges()
           this.roleService.setUserFromProfile(profile);
         }
       },

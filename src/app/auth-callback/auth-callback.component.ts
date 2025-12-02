@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService, RoleService, UserProfileService } from '@org/core-services';
+import { Subject, takeUntil } from 'rxjs';
 
 interface AuthState {
   message: string;
@@ -29,9 +30,10 @@ interface AuthState {
     }
   `]
 })
-export class AuthCallbackComponent implements OnInit {
+export class AuthCallbackComponent implements OnInit, OnDestroy {
   message = 'Processing authentication...';
   isProcessing = true;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private route: ActivatedRoute,
@@ -43,6 +45,11 @@ export class AuthCallbackComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.processAuthCallback();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**
@@ -89,7 +96,8 @@ export class AuthCallbackComponent implements OnInit {
       this.roleService.setUserFromAuth(userInfo);
       
       // Fetch user profile from backend API to get organization and role data
-      this.userProfileService.fetchUserProfile().subscribe({
+      // Using takeUntil to cleanup subscription if component is destroyed
+      this.userProfileService.fetchUserProfile().pipe(takeUntil(this.destroy$)).subscribe({
         next: (profile) => {
           if (profile) {
             console.log('[AuthCallbackComponent] User profile loaded from API');
