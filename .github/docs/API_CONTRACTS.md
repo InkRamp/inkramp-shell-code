@@ -29,6 +29,123 @@ The HttpInterceptor automatically attaches tokens from AuthService.
 
 ---
 
+## User Profile API
+
+### Get Current User Profile
+
+```http
+GET /auth/me
+```
+
+Returns the authenticated user's profile including organization and role information.
+
+**Response:**
+```typescript
+interface UserProfileResponse {
+  success: boolean;
+  message: string;
+  data: UserProfileData;
+  timestamp: string;
+  statusCode: number;
+}
+
+interface UserProfileData {
+  userId: string;
+  email: string;
+  name: string;
+  nickname: string;
+  picture: string;
+  emailVerified: boolean;
+  organizations: Organization[];
+  roles: Role[];
+  permissions: string[];
+}
+
+interface Organization {
+  id: string;
+  name: string;
+  displayName: string;
+}
+
+interface Role {
+  id: string;
+  name: string;
+  description: string;
+}
+```
+
+**Example Response (User with Organization):**
+```json
+{
+  "success": true,
+  "message": "User profile retrieved successfully",
+  "data": {
+    "userId": "google-oauth2|105249356619326623912",
+    "email": "desai.koustubh@gmail.com",
+    "name": "Koustubh Desai",
+    "nickname": "desai.koustubh",
+    "picture": "https://lh3.googleusercontent.com/a/ACg8ocKW-P24w6QOHgZFKUHJNexqF7q3s-TlGxXO0y5Qp6ECUZxcQQ=s96-c",
+    "emailVerified": true,
+    "organizations": [
+      {
+        "id": "org_k8eSphulLyDkEOtw",
+        "name": "hdfc",
+        "displayName": "HDFC"
+      }
+    ],
+    "roles": [
+      {
+        "id": "rol_uGMOy1YN4yn0QqO4",
+        "name": "team-lead",
+        "description": "One who manages a team within an org"
+      }
+    ],
+    "permissions": []
+  },
+  "timestamp": "2025-12-02T03:37:55.155Z",
+  "statusCode": 200
+}
+```
+
+**Example Response (User without Organization):**
+```json
+{
+  "success": true,
+  "message": "User profile retrieved successfully",
+  "data": {
+    "userId": "google-oauth2|109184121663700812552",
+    "email": "satyam.evam.jayate@gmail.com",
+    "name": "Indian Patriot",
+    "nickname": "satyam.evam.jayate",
+    "picture": "https://lh3.googleusercontent.com/a/ACg8ocKGHflpReD1w7yQD3I4H_rwD_nykRwye2GXZzOWcKEsuxxY6Q=s96-c",
+    "emailVerified": true,
+    "organizations": [],
+    "roles": [
+      {
+        "id": "rol_WG6uQ24dUO6EuHnC",
+        "name": "org-manager",
+        "description": "One who manages an organisation within SaaS"
+      },
+      {
+        "id": "rol_i8djnAh3lXlxDIBn",
+        "name": "sales-executive",
+        "description": "End user for i17ve"
+      },
+      {
+        "id": "rol_kOPmt7tRuALroBrj",
+        "name": "super-admin",
+        "description": "One who has access at a SaaS level for this product"
+      }
+    ],
+    "permissions": []
+  },
+  "timestamp": "2025-12-02T03:35:23.702Z",
+  "statusCode": 200
+}
+```
+
+---
+
 ## Standard Response Format
 
 ### Success Response

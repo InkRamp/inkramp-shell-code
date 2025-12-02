@@ -38,6 +38,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.syncAuthenticatedUser();
     this.subscribeToUserChanges();
+    this.subscribeToProfileChanges();
   }
 
   ngOnDestroy(): void {
@@ -69,14 +70,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   /**
    * Fetch user profile from backend API
+   * Note: Profile updates are handled via subscribeToProfileChanges() subscription
    */
   private fetchUserProfile(): void {
     const sub = this.userProfileService.fetchUserProfile().subscribe({
       next: (profile) => {
         if (profile) {
           console.log('[HeaderComponent] User profile loaded:', profile);
-          this.userProfile = profile;
           // Update role service with API profile data
+          // Note: userProfile is updated via profile$ subscription in subscribeToProfileChanges()
           this.roleService.setUserFromProfile(profile);
         }
       },
@@ -101,6 +103,20 @@ export class HeaderComponent implements OnInit, OnDestroy {
     const sub = this.roleService.currentUser$.subscribe(user => {
       this.currentUser = user;
       this.updateComponentState(user);
+    });
+    this.subscriptions.add(sub);
+  }
+
+  /**
+   * Subscribe to user profile changes from UserProfileService
+   * This ensures the header updates reactively when profile is fetched after auth callback
+   */
+  private subscribeToProfileChanges(): void {
+    const sub = this.userProfileService.profile$.subscribe(profile => {
+      this.userProfile = profile;
+      if (profile) {
+        console.log('[HeaderComponent] Profile updated via subscription:', profile);
+      }
     });
     this.subscriptions.add(sub);
   }
