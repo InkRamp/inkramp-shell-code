@@ -1,7 +1,0 @@
-<p>lazyload works!</p>
-<button (click)="start()" class="px-4 py-2 bg-green-500 text-white rounded mr-2">Start</button>
-<button (click)="stop()" class="px-4 py-2 bg-red-500 text-white rounded">Stop</button>
-
-<ul>
-    <li *ngFor="let p of pokemonService.$masterSet | async; trackBy:referId">{{p.name}}</li>
-</ul>
