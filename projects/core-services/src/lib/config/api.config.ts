@@ -15,9 +15,9 @@ export interface ApiConfig {
 
 /**
  * Default API Configuration
- * This will be updated at runtime based on environment configuration
+ * This object will be mutated at runtime based on environment configuration
  */
-let apiConfig: ApiConfig = {
+const apiConfig: ApiConfig = {
   // Default backend API base URL (can be overridden)
   baseUrl: 'https://tmzuktmjy7.execute-api.us-east-1.amazonaws.com'
 };
@@ -35,11 +35,12 @@ export function getApiConfig(): ApiConfig {
  * @param config Partial API configuration to update
  */
 export function updateApiConfig(config: Partial<ApiConfig>): void {
-  apiConfig = { ...apiConfig, ...config };
+  // Mutate the existing object to maintain references
+  Object.assign(apiConfig, config);
 }
 
 /**
- * API Configuration (legacy export for backward compatibility)
- * @deprecated Use getApiConfig() instead
+ * API Configuration
+ * This constant references the mutable apiConfig object
  */
 export const API_CONFIG: ApiConfig = apiConfig;
