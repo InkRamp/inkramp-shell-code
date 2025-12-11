@@ -76,9 +76,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     const sub = this.userProfileService.fetchUserProfile().subscribe({
       next: (profile) => {
         if (profile) {
-          console.log('[HeaderComponent] User profile loaded:', profile);
-          // Update role service with API profile data
-          // Note: userProfile is updated via profile$ subscription in subscribeToProfileChanges()
           this.roleService.setUserFromProfile(profile);
         }
       },
@@ -114,9 +111,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private subscribeToProfileChanges(): void {
     const sub = this.userProfileService.profile$.subscribe(profile => {
       this.userProfile = profile;
-      if (profile) {
-        console.log('[HeaderComponent] Profile updated via subscription:', profile);
-      }
     });
     this.subscriptions.add(sub);
   }
@@ -148,13 +142,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   /**
    * Update available MFEs based on current user role
-   * TEMPORARILY showing all MFEs for testing - role filtering disabled
    */
   private updateAvailableMfes(): void {
-    // TODO: Re-enable role-based filtering when guards are restored
-    // Original code: this.mfeLoader.getConfigsForRole(this.currentUser.role)
     this.availableMfes = this.currentUser 
-      ? this.mfeLoader.getConfigs()  // Show ALL MFEs temporarily
+      ? this.mfeLoader.getConfigsForRole(this.currentUser.role)
       : [];
   }
 
@@ -205,16 +196,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
    * Checks for invitation parameters in URL and passes them to Auth0 if present
    */
   login(): void {
-    // Check if invitation parameters are present in the URL
     const urlTree = this.router.parseUrl(this.router.url);
     const params = urlTree.queryParams;
     
     const invitation = params['invitation'];
     const organization = params['organization'];
 
-    // If invitation parameters exist, pass them to login
     if (invitation && organization) {
-      console.log('[HeaderComponent] Invitation parameters detected, initiating invitation login');
       this.auth.login(undefined, {
         invitation,
         organization

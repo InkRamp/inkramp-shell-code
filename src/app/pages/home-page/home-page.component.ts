@@ -1,26 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { MfeLoaderService, MfeConfig } from '@org/core-services';
 
 /**
- * Home page component that displays all available routes
- * For testing purposes - shows all MFEs regardless of role
+ * Home page component - landing page for the application
  */
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './home-page.component.html',
   styleUrl: './home-page.component.scss'
 })
-export class HomePageComponent implements OnInit {
-  allMfes: MfeConfig[] = [];
-
-  constructor(private mfeLoader: MfeLoaderService) {}
-
-  ngOnInit(): void {
-    // Get all MFE configurations without role filtering
-    this.allMfes = this.mfeLoader.getConfigs();
-  }
+export class HomePageComponent {
 }
