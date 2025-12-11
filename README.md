@@ -77,10 +77,28 @@ ng add @angular-architects/module-federation@18 --project [remote-name] --type r
 ```
 
 ### API Configuration
+
+The API base URL is configured via environment files:
+
+**Development** (`src/environments/environment.ts`):
+```typescript
+export const environment = {
+  production: false,
+  apiBaseUrl: 'https://your-dev-api-url.com'
+};
+```
+
+**Production** - Set via GitHub Variables:
+1. Go to **Settings** → **Secrets and variables** → **Actions** → **Variables**
+2. Create `API_BASE_URL` variable with your production API URL
+
+See [Deployment Guide](.github/docs/DEPLOYMENT.md) for detailed setup instructions.
+
+**Dynamic Updates** (if needed at runtime):
 ```typescript
 import { updateApiConfig } from '@org/core-services';
 
 updateApiConfig({
-  baseUrl: 'https://your-api-endpoint.com/db'
+  baseUrl: 'https://your-api-endpoint.com'
 });
 ```

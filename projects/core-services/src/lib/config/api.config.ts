@@ -2,7 +2,7 @@
  * API Configuration
  * 
  * This file contains API endpoint configuration.
- * Update these values to match your backend API configuration.
+ * The API base URL is now configured via environment variables.
  */
 
 export interface ApiConfig {
@@ -14,11 +14,32 @@ export interface ApiConfig {
 }
 
 /**
- * API Configuration
- * 
- * Update this value to point to your backend API
+ * Default API Configuration
+ * This will be updated at runtime based on environment configuration
  */
-export const API_CONFIG: ApiConfig = {
-  // Backend API base URL
+let apiConfig: ApiConfig = {
+  // Default backend API base URL (can be overridden)
   baseUrl: 'https://tmzuktmjy7.execute-api.us-east-1.amazonaws.com'
 };
+
+/**
+ * Get the current API configuration
+ */
+export function getApiConfig(): ApiConfig {
+  return apiConfig;
+}
+
+/**
+ * Update API configuration
+ * This allows dynamic configuration at runtime
+ * @param config Partial API configuration to update
+ */
+export function updateApiConfig(config: Partial<ApiConfig>): void {
+  apiConfig = { ...apiConfig, ...config };
+}
+
+/**
+ * API Configuration (legacy export for backward compatibility)
+ * @deprecated Use getApiConfig() instead
+ */
+export const API_CONFIG: ApiConfig = apiConfig;

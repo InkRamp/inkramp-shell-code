@@ -26,3 +26,4 @@ export * from './lib/models/mfe.model';
 // Config
 export * from './lib/config/auth.config';
 export * from './lib/config/api.config';
+export * from './lib/config/environment-loader.service';
