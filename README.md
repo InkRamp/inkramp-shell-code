@@ -2,6 +2,12 @@
 
 An **Angular 18 Micro Frontend shell** using **Module Federation** for a multi-tenant SaaS incentive rules platform.
 
+### Local Development
+1. Set `"baseHref": "./"` in angular.json
+2. Run `npm run watch:prod` in one terminal
+3. Run `npx http-server dist/i17e` in another terminal
+4. Update `REDIRECT_URI` in auth.service.ts to `http://127.0.0.1:8080/`
+
 ## 🚀 Quick Start
 
 ```bash
