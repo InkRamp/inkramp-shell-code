@@ -81,19 +81,19 @@ export const MFE_CONFIGS: MfeConfig[] = [
         allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.TEAM_LEAD, UserRole.SALES_EXECUTIVE],
         priority: 6,
         icon: 'chart'
-    },
-    {
-        id: 'mfe-users-crud',
-        name: 'users-crud',
-        displayName: 'User Management',
-        remoteName: 'usersCrud',
-        exposedModule: './Component',
-        url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-USERS_CRUD/remoteEntry.js',
-        route: 'users',
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN],
-        priority: 7,
-        icon: 'users'
     }
+    // {
+    //     id: 'mfe-users-crud',
+    //     name: 'users-crud',
+    //     displayName: 'User Management',
+    //     remoteName: 'usersCrud',
+    //     exposedModule: './Component',
+    //     url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-USERS_CRUD/remoteEntry.js',
+    //     route: 'users',
+    //     allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN],
+    //     priority: 7,
+    //     icon: 'users'
+    // }
 ];
 
 /**
