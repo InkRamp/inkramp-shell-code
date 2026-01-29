@@ -187,7 +187,7 @@ TypeError: Cannot read properties of undefined (reading 'hasOwnProperty')
 
 ### Root Cause
 
-1. The `authInterceptor` references `API_CONFIG` and `AUTH0_CONFIG` from config files
+1. The `authInterceptor` references `API_CONFIG` from config files, and `AuthService` references `AUTH0_CONFIG`
 2. In Module Federation context, when MFEs import the interceptor, config objects may be undefined
 3. Even with optional chaining (`API_CONFIG?.baseUrl`), accessing properties on completely undefined objects causes errors
 4. The config files were not exposed in webpack Module Federation configuration

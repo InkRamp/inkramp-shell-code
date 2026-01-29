@@ -63,7 +63,7 @@ const isAuthEndpoint = (url: string): boolean => {
     }
   } catch (error) {
     // If API_CONFIG is not available (e.g., in MFE context), fall through to auth pattern check
-    console.warn('[authInterceptor] API_CONFIG not available, using pattern-based auth endpoint detection');
+    console.warn('[authInterceptor] API_CONFIG not available, using pattern-based auth endpoint detection', error);
   }
   
   return authPatterns.some(pattern => url.includes(pattern));

@@ -66,11 +66,16 @@ export class UserProfileService {
   /**
    * Fetch user profile from /auth/me endpoint
    * Requires valid authentication token in Authorization header
+   * 
+   * Note: This method returns null if API_CONFIG is unavailable, allowing the app to continue
+   * functioning even without profile data. This differs from AuthService which throws errors
+   * for missing AUTH0_CONFIG, since authentication is critical for app security while profile
+   * data is optional/supplementary.
    */
   fetchUserProfile(): Observable<UserProfileData | null> {
     console.log('[UserProfileService] Fetching user profile from API');
     
-    // Defensive check for API_CONFIG
+    // Defensive check for API_CONFIG - returns null to allow graceful degradation
     if (!API_CONFIG || !API_CONFIG.baseUrl) {
       console.error('[UserProfileService] API_CONFIG or baseUrl is not defined');
       return of(null);
