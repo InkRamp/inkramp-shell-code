@@ -164,3 +164,125 @@ NPM package provides generic utilities:
 ---
 
 **Status**: Issue resolved. Application ready for deployment.
+
+---
+
+## Issue 2: Undefined Config Objects in MFEs (Resolved)
+
+**Date**: 2026-01-29  
+**Problem**: TypeError during bootstrap - "Cannot read properties of undefined (reading 'hasOwnProperty')"
+
+### Symptoms
+
+Production build error in MFE applications:
+```
+TypeError: Cannot read properties of undefined (reading 'hasOwnProperty')
+    at L_ (953.ed92e8bf08b24559.js:1:68827)
+    at Ch (953.ed92e8bf08b24559.js:1:68899)
+    at Dh (953.ed92e8bf08b24559.js:1:68670)
+    ...
+```
+
+**Result**: Application fails to bootstrap in production builds
+
+### Root Cause
+
+1. The `authInterceptor` references `API_CONFIG` from config files, and `AuthService` references `AUTH0_CONFIG`
+2. In Module Federation context, when MFEs import the interceptor, config objects may be undefined
+3. Even with optional chaining (`API_CONFIG?.baseUrl`), accessing properties on completely undefined objects causes errors
+4. The config files were not exposed in webpack Module Federation configuration
+
+### Solution
+
+**Files Modified**:
+
+1. **`src/_temp-shared/interceptors/auth.interceptor.ts`**
+   - Added try-catch block around API_CONFIG access
+   - Added explicit type checking before accessing properties
+   
+   ```typescript
+   try {
+     if (API_CONFIG && typeof API_CONFIG === 'object' && API_CONFIG.baseUrl && url.startsWith(API_CONFIG.baseUrl)) {
+       return false;
+     }
+   } catch (error) {
+     console.warn('[authInterceptor] API_CONFIG not available, using pattern-based auth endpoint detection');
+   }
+   ```
+
+2. **`src/_temp-shared/auth.service.ts`**
+   - Added defensive checks in `initializeAuth0()` method
+   - Validates AUTH0_CONFIG exists and has required fields before use
+   
+   ```typescript
+   if (!AUTH0_CONFIG || typeof AUTH0_CONFIG !== 'object') {
+     throw new Error('[AuthService] AUTH0_CONFIG is not defined or invalid');
+   }
+   ```
+
+3. **`src/_temp-shared/user-profile.service.ts`**
+   - Added defensive check before API call
+   - Returns `of(null)` if API_CONFIG is undefined
+   
+   ```typescript
+   if (!API_CONFIG || !API_CONFIG.baseUrl) {
+     console.error('[UserProfileService] API_CONFIG or baseUrl is not defined');
+     return of(null);
+   }
+   ```
+
+4. **`webpack.config.js`**
+   - Exposed AuthService, AuthInterceptor, and config files in Module Federation
+   
+   ```javascript
+   exposes: {
+     './AuthService': './src/_temp-shared/auth.service.ts',
+     './AuthInterceptor': './src/_temp-shared/interceptors/auth.interceptor.ts',
+     './AuthConfig': './src/_temp-shared/config/auth.config.ts',
+     './ApiConfig': './src/_temp-shared/config/api.config.ts',
+     // ... other exposures
+   }
+   ```
+
+### Why This Works
+
+1. **Defensive Programming**: Services now handle undefined config gracefully instead of crashing
+2. **Better Module Federation**: Configs are now properly exposed and shared across MFEs
+3. **Fail-Safe Behavior**: When configs are unavailable, services fall back to safe defaults
+4. **Clear Error Messages**: Logs help identify configuration issues during development
+
+### Best Practices for Shared Services in Module Federation
+
+#### ✅ DO:
+- Always expose config files when exposing services that depend on them
+- Add defensive checks for imported constants/objects
+- Use try-catch for property access that might fail in different contexts
+- Provide fallback behavior when dependencies are unavailable
+- Log warnings to help developers identify configuration issues
+
+#### ❌ DON'T:
+- Assume imported constants will always be defined
+- Rely solely on optional chaining for complex object access
+- Expose services without their dependencies
+- Crash the application when configs are missing
+- Hide configuration errors silently
+
+### Verification
+
+- ✅ Build completes successfully without errors
+- ✅ No "hasOwnProperty" errors during bootstrap
+- ✅ MFEs can properly use shared auth services
+- ✅ Graceful degradation when configs are unavailable
+
+### Impact
+
+**Before Fix:**
+- ❌ TypeError during bootstrap in production builds
+- ❌ MFEs crash when trying to use auth services
+- ❌ Application unusable
+
+**After Fix:**
+- ✅ Application bootstraps successfully
+- ✅ MFEs can use shared services without crashes
+- ✅ Clear error logging for debugging
+- ✅ Graceful fallback behavior

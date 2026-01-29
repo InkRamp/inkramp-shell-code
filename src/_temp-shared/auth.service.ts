@@ -94,6 +94,16 @@ export class AuthService {
   private async initializeAuth0(): Promise<void> {
     try {
       console.log("[AuthService] Starting Auth0 client initialization...");
+      
+      // Defensive check for AUTH0_CONFIG
+      if (!AUTH0_CONFIG || typeof AUTH0_CONFIG !== 'object') {
+        throw new Error('[AuthService] AUTH0_CONFIG is not defined or invalid');
+      }
+      
+      if (!AUTH0_CONFIG.domain || !AUTH0_CONFIG.clientId) {
+        throw new Error('[AuthService] AUTH0_CONFIG is missing required fields (domain, clientId)');
+      }
+      
       this.auth0Client = await createAuth0Client({
         domain: AUTH0_CONFIG.domain,
         clientId: AUTH0_CONFIG.clientId,
