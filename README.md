@@ -2,6 +2,12 @@
 
 An **Angular 18 Micro Frontend shell** using **Module Federation** for a multi-tenant SaaS incentive rules platform.
 
+### Local Development
+1. Set `"baseHref": "./"` in angular.json
+2. Run `npm run watch:prod` in one terminal
+3. Run `npx http-server dist/i17e` in another terminal
+4. Update `REDIRECT_URI` in auth.service.ts to `http://127.0.0.1:8080/`
+
 ## 🚀 Quick Start
 
 ```bash
@@ -10,12 +16,6 @@ npm start        # Development server at http://localhost:4200/
 npm run build    # Production build
 npm test         # Run unit tests
 ```
-
-### Local Development
-1. Set `"baseHref": "./"` in angular.json
-2. Run `npm run watch:prod` in one terminal
-3. Run `npx http-server dist/i17e` in another terminal
-4. Update `REDIRECT_URI` in auth.service.ts to `http://127.0.0.1:8080/`
 
 ## 🏗️ Architecture
 
@@ -55,20 +55,6 @@ All AI/Copilot context is centralized in `.github/`:
 - **Role-based access control** with capability-based permissions
 - **Dynamic Module Federation** for MFE loading
 - **Event-driven communication** between MFEs
-- **Dev user mimicking** for testing different roles
-
-### Dev User Mimicking (Development Only)
-```typescript
-// In browser console - uses localStorage intentionally to persist across dev sessions
-// (unlike tokens which use sessionStorage and are cleared on tab close)
-localStorage.setItem('dev_mimic_user', JSON.stringify({
-  id: 'dev-1',
-  name: 'Dev Admin',
-  email: 'admin@test.com',
-  role: 'super-admin'
-}));
-// Refresh page to apply
-```
 
 ## 🛠️ Development
 

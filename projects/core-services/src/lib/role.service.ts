@@ -91,6 +91,7 @@ export class RoleService {
   /**
    * Extract user role from Auth0 token claims
    * Checks both top-level claims and namespaced custom claims
+   * Also handles org_and_roles structure: { "org_name": ["role1", "role2"] }
    * @param userInfo User information from Auth0 token
    * @returns Assigned UserRole
    */
@@ -98,6 +99,15 @@ export class RoleService {
     // Check top-level role claim first
     if (userInfo.role) {
       return this.mapStringToUserRole(userInfo.role);
+    }
+    
+    // Check for org_and_roles structure (Auth0 custom claim format)
+    if (userInfo['org_and_roles']) {
+      const roleFromOrgAndRoles = this.extractRoleFromOrgAndRoles(userInfo['org_and_roles']);
+      if (roleFromOrgAndRoles) {
+        console.log('[RoleService] Extracted role from org_and_roles:', roleFromOrgAndRoles);
+        return roleFromOrgAndRoles;
+      }
     }
     
     // Check namespaced custom claims
@@ -120,6 +130,54 @@ export class RoleService {
     // Fallback to email pattern matching if no role in token
     console.warn('[RoleService] No role found in token, falling back to email pattern');
     return this.determineRoleFromEmail(userInfo.email || '');
+  }
+
+  /**
+   * Extract role from org_and_roles structure
+   * Format: { "org_name": ["role1", "role2"], "another_org": ["role3"] }
+   * Returns the highest privilege role across all organizations
+   * @param orgAndRoles - Organization and roles mapping
+   * @returns Highest privilege UserRole or null if no valid roles found
+   */
+  private extractRoleFromOrgAndRoles(orgAndRoles: any): UserRole | null {
+    if (!orgAndRoles || typeof orgAndRoles !== 'object') {
+      return null;
+    }
+
+    const allRoles: UserRole[] = [];
+
+    // Iterate through all organizations and collect their roles
+    for (const org in orgAndRoles) {
+      const roles = orgAndRoles[org];
+      if (Array.isArray(roles)) {
+        roles.forEach(roleString => {
+          const mappedRole = this.mapStringToUserRole(roleString);
+          allRoles.push(mappedRole);
+        });
+      }
+    }
+
+    if (allRoles.length === 0) {
+      return null;
+    }
+
+    // Return the highest privilege role
+    // Role hierarchy: SUPER_ADMIN > ORG_ADMIN > TEAM_LEAD > SALES_EXECUTIVE
+    const roleHierarchy = [
+      UserRole.SUPER_ADMIN,
+      UserRole.ORG_ADMIN,
+      UserRole.TEAM_LEAD,
+      UserRole.SALES_EXECUTIVE
+    ];
+
+    for (const role of roleHierarchy) {
+      if (allRoles.includes(role)) {
+        console.log('[RoleService] Selected highest privilege role:', role);
+        return role;
+      }
+    }
+
+    return allRoles[0]; // Fallback to first role
   }
 
   /**

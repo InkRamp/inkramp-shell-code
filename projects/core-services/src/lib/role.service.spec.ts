@@ -199,4 +199,172 @@ describe('RoleService', () => {
 
     expect(user?.name).toBe('User');
   });
+
+  describe('org_and_roles token structure', () => {
+    it('should extract role from org_and_roles with single organization', () => {
+      const userInfo = {
+        sub: 'auth0-123',
+        name: 'Test User',
+        email: 'test@example.com',
+        org_and_roles: {
+          hdfc: ['super-admin', 'org-admin']
+        }
+      };
+
+      service.setUserFromAuth(userInfo);
+      const user = service.getCurrentUser();
+
+      expect(user?.role).toBe(UserRole.SUPER_ADMIN);
+    });
+
+    it('should extract highest privilege role from org_and_roles with multiple organizations', () => {
+      const userInfo = {
+        sub: 'auth0-124',
+        name: 'Multi Org User',
+        email: 'multi@example.com',
+        org_and_roles: {
+          hdfc: ['org-admin'],
+          icici: ['super-admin'],
+          axis: ['sales-executive']
+        }
+      };
+
+      service.setUserFromAuth(userInfo);
+      const user = service.getCurrentUser();
+
+      expect(user?.role).toBe(UserRole.SUPER_ADMIN);
+    });
+
+    it('should handle org_and_roles with single role per organization', () => {
+      const userInfo = {
+        sub: 'auth0-125',
+        name: 'Single Role User',
+        email: 'single@example.com',
+        org_and_roles: {
+          hdfc: ['team-lead']
+        }
+      };
+
+      service.setUserFromAuth(userInfo);
+      const user = service.getCurrentUser();
+
+      expect(user?.role).toBe(UserRole.TEAM_LEAD);
+    });
+
+    it('should prioritize super-admin over org-admin', () => {
+      const userInfo = {
+        sub: 'auth0-126',
+        name: 'Priority Test',
+        email: 'priority@example.com',
+        org_and_roles: {
+          org1: ['sales-executive', 'org-admin'],
+          org2: ['team-lead', 'super-admin']
+        }
+      };
+
+      service.setUserFromAuth(userInfo);
+      const user = service.getCurrentUser();
+
+      expect(user?.role).toBe(UserRole.SUPER_ADMIN);
+    });
+
+    it('should prioritize org-admin over team-lead', () => {
+      const userInfo = {
+        sub: 'auth0-127',
+        name: 'Admin Priority',
+        email: 'adminpri@example.com',
+        org_and_roles: {
+          org1: ['sales-executive', 'team-lead'],
+          org2: ['org-admin']
+        }
+      };
+
+      service.setUserFromAuth(userInfo);
+      const user = service.getCurrentUser();
+
+      expect(user?.role).toBe(UserRole.ORG_ADMIN);
+    });
+
+    it('should prioritize team-lead over sales-executive', () => {
+      const userInfo = {
+        sub: 'auth0-128',
+        name: 'Lead Priority',
+        email: 'leadpri@example.com',
+        org_and_roles: {
+          org1: ['sales-executive'],
+          org2: ['team-lead']
+        }
+      };
+
+      service.setUserFromAuth(userInfo);
+      const user = service.getCurrentUser();
+
+      expect(user?.role).toBe(UserRole.TEAM_LEAD);
+    });
+
+    it('should handle empty org_and_roles', () => {
+      const userInfo = {
+        sub: 'auth0-129',
+        name: 'Empty Roles',
+        email: 'empty@example.com',
+        org_and_roles: {}
+      };
+
+      service.setUserFromAuth(userInfo);
+      const user = service.getCurrentUser();
+
+      // Should fall back to email pattern matching
+      expect(user?.role).toBe(UserRole.SALES_EXECUTIVE);
+    });
+
+    it('should handle org_and_roles with empty array', () => {
+      const userInfo = {
+        sub: 'auth0-130',
+        name: 'Empty Array',
+        email: 'emptyarray@example.com',
+        org_and_roles: {
+          org1: []
+        }
+      };
+
+      service.setUserFromAuth(userInfo);
+      const user = service.getCurrentUser();
+
+      // Should fall back to email pattern matching
+      expect(user?.role).toBe(UserRole.SALES_EXECUTIVE);
+    });
+
+    it('should prefer top-level role over org_and_roles', () => {
+      const userInfo = {
+        sub: 'auth0-131',
+        name: 'Top Level Priority',
+        email: 'toplevel@example.com',
+        role: 'team-lead',
+        org_and_roles: {
+          hdfc: ['super-admin']
+        }
+      };
+
+      service.setUserFromAuth(userInfo);
+      const user = service.getCurrentUser();
+
+      // Top-level role claim takes precedence
+      expect(user?.role).toBe(UserRole.TEAM_LEAD);
+    });
+
+    it('should handle org_and_roles as non-object gracefully', () => {
+      const userInfo = {
+        sub: 'auth0-132',
+        name: 'Invalid Format',
+        email: 'invalid@example.com',
+        org_and_roles: 'invalid'
+      };
+
+      service.setUserFromAuth(userInfo);
+      const user = service.getCurrentUser();
+
+      // Should fall back to email pattern matching
+      expect(user?.role).toBe(UserRole.SALES_EXECUTIVE);
+    });
+  });
 });
