@@ -15,6 +15,9 @@ on:
         description: "Target environment (main, develop, or feature)"
         required: false
         default: "main"
+        
+  repository_dispatch:
+    types: [library_updated]
 
 jobs:
   Build_Deploy:
