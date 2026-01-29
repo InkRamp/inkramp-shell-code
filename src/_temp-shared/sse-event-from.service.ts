@@ -11,7 +11,7 @@ export class SseFromEventService {
 
     // Convert message events into an observable
     return fromEvent<MessageEvent>(es, 'message').pipe(
-      map(event => {
+      map((event: MessageEvent) => {
         // Ensure Angular change detection runs
         let data: any;
         this.zone.run(() => data = event.data);

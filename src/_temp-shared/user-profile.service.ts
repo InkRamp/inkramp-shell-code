@@ -71,7 +71,7 @@ export class UserProfileService {
     console.log('[UserProfileService] Fetching user profile from API');
     
     return this.http.get<UserProfileResponse>(`${API_CONFIG.baseUrl}/auth/me`).pipe(
-      map(response => {
+      map((response: UserProfileResponse) => {
         if (response.success && response.data) {
           console.log('[UserProfileService] Profile loaded successfully');
           this.profileSubject.next(response.data);
@@ -79,7 +79,7 @@ export class UserProfileService {
         }
         return null;
       }),
-      catchError(error => {
+      catchError((error: any) => {
         console.error('[UserProfileService] Error fetching profile:', error);
         this.profileSubject.next(null);
         return of(null);
