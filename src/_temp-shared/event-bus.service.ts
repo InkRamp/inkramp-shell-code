@@ -13,7 +13,7 @@ export class EventBusService {
     const e: Event = new Event('EventBusServiceCreated');
     this.onePlusNEvents = new ReplaySubject<EventType>(100);
     this.onePlusNEvents.next(e.type);
-    this.emitter.on('*', (event) => {
+    this.emitter.on('*', (event: EventType) => {
       // DEBUG_LOG: Event received
       console.log('[EventBusService] Event received and forwarded to ReplaySubject:', event);
       this.onePlusNEvents.next(event);

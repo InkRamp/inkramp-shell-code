@@ -107,39 +107,6 @@
 					}
 				}
 			}
-    },
-    "core-services": {
-      "projectType": "library",
-      "root": "projects/core-services",
-      "sourceRoot": "projects/core-services/src",
-      "prefix": "org",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
-          "options": {
-            "project": "projects/core-services/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/core-services/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "projects/core-services/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "tsConfig": "projects/core-services/tsconfig.spec.json",
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ]
-          }
-        }
-      }
-    }
+		}
 	}
 }
