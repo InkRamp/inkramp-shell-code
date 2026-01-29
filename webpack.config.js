@@ -10,7 +10,7 @@ module.exports = withModuleFederationPlugin({
   },
 
   shared: {
-    ...shareAll({ singleton: true, strictVersion: true, requiredVersion: 'auto', eager: false }),
+    ...shareAll({ singleton: true, strictVersion: false, requiredVersion: 'auto', eager: false }),
   },
 
   // Expose shared services for MFEs from _temp-shared folder
