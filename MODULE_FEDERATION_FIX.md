@@ -53,26 +53,20 @@ shared: {
 - **Standard practice** for micro frontends
 - **Result**: MFEs load successfully with compatible versions
 
-## Additional Changes
+## Note About NPM Package
 
-### NPM Package Installation
+The npm package `@opensourcekd/ng-common-libs` is available but **NOT installed** in this PR.
 
-Installed `@opensourcekd/ng-common-libs@1.2.2` as requested:
+**Why?**
+- The namespace `@opensourcekd/ng-common-libs` is currently mapped to local services in `tsconfig.json`
+- Installing the npm package would create a **namespace conflict**
+- The local services in `src/_temp-shared/` are still in use and not yet decommissioned
+- The npm package should only be added after migrating away from local services
 
-```bash
-npm install @opensourcekd/ng-common-libs@1.2.2
-```
-
-**Package Contents**:
-- `NgEventEmitter` - Angular service wrapper for EventBus
-- `TokenManager` - Token management utilities
-- `AuthGuard` - Authorization guards
-- Framework-agnostic core utilities
-
-**Current Status**:
-- ✅ Package installed and available
-- ⏳ Not yet used in code (project uses local services in `_temp-shared/`)
-- 📝 Path mappings in `tsconfig.json` ready for gradual migration
+**Current Setup**:
+- ⚠️ `tsconfig.json` maps `@opensourcekd/ng-common-libs` → `./src/_temp-shared/`
+- ✅ Local services are fully functional
+- 📝 Migration to npm package should be done separately, after decommissioning local services
 
 ## Verification
 
@@ -122,7 +116,12 @@ npm run build
 
 ## Next Steps (Optional)
 
-### 1. Migrate to NPM Package (When Ready)
+### 1. Consider Migration to NPM Package (Future Work)
+Before migrating to `@opensourcekd/ng-common-libs`:
+1. **Remove or rename tsconfig path mapping** to avoid namespace conflict
+2. **Decommission local services** in `src/_temp-shared/`
+3. **Install npm package** after clearing the namespace
+
 Current project uses local services in `src/_temp-shared/`:
 - `AuthService`
 - `RoleService`  
@@ -150,8 +149,8 @@ NPM package provides generic utilities:
 ## Related Files
 
 - `webpack.config.js` - Module Federation configuration
-- `package.json` - Dependencies
-- `tsconfig.json` - Path mappings for npm package
+- `package.json` - Dependencies (npm package NOT added to avoid conflict)
+- `tsconfig.json` - Path mappings that currently redirect @opensourcekd namespace
 - `src/_temp-shared/` - Current local services
 - `MIGRATION_TEMP_SHARED.md` - Migration documentation
 
