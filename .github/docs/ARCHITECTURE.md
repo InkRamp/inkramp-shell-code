@@ -112,13 +112,10 @@ module.exports = {
   remotes: {
     // Remotes are loaded dynamically at runtime
   },
-  shared: share({
-    "@angular/core": { singleton: true, strictVersion: true },
-    "@angular/common": { singleton: true, strictVersion: true },
-    "@angular/router": { singleton: true, strictVersion: true },
-    "rxjs": { singleton: true, strictVersion: true },
-    "@org/core-services": { singleton: true, strictVersion: true }
-  })
+  shared: {
+    ...shareAll({ singleton: true, strictVersion: false, requiredVersion: 'auto', eager: false }),
+    '@org/core-services': { singleton: true, strictVersion: false, requiredVersion: 'auto' }
+  }
 };
 ```
 
@@ -129,9 +126,10 @@ module.exports = {
   exposes: {
     './Module': './src/app/remote-entry/entry.module.ts'
   },
-  shared: share({
-    // Same shared dependencies
-  })
+  shared: {
+    ...shareAll({ singleton: true, strictVersion: false, requiredVersion: 'auto', eager: false }),
+    '@org/core-services': { singleton: true, strictVersion: false, requiredVersion: 'auto' }
+  }
 };
 ```
 
