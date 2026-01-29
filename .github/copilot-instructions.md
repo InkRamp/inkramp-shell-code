@@ -19,12 +19,24 @@
 | Module Federation | ^18.0.6 | Micro Frontend architecture |
 | mitt | ^3.0.1 | Event bus for cross-MFE communication |
 
-## Core Services (`@org/core-services`)
+## Core Services
 
+**Location**: `src/_temp-shared/` (temporary structure)
+
+⚠️ **Note**: These services are in a temporary location and will be migrated to either:
+- External package: `@opensourcekd/ng-common-libs` (for reuse across projects)
+- Core application: Integrated directly into src/app (for project-specific code)
+
+**Current Import Paths**:
+- `@org/core-services` (legacy, still works)
+- `@opensourcekd/ng-common-libs` (future package name)
+
+**Key Services**:
 - **AuthService**: Auth0 OAuth2/OIDC with sessionStorage
 - **RoleService**: RBAC and user permissions
 - **EventBusService**: Cross-MFE communication (mitt-based)
-- **API Services**: IncentiveRules, Incentives, Targets, Tasks
+- **MfeLoaderService**: Dynamic MFE loading
+- **DummyDataService**: Mock data for development
 
 ## Code Standards
 
@@ -46,18 +58,20 @@
 ## File Organization
 
 ```
-src/app/                      # Shell application
-projects/core-services/       # Shared library (@org/core-services)
-  └── src/lib/
-      ├── auth.service.ts
-      ├── role.service.ts
-      ├── event-bus.service.ts
-      ├── models/             # TypeScript interfaces
-      └── api/                # API service classes
+src/
+  ├── app/                      # Shell application
+  ├── _temp-shared/             # ⚠️ TEMPORARY: Shared services (to be migrated)
+  │   ├── auth.service.ts
+  │   ├── role.service.ts
+  │   ├── event-bus.service.ts
+  │   ├── models/               # TypeScript interfaces
+  │   ├── config/               # Auth0 & API configs
+  │   └── interceptors/         # HTTP interceptors
+  └── configs/                  # MFE configurations
 .github/
-  ├── copilot-context.yml     # Centralized context manifest
-  ├── copilot-instructions.md # This file
-  ├── context/                # Machine-readable context
+  ├── copilot-context.yml       # Centralized context manifest
+  ├── copilot-instructions.md   # This file
+  ├── context/                  # Machine-readable context
   │   ├── domain-models.json
   │   └── event-schemas/
   ├── docs/                   # Documentation
@@ -76,7 +90,7 @@ projects/core-services/       # Shared library (@org/core-services)
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
-import { API_CONFIG } from './api.config';
+import { API_CONFIG } from '@opensourcekd/ng-common-libs';  // or '@org/core-services'
 
 @Injectable({ providedIn: 'root' })
 export class MyNewService {
@@ -127,10 +141,10 @@ export class MyComponent {
 
 | Task | Location |
 |------|----------|
-| Authentication | `AuthService` in `@org/core-services` |
-| API calls | `projects/core-services/src/lib/api/` |
-| Cross-MFE events | `EventBusService` |
-| User roles/permissions | `RoleService` |
+| Authentication | `AuthService` in `src/_temp-shared/` |
+| API calls | `src/_temp-shared/config/api.config.ts` |
+| Cross-MFE events | `EventBusService` in `src/_temp-shared/` |
+| User roles/permissions | `RoleService` in `src/_temp-shared/` |
 | Domain models | `.github/context/domain-models.json` |
 | Event schemas | `.github/context/event-schemas/` |
 | Architecture | `.github/docs/ARCHITECTURE.md` |
