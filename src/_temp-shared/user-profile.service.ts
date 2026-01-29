@@ -70,6 +70,12 @@ export class UserProfileService {
   fetchUserProfile(): Observable<UserProfileData | null> {
     console.log('[UserProfileService] Fetching user profile from API');
     
+    // Defensive check for API_CONFIG
+    if (!API_CONFIG || !API_CONFIG.baseUrl) {
+      console.error('[UserProfileService] API_CONFIG or baseUrl is not defined');
+      return of(null);
+    }
+    
     return this.http.get<UserProfileResponse>(`${API_CONFIG.baseUrl}/auth/me`).pipe(
       map((response: UserProfileResponse) => {
         if (response.success && response.data) {

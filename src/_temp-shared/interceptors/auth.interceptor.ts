@@ -56,8 +56,14 @@ const isAuthEndpoint = (url: string): boolean => {
   ];
   
   // Check if request is to our configured API - these SHOULD receive the token
-  if (API_CONFIG?.baseUrl && url.startsWith(API_CONFIG.baseUrl)) {
-    return false; // Always add token to our API requests
+  // Handle case where API_CONFIG might be undefined in Module Federation context
+  try {
+    if (API_CONFIG && typeof API_CONFIG === 'object' && API_CONFIG.baseUrl && url.startsWith(API_CONFIG.baseUrl)) {
+      return false; // Always add token to our API requests
+    }
+  } catch (error) {
+    // If API_CONFIG is not available (e.g., in MFE context), fall through to auth pattern check
+    console.warn('[authInterceptor] API_CONFIG not available, using pattern-based auth endpoint detection');
   }
   
   return authPatterns.some(pattern => url.includes(pattern));
