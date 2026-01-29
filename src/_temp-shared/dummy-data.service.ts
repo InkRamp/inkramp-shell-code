@@ -190,7 +190,7 @@ export class DummyDataService {
     // DEBUG_LOG: Fetching sales records for executive
     console.log('[DummyDataService] getSalesRecordsForExecutive() called for:', salesExecutiveId);
     const records = this.salesRecordsSubject.value.filter(
-      record => record.salesExecutiveId === salesExecutiveId
+      (record: SalesRecord) => record.salesExecutiveId === salesExecutiveId
     );
     // DEBUG_LOG: Records found
     console.log('[DummyDataService] Found', records.length, 'sales records for executive:', salesExecutiveId);
@@ -206,7 +206,7 @@ export class DummyDataService {
     // DEBUG_LOG: Fetching incentives for executive
     console.log('[DummyDataService] getIncentivesForExecutive() called for:', salesExecutiveId);
     const incentives = this.incentivesEarnedSubject.value.filter(
-      incentive => incentive.salesExecutiveId === salesExecutiveId
+      (incentive: IncentiveEarned) => incentive.salesExecutiveId === salesExecutiveId
     );
     // DEBUG_LOG: Incentives found
     console.log('[DummyDataService] Found', incentives.length, 'incentives for executive:', salesExecutiveId);
@@ -221,7 +221,7 @@ export class DummyDataService {
   getReportDataForExecutive(salesExecutiveId: string): ReportData {
     // DEBUG_LOG: Generating report data
     console.log('[DummyDataService] getReportDataForExecutive() called for:', salesExecutiveId);
-    const exec = this.salesExecutivesSubject.value.find(e => e.id === salesExecutiveId);
+    const exec = this.salesExecutivesSubject.value.find((e: SalesExecutive) => e.id === salesExecutiveId);
     const salesRecords = this.getSalesRecordsForExecutive(salesExecutiveId);
     const incentives = this.getIncentivesForExecutive(salesExecutiveId);
 
@@ -313,7 +313,7 @@ export class DummyDataService {
     // DEBUG_LOG: Updating incentive rule
     console.log('[DummyDataService] updateIncentiveRule() called for rule:', ruleId, 'with updates:', updates);
     const currentRules = this.incentiveRulesSubject.value;
-    const updatedRules = currentRules.map(rule =>
+    const updatedRules = currentRules.map((rule: IncentiveRule) =>
       rule.id === ruleId ? { ...rule, ...updates } : rule
     );
     this.incentiveRulesSubject.next(updatedRules);
@@ -329,7 +329,7 @@ export class DummyDataService {
     // DEBUG_LOG: Deleting incentive rule
     console.log('[DummyDataService] deleteIncentiveRule() called for rule:', ruleId);
     const currentRules = this.incentiveRulesSubject.value;
-    const filteredRules = currentRules.filter(rule => rule.id !== ruleId);
+    const filteredRules = currentRules.filter((rule: IncentiveRule) => rule.id !== ruleId);
     this.incentiveRulesSubject.next(filteredRules);
     // DEBUG_LOG: Rule deleted successfully
     console.log('[DummyDataService] Rule deleted successfully, remaining rules:', this.incentiveRulesSubject.value.length);
