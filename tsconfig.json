@@ -3,8 +3,8 @@
   "compilerOptions": {
     "paths": {
       "@org/core-services": ["./src/_temp-shared/public-api.ts"],
-      "@opensourcekd/ng-common-libs": ["./src/_temp-shared/public-api.ts"],
-      "@opensourcekd/ng-common-libs/*": ["./src/_temp-shared/*"]
+      // "@opensourcekd/ng-common-libs": ["./src/_temp-shared/public-api.ts"],
+      // "@opensourcekd/ng-common-libs/*": ["./src/_temp-shared/*"]
     },
     "outDir": "./dist/out-tsc",
     "strict": true,
