@@ -84,7 +84,7 @@ export class AuthService {
     private http: HttpClient,
     private eventBus: EventBusService
   ) {
-    console.log("[AuthService] Initializing Auth0 authentication service");
+    console.log("[AuthService] Initializing Auth0 authentication service from the SHELL");
     this.initializationPromise = this.initializeAuth0();
   }
 
