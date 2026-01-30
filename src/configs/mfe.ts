@@ -46,42 +46,42 @@ export interface InterfaceMfeUrl extends LoadRemoteModuleScriptOptions{
  * - 1-4: Normal (load on demand)
  */
 export const MFE_CONFIGS: MfeConfig[] = [
-    {
-        id: 'mfe-crud-rules',
-        name: 'crud-rules',
-        displayName: 'Manage Incentive Rules',
-        remoteName: 'crudRules',
-        exposedModule: './Component',
-        url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-CRUD_RULES/remoteEntry.js',
-        route: 'rules',
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.TEAM_LEAD],
-        priority: 8,
-        icon: 'settings'
-    },
-    {
-        id: 'mfe-my-sales',
-        name: 'my-sales',
-        displayName: 'My Sales History',
-        remoteName: 'mySales',
-        exposedModule: './Component',
-        url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-MY_SALES/remoteEntry.js',
-        route: 'sales',
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.TEAM_LEAD, UserRole.SALES_EXECUTIVE],
-        priority: 7,
-        icon: 'list'
-    },
-    {
-        id: 'mfe-my-report',
-        name: 'my-report',
-        displayName: 'My Incentive Reports',
-        remoteName: 'myReport',
-        exposedModule: './Component',
-        url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-MY_REPORT/remoteEntry.js',
-        route: 'reports',
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.TEAM_LEAD, UserRole.SALES_EXECUTIVE],
-        priority: 6,
-        icon: 'chart'
-    },
+    // {
+    //     id: 'mfe-crud-rules',
+    //     name: 'crud-rules',
+    //     displayName: 'Manage Incentive Rules',
+    //     remoteName: 'crudRules',
+    //     exposedModule: './Component',
+    //     url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-CRUD_RULES/remoteEntry.js',
+    //     route: 'rules',
+    //     allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.TEAM_LEAD],
+    //     priority: 8,
+    //     icon: 'settings'
+    // },
+    // {
+    //     id: 'mfe-my-sales',
+    //     name: 'my-sales',
+    //     displayName: 'My Sales History',
+    //     remoteName: 'mySales',
+    //     exposedModule: './Component',
+    //     url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-MY_SALES/remoteEntry.js',
+    //     route: 'sales',
+    //     allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.TEAM_LEAD, UserRole.SALES_EXECUTIVE],
+    //     priority: 7,
+    //     icon: 'list'
+    // },
+    // {
+    //     id: 'mfe-my-report',
+    //     name: 'my-report',
+    //     displayName: 'My Incentive Reports',
+    //     remoteName: 'myReport',
+    //     exposedModule: './Component',
+    //     url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-MY_REPORT/remoteEntry.js',
+    //     route: 'reports',
+    //     allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.TEAM_LEAD, UserRole.SALES_EXECUTIVE],
+    //     priority: 6,
+    //     icon: 'chart'
+    // },
     {
         id: 'mfe-users-crud',
         name: 'users-crud',
