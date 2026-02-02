@@ -84,7 +84,7 @@ export class AuthService {
     private http: HttpClient,
     private eventBus: EventBusService
   ) {
-    console.log("[AuthService] Initializing Auth0 authentication service");
+    console.log("[AuthService] Initializing Auth0 authentication service from the SHELL");
     this.initializationPromise = this.initializeAuth0();
   }
 
@@ -115,7 +115,7 @@ export class AuthService {
         cacheLocation: 'memory', // Use memory cache instead of localStorage
         useRefreshTokens: true, // Enable refresh tokens for better security
       });
-      console.log("[AuthService] Auth0 client initialized successfully");
+      console.log("[AuthService] Auth0 client initialized successfully from SHELL");
     } catch (error) {
       console.error("[AuthService] Failed to initialize Auth0 client:", error);
       throw error;
