@@ -88,6 +88,10 @@ export class AuthService {
     this.initializationPromise = this.initializeAuth0();
   }
 
+  public sayHi():void{
+    console.log("In sayHI() function of SHELL auth service")
+  }
+
   /**
    * Initialize Auth0 client
    */
