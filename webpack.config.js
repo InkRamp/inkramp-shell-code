@@ -15,7 +15,7 @@ module.exports = withModuleFederationPlugin({
     '@opensourcekd/ng-common-libs': { singleton: true, strictVersion: false, requiredVersion: 'auto' },
   },
 
-  // Expose shared services for MFEs from _temp-shared folder
+  // // Expose shared services for MFEs from _temp-shared folder
   // exposes: {
   //   './RoleService': './src/_temp-shared/role.service.ts',
   //   './DummyDataService': './src/_temp-shared/dummy-data.service.ts',
