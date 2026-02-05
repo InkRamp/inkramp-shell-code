@@ -10,16 +10,9 @@ module.exports = withModuleFederationPlugin({
   },
 
   shared: {
-    // shareAll excludes @opensourcekd/ng-common-libs to prevent "JIT compiler unavailable" errors
-    // This package is built as ESM/CJS bundles (not Angular-compiled artifacts)
-    // Each app (shell and remotes) should bundle its own copy instead of sharing it
-    ...shareAll({ 
-      singleton: true, 
-      strictVersion: false, 
-      requiredVersion: 'auto', 
-      eager: false 
-    }, ['@opensourcekd/ng-common-libs']),
+    ...shareAll({ singleton: true, strictVersion: false, requiredVersion: 'auto', eager: false }),
     '@org/core-services': { singleton: true, strictVersion: false, requiredVersion: 'auto' },
+    '@opensourcekd/ng-common-libs': { singleton: true, strictVersion: false, requiredVersion: 'auto' },
   },
 
   // // Expose shared services for MFEs from _temp-shared folder
