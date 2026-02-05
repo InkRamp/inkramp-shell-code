@@ -4,7 +4,7 @@ import { AuthService, UserInfo } from '@opensourcekd/ng-common-libs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { RoleService, MfeLoaderService, User } from '@opensourcekd/ng-common-libs';
+import { RoleService, MfeLoaderService, User } from '@org/core-services';
 import { MFE_CONFIGS } from '../configs/mfe';
 import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
