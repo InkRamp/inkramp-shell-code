@@ -1,26 +1,6 @@
 <header class="app-header">
   <div class="header-left">
     <h1 class="app-title">Incentive Management System</h1>
-    <span *ngIf="currentUser && getOrganizationName()" class="org-display">
-      {{ getOrganizationName() }}
-    </span>
-  </div>
-  
-  <div class="header-center" *ngIf="currentUser && canViewOthers">
-    <div class="user-selector">
-      <label for="salesExecSelect">View data for:</label>
-      <span id="salesExecSelectDesc" class="visually-hidden">
-        Selecting a user will display their incentive data.
-      </span>
-      <select 
-        id="salesExecSelect" 
-        [(ngModel)]="selectedSalesExecutiveId" 
-        (change)="onSalesExecutiveChange()" 
-        aria-describedby="salesExecSelectDesc">
-        <option [value]="currentUser.id">My Data</option>
-        <option *ngFor="let exec of salesExecutives" [value]="exec.id">{{ exec.name }}</option>
-      </select>
-    </div>
   </div>
   
   <div class="header-right">

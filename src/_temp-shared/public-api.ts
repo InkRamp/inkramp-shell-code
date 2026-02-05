@@ -10,16 +10,9 @@
  * Import these services directly from '@opensourcekd/ng-common-libs' instead of this file.
  */
 
-export * from './core-services.service';
-export * from './core-services.component';
-
 // Services - Only services used in shell application
 export * from './role.service';
-export * from './dummy-data.service';
 export * from './mfe-loader.service';
-export * from './sse-event-from.service';
-export * from './sse-event-from.service2';
-export * from './user-profile.service';
 
 // Interceptors
 export * from './interceptors/auth.interceptor';
