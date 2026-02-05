@@ -28,15 +28,15 @@
 - Core application: Integrated directly into src/app (for project-specific code)
 
 **Current Import Paths**:
-- `@org/core-services` (legacy, still works)
-- `@opensourcekd/ng-common-libs` (future package name)
+- `@org/core-services` (legacy, still works for services not yet in package)
+- `@opensourcekd/ng-common-libs` (npm package for AuthService, EventBusService)
 
 **Key Services**:
-- **AuthService**: Auth0 OAuth2/OIDC with sessionStorage
-- **RoleService**: RBAC and user permissions
-- **EventBusService**: Cross-MFE communication (mitt-based)
-- **MfeLoaderService**: Dynamic MFE loading
-- **DummyDataService**: Mock data for development
+- **AuthService**: Auth0 OAuth2/OIDC with sessionStorage (from `@opensourcekd/ng-common-libs`)
+- **RoleService**: RBAC and user permissions (from `@org/core-services`)
+- **EventBusService**: Cross-MFE communication (from `@opensourcekd/ng-common-libs`)
+- **MfeLoaderService**: Dynamic MFE loading (from `@org/core-services`)
+- **DummyDataService**: Mock data for development (from `@org/core-services`)
 
 ## Code Standards
 
@@ -61,11 +61,12 @@
 src/
   ├── app/                      # Shell application
   ├── _temp-shared/             # ⚠️ TEMPORARY: Shared services (to be migrated)
-  │   ├── auth.service.ts
   │   ├── role.service.ts
-  │   ├── event-bus.service.ts
+  │   ├── mfe-loader.service.ts
+  │   ├── user-profile.service.ts
+  │   ├── dummy-data.service.ts
   │   ├── models/               # TypeScript interfaces
-  │   ├── config/               # Auth0 & API configs
+  │   ├── config/               # API configs
   │   └── interceptors/         # HTTP interceptors
   └── configs/                  # MFE configurations
 .github/
@@ -141,9 +142,9 @@ export class MyComponent {
 
 | Task | Location |
 |------|----------|
-| Authentication | `AuthService` in `src/_temp-shared/` |
+| Authentication | `AuthService` from `@opensourcekd/ng-common-libs` package |
 | API calls | `src/_temp-shared/config/api.config.ts` |
-| Cross-MFE events | `EventBusService` in `src/_temp-shared/` |
+| Cross-MFE events | `EventBusService` from `@opensourcekd/ng-common-libs` package |
 | User roles/permissions | `RoleService` in `src/_temp-shared/` |
 | Domain models | `.github/context/domain-models.json` |
 | Event schemas | `.github/context/event-schemas/` |
