@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { User, UserRole, hasRequiredRole } from './models/roles.model';
 import { UserInfo } from '@opensourcekd/ng-common-libs';
-import { UserProfileData, Role } from './user-profile.service';
 
 /**
  * Service to manage user roles and permissions
@@ -19,42 +18,6 @@ export class RoleService {
     console.log('[RoleService] Service initialized');
     // Initialize with dummy user for development or load from sessionStorage for mimicking
     this.loadInitialUser();
-  }
-
-  /**
-   * Set user from API profile data
-   * Maps profile data including organization and role from backend API
-   * @param profile User profile data from /auth/me API
-   */
-  setUserFromProfile(profile: UserProfileData): void {
-    console.log('[RoleService] Setting user from API profile:', profile);
-    
-    const role = this.mapApiRoleToUserRole(profile.roles);
-    
-    const user: User = {
-      id: profile.userId,
-      name: profile.name || profile.email || 'User',
-      email: profile.email || '',
-      role: role
-    };
-    
-    console.log('[RoleService] Mapped user with role from API:', user);
-    this.setCurrentUser(user);
-  }
-
-  /**
-   * Map API role to UserRole enum
-   * @param roles Array of roles from API
-   * @returns Mapped UserRole
-   */
-  private mapApiRoleToUserRole(roles: Role[]): UserRole {
-    if (!roles || roles.length === 0) {
-      console.warn('[RoleService] No roles found in API response, defaulting to SALES_EXECUTIVE');
-      return UserRole.SALES_EXECUTIVE;
-    }
-    
-    const roleName = roles[0].name;
-    return this.mapStringToUserRole(roleName);
   }
 
   /**
