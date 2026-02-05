@@ -50,19 +50,27 @@ This document describes the architecture of the i17e Incentive Management System
 
 ---
 
-## Core Services (`src/_temp-shared/`)
+## Core Services
 
-⚠️ **Temporary Location**: These services are in a transitional state and will be migrated to either:
-1. External package: `@opensourcekd/ng-common-libs` (for reuse across projects)
-2. Core application: Integrated directly into the main application (for project-specific code)
+⚠️ **Note**: Some services have been migrated to `@opensourcekd/ng-common-libs` npm package.
+
+**Services from `@opensourcekd/ng-common-libs` package**:
+- `AuthService` - OAuth2/OIDC authentication via Auth0
+- `EventBusService` - Cross-MFE communication
+
+**Services in `src/_temp-shared/` (temporary location)**:
+- `RoleService` - RBAC and permissions
+- `MfeLoaderService` - Dynamic MFE loading
+- `UserProfileService` - User profile from backend API
+- `DummyDataService` - Mock data for development
 
 **Import Paths**:
-- `@org/core-services` (legacy, still supported)
-- `@opensourcekd/ng-common-libs` (future package name)
+- `@opensourcekd/ng-common-libs` - For AuthService, EventBusService
+- `@org/core-services` - For RoleService, MfeLoaderService, etc.
 
 The shared services provide cross-cutting concerns for all MFEs:
 
-### AuthService
+### AuthService (from @opensourcekd/ng-common-libs)
 - **Purpose**: OAuth2/OIDC authentication via Auth0
 - **Token Storage**: sessionStorage (cleared on tab close)
 - **Features**:
@@ -71,14 +79,14 @@ The shared services provide cross-cutting concerns for all MFEs:
   - Session management
   - Event broadcasting for MFE consumption
 
-### RoleService
+### RoleService (from @org/core-services)
 - **Purpose**: Role-Based Access Control (RBAC)
 - **Features**:
   - User role management
   - Permission checking
   - Feature visibility control
 
-### EventBusService
+### EventBusService (from @opensourcekd/ng-common-libs)
 - **Purpose**: Cross-MFE communication
 - **Implementation**: mitt (lightweight event emitter)
 - **Pattern**: Pub/Sub for decoupled communication
@@ -231,21 +239,18 @@ i17e-code/
 │   ├── copilot-instructions.md   # Copilot context
 │   └── workflows/                 # CI/CD pipelines
 ├── docs/                          # Documentation
-├── projects/
-│   └── core-services/             # Shared library
-│       └── src/
-│           ├── lib/
-│           │   ├── auth.service.ts
-│           │   ├── role.service.ts
-│           │   ├── event-bus.service.ts
-│           │   ├── brand-context.service.ts
-│           │   └── api/
-│           │       ├── api.config.ts
-│           │       ├── incentive-rules.service.ts
-│           │       ├── incentives.service.ts
-│           │       ├── targets.service.ts
-│           │       └── tasks.service.ts
-│           └── public-api.ts
+├── src/
+│   ├── _temp-shared/              # ⚠️ TEMPORARY: Shared services (to be migrated)
+│   │   ├── role.service.ts
+│   │   ├── mfe-loader.service.ts
+│   │   ├── user-profile.service.ts
+│   │   ├── dummy-data.service.ts
+│   │   ├── models/
+│   │   ├── config/
+│   │   │   └── api.config.ts
+│   │   └── interceptors/
+│   │       └── auth.interceptor.ts
+│   └── public-api.ts
 ├── src/
 │   ├── app/
 │   │   ├── components/

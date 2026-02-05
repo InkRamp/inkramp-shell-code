@@ -4,6 +4,18 @@
 
 This folder contains shared services, models, and configurations that were moved from `projects/core-services/`.
 
+## Services Already Migrated to @opensourcekd/ng-common-libs
+
+The following services have been removed from this folder and should be imported from `@opensourcekd/ng-common-libs` package:
+
+- **AuthService** - Authentication with Auth0 (removed, use package)
+- **EventBusService** - Cross-application event communication (removed, use package)
+
+Import these from the package:
+```typescript
+import { AuthService, EventBusService } from '@opensourcekd/ng-common-libs';
+```
+
 ## Future Migration Path
 
 All code in this folder will be migrated to one of two destinations:
