@@ -23,7 +23,3 @@ export * from './interceptors/auth.interceptor';
 export * from './models/roles.model';
 export * from './models/data.model';
 export * from './models/mfe.model';
-
-// Config
-// auth.config and api.config have been moved to src/configs/
-export * from './config/api.config';

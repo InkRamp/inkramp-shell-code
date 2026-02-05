@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
-import { API_CONFIG } from './config/api.config';
+import { API_CONFIG } from '../configs/api.config';
 
 /**
  * Organization information from API
