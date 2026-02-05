@@ -21,6 +21,42 @@ export class MfeWrapperComponent implements AfterViewInit{
   
   private injector = inject(EnvironmentInjector);
 
+  /**
+   * Gets an error message explaining that a component must be standalone
+   * @param componentName The name of the component
+   * @returns Formatted error message with instructions
+   */
+  private getNonStandaloneErrorMessage(componentName: string): string {
+    return `⚠️ CRITICAL ERROR: Component ${componentName} is NOT a standalone component. ` +
+      `This will cause "JIT compiler unavailable" errors in production builds. ` +
+      `\n\nTo fix this issue, the remote MFE must:` +
+      `\n1. Mark the component with 'standalone: true' in the @Component decorator` +
+      `\n2. Import all dependencies in the component's 'imports' array` +
+      `\n3. Rebuild and redeploy the MFE` +
+      `\n\nExample:` +
+      `\n@Component({` +
+      `\n  selector: 'app-root',` +
+      `\n  standalone: true,` +
+      `\n  imports: [CommonModule, RouterModule, ...],` +
+      `\n  templateUrl: './app.component.html'` +
+      `\n})`;
+  }
+
+  /**
+   * Checks if a component is standalone
+   * @param componentType The component type to check
+   * @returns true if the component is standalone, false otherwise
+   * 
+   * Note: This uses Angular's internal ɵcmp property because there's no public API
+   * to check if a component is standalone. This may need to be updated if Angular's
+   * internal structure changes in future versions.
+   */
+  private isStandaloneComponent(componentType: Type<any>): boolean {
+    // Access Angular's internal component metadata
+    // ɵcmp is Angular's internal property that contains component definition
+    return (componentType as any).ɵcmp?.standalone === true;
+  }
+
   async ngAfterViewInit(){
     const options:LoadRemoteModuleScriptOptions | undefined = MFE.find(({remoteName})=>remoteName===this.name)
     if(!options) {
@@ -56,22 +92,11 @@ export class MfeWrapperComponent implements AfterViewInit{
       console.log(`[MfeWrapperComponent] Found component type for MFE: ${this.name}`);
       
       // Check if the component is standalone
-      const isStandalone = (componentType as any).ɵcmp?.standalone === true;
+      const isStandalone = this.isStandaloneComponent(componentType);
       
       if (!isStandalone) {
-        console.error(`[MfeWrapperComponent] ⚠️ CRITICAL ERROR: Component ${this.name} is NOT a standalone component. ` +
-          `This will cause "JIT compiler unavailable" errors in production builds. ` +
-          `\n\nTo fix this issue, the remote MFE must:` +
-          `\n1. Mark the component with 'standalone: true' in the @Component decorator` +
-          `\n2. Import all dependencies in the component's 'imports' array` +
-          `\n3. Rebuild and redeploy the MFE` +
-          `\n\nExample:` +
-          `\n@Component({` +
-          `\n  selector: 'app-root',` +
-          `\n  standalone: true,` +
-          `\n  imports: [CommonModule, RouterModule, ...],` +
-          `\n  templateUrl: './app.component.html'` +
-          `\n})`);
+        const errorMessage = this.getNonStandaloneErrorMessage(this.name || 'unknown');
+        console.error(`[MfeWrapperComponent] ${errorMessage}`);
         throw new Error(`Component ${this.name} must be a standalone component for Module Federation in production builds`);
       }
       
