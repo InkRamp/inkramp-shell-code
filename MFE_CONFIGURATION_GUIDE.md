@@ -2,7 +2,21 @@
 
 ## ⚠️ IMPORTANT: Using @opensourcekd/ng-common-libs
 
-If your remote MFE uses the `@opensourcekd/ng-common-libs` package (for AuthService, EventBusService, etc.), you **MUST** exclude it from Module Federation sharing to avoid "JIT compiler unavailable" errors.
+When using the `@opensourcekd/ng-common-libs` package (for AuthService, EventBusService, etc.), you **MUST** use version 1.2.7 or later to avoid "JIT compiler unavailable" errors.
+
+### Required Version
+
+In your remote MFE's `package.json`:
+
+```json
+{
+  "dependencies": {
+    "@opensourcekd/ng-common-libs": "^1.2.7"
+  }
+}
+```
+
+**Version 1.2.6 has JIT compiler issues - do not use it!**
 
 ### Required Configuration
 
@@ -21,27 +35,29 @@ module.exports = withModuleFederationPlugin({
   },
 
   shared: {
-    // CRITICAL: Exclude @opensourcekd/ng-common-libs from Module Federation sharing
-    // Pass it as the second parameter to shareAll()
+    // Share the package as singleton (v1.2.7+ works correctly)
     ...shareAll({ 
       singleton: true, 
       strictVersion: false, 
       requiredVersion: 'auto' 
-    }, ['@opensourcekd/ng-common-libs']),  // <-- Add this exclusion array
+    }),
+    '@opensourcekd/ng-common-libs': { 
+      singleton: true, 
+      strictVersion: false, 
+      requiredVersion: 'auto' 
+    },
   },
 });
 ```
 
 ### Why This is Required
 
-The `@opensourcekd/ng-common-libs` package is built with Rollup/TypeScript (not Angular compiler):
-- ❌ Does NOT contain Angular metadata (`ɵfac`, `ɵprov`, `ɵinj`)
-- ❌ Cannot be shared via Module Federation in production (AOT mode)
-- ✅ Must be bundled directly into each application
+Version 1.2.7 of `@opensourcekd/ng-common-libs`:
+- ✅ Contains proper Angular metadata (`ɵfac`, `ɵprov`, `ɵinj`)
+- ✅ Can be shared via Module Federation in production (AOT mode)
+- ✅ Works correctly as a singleton across shell and MFEs
 
-**Without this exclusion**: Your MFE will fail with "JIT compiler unavailable" error in production builds.
-
-**With this exclusion**: Each app bundles its own copy (~34-50 KB increase), but everything works correctly.
+**Version 1.2.6 does NOT work with Module Federation and will cause JIT compiler errors.**
 
 ## Complete Example Configuration
 
@@ -60,16 +76,18 @@ module.exports = withModuleFederationPlugin({
   },
 
   shared: {
-    // Exclude non-Angular-compiled packages from sharing
+    // Share all packages including @opensourcekd/ng-common-libs (v1.2.7+)
     ...shareAll({ 
       singleton: true, 
       strictVersion: false, 
       requiredVersion: 'auto',
       eager: false
-    }, [
-      '@opensourcekd/ng-common-libs',  // ← Required exclusion
-      // Add any other non-Angular packages here
-    ]),
+    }),
+    '@opensourcekd/ng-common-libs': { 
+      singleton: true, 
+      strictVersion: false, 
+      requiredVersion: 'auto'
+    },
     
     // Share shell's core services (if needed)
     '@org/core-services': { 
@@ -87,7 +105,7 @@ module.exports = withModuleFederationPlugin({
 Add the package to your MFE's `package.json`:
 
 ```bash
-npm install @opensourcekd/ng-common-libs@^1.2.6
+npm install @opensourcekd/ng-common-libs@^1.2.7
 ```
 
 Or manually in `package.json`:
@@ -95,7 +113,7 @@ Or manually in `package.json`:
 ```json
 {
   "dependencies": {
-    "@opensourcekd/ng-common-libs": "^1.2.6"
+    "@opensourcekd/ng-common-libs": "^1.2.7"
   }
 }
 ```
@@ -175,10 +193,11 @@ ERROR Error: JIT compiler unavailable
 ```
 
 **Solution**: 
-1. ✅ Check `webpack.config.js` - ensure `@opensourcekd/ng-common-libs` is in the exclusion array
-2. ✅ Rebuild your MFE: `npm run build`
-3. ✅ Clear browser cache and test again
-4. ✅ Verify the shell also excludes the package
+1. ✅ Check `package.json` - ensure you're using v1.2.7 or later
+2. ✅ Run `npm install` to update the package
+3. ✅ Rebuild your MFE: `npm run build`
+4. ✅ Clear browser cache and test again
+5. ✅ Verify the shell also uses v1.2.7 or later
 
 ### Module Not Found Error
 
@@ -189,7 +208,7 @@ Module not found: Error: Can't resolve '@opensourcekd/ng-common-libs'
 ```
 
 **Solution**: 
-1. ✅ Install the package: `npm install @opensourcekd/ng-common-libs`
+1. ✅ Install the package: `npm install @opensourcekd/ng-common-libs@^1.2.7`
 2. ✅ Verify it's in `package.json` dependencies
 3. ✅ Delete `node_modules` and `package-lock.json`, then `npm install` again
 
@@ -225,19 +244,20 @@ Component must be a standalone component for Module Federation
 
 ### Shell Version Requirements
 - Angular: `^18.2.13`
-- @opensourcekd/ng-common-libs: `^1.2.6`
+- @opensourcekd/ng-common-libs: `^1.2.7` ✅ (v1.2.6 has issues)
 
 ### Remote MFE Version Requirements
 - Angular: `^18.2.x` (must match shell's major.minor version)
-- @opensourcekd/ng-common-libs: `^1.2.x` (patch differences are OK)
+- @opensourcekd/ng-common-libs: `^1.2.7` ✅ (must use v1.2.7 or later)
 
 ### Version Compatibility Matrix
 
-| Shell Angular | Remote Angular | Compatible |
+| Shell Package | Remote Package | Compatible |
 |---------------|----------------|------------|
-| 18.2.13       | 18.2.14        | ✅ Yes     |
-| 18.2.13       | 18.3.0         | ⚠️ Risky   |
-| 18.2.13       | 19.0.0         | ❌ No      |
+| 1.2.7         | 1.2.7          | ✅ Yes     |
+| 1.2.7         | 1.2.8+         | ✅ Yes     |
+| 1.2.6         | Any            | ❌ No - has JIT compiler issues |
+| Any           | 1.2.6          | ❌ No - has JIT compiler issues |
 
 ## Testing Your Configuration
 
@@ -284,8 +304,9 @@ export const MFE_CONFIGS: MfeConfig[] = [
 
 Before deploying your remote MFE:
 
-- [ ] Added `@opensourcekd/ng-common-libs` to package.json dependencies
-- [ ] Excluded `@opensourcekd/ng-common-libs` from Module Federation sharing in webpack.config.js
+- [ ] Added `@opensourcekd/ng-common-libs@^1.2.7` to package.json dependencies
+- [ ] Verified using version 1.2.7 or later (NOT 1.2.6)
+- [ ] Package is shared via Module Federation in webpack.config.js
 - [ ] Component is marked as `standalone: true`
 - [ ] All dependencies are in component's `imports` array
 - [ ] Angular version matches shell (18.2.x)
