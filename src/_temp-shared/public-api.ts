@@ -6,7 +6,6 @@
  */
 
 export * from './core-services.service';
-export * from './auth.service';
 export * from './core-services.component';
 
 // Services - Only services used in shell application
@@ -27,5 +26,4 @@ export * from './models/data.model';
 export * from './models/mfe.model';
 
 // Config
-export * from './config/auth.config';
 export * from './config/api.config';

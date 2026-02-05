@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { User, UserRole, hasRequiredRole } from './models/roles.model';
-import { UserInfo } from './auth.service';
+import { UserInfo } from '@opensourcekd/ng-common-libs';
 import { UserProfileData, Role } from './user-profile.service';
 
 /**
