@@ -2,13 +2,13 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { RoleService, DummyDataService, MfeLoaderService, User, SalesExecutive, MfeConfig, UserProfileService, UserProfileData } from '@org/core-services';
+import { RoleService, MfeLoaderService, User, MfeConfig } from '@org/core-services';
 import { AuthService, UserInfo } from '@opensourcekd/ng-common-libs';
 import { Subscription } from 'rxjs';
 
 /**
  * Header component for the application
- * Displays user information, role-based navigation, and user selection for admins
+ * Displays user information and role-based navigation
  */
 @Component({
   selector: 'app-header',
@@ -19,26 +19,19 @@ import { Subscription } from 'rxjs';
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;
-  userProfile: UserProfileData | null = null;
   availableMfes: MfeConfig[] = [];
-  salesExecutives: SalesExecutive[] = [];
-  selectedSalesExecutiveId: string = '';
-  canViewOthers: boolean = false;
   private subscriptions = new Subscription();
 
   constructor(
     private roleService: RoleService,
-    private dummyDataService: DummyDataService,
     private mfeLoader: MfeLoaderService,
     private auth: AuthService,
-    private userProfileService: UserProfileService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.syncAuthenticatedUser();
     this.subscribeToUserChanges();
-    this.subscribeToProfileChanges();
   }
 
   ngOnDestroy(): void {
@@ -47,7 +40,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   /**
    * Sync authenticated user from auth service to role service if needed
-   * Also fetches user profile from API for organization and role data
    */
   private syncAuthenticatedUser(): void {
     const isAuthenticated = this.auth.isAuthenticatedSync();
@@ -61,29 +53,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (shouldSync) {
       this.roleService.setUserFromAuth(userInfo);
     }
-
-    // Fetch user profile from API if authenticated
-    if (isAuthenticated) {
-      this.fetchUserProfile();
-    }
-  }
-
-  /**
-   * Fetch user profile from backend API
-   * Note: Profile updates are handled via subscribeToProfileChanges() subscription
-   */
-  private fetchUserProfile(): void {
-    const sub = this.userProfileService.fetchUserProfile().subscribe({
-      next: (profile) => {
-        if (profile) {
-          this.roleService.setUserFromProfile(profile);
-        }
-      },
-      error: (error) => {
-        console.error('[HeaderComponent] Error fetching user profile:', error);
-      }
-    });
-    this.subscriptions.add(sub);
   }
 
   /**
@@ -105,17 +74,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Subscribe to user profile changes from UserProfileService
-   * This ensures the header updates reactively when profile is fetched after auth callback
-   */
-  private subscribeToProfileChanges(): void {
-    const sub = this.userProfileService.profile$.subscribe(profile => {
-      this.userProfile = profile;
-    });
-    this.subscriptions.add(sub);
-  }
-
-  /**
    * Update component state based on current user
    */
   private updateComponentState(user: User | null): void {
@@ -124,10 +82,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.selectedSalesExecutiveId = user.id;
-    this.canViewOthers = this.roleService.canViewOthersData();
     this.updateAvailableMfes();
-    this.loadSalesExecutives();
   }
 
   /**
@@ -135,9 +90,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
    */
   private resetComponentState(): void {
     this.availableMfes = [];
-    this.salesExecutives = [];
-    this.canViewOthers = false;
-    this.userProfile = null;
   }
 
   /**
@@ -150,45 +102,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Load sales executives for selection (admin/team lead only)
-   */
-  private loadSalesExecutives(): void {
-    this.salesExecutives = this.canViewOthers 
-      ? this.dummyDataService.getSalesExecutives()
-      : [];
-  }
-
-  /**
-   * Handle sales executive selection change
-   */
-  onSalesExecutiveChange(): void {
-    this.persistSelectedExecutive(this.selectedSalesExecutiveId);
-    this.notifyExecutiveChange(this.selectedSalesExecutiveId);
-  }
-
-  /**
-   * Persist selected executive to session storage
-   */
-  private persistSelectedExecutive(executiveId: string): void {
-    sessionStorage.setItem('selected_sales_executive_id', executiveId);
-  }
-
-  /**
-   * Notify other components of executive change via custom event
-   */
-  private notifyExecutiveChange(executiveId: string): void {
-    window.dispatchEvent(new CustomEvent('salesExecutiveChanged', { 
-      detail: { salesExecutiveId: executiveId } 
-    }));
-  }
-
-  /**
    * Handle logout action
    */
   logout(): void {
     this.auth.logout();
     this.roleService.setCurrentUser(null);
-    this.userProfileService.clearProfile();
   }
 
   /**
@@ -210,15 +128,5 @@ export class HeaderComponent implements OnInit, OnDestroy {
     } else {
       this.auth.login();
     }
-  }
-
-  /**
-   * Get organization display name from API profile
-   */
-  getOrganizationName(): string {
-    if (this.userProfile?.organizations?.length) {
-      return this.userProfile.organizations[0].displayName;
-    }
-    return '';
   }
 }

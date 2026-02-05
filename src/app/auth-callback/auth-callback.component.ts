@@ -2,8 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '@opensourcekd/ng-common-libs';
-import { RoleService, UserProfileService } from '@org/core-services';
-import { Subject, takeUntil } from 'rxjs';
+import { RoleService } from '@org/core-services';
+import { Subject } from 'rxjs';
 
 interface AuthState {
   message: string;
@@ -40,8 +40,7 @@ export class AuthCallbackComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService,
-    private roleService: RoleService,
-    private userProfileService: UserProfileService
+    private roleService: RoleService
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -95,20 +94,6 @@ export class AuthCallbackComponent implements OnInit, OnDestroy {
       }
       
       this.roleService.setUserFromAuth(userInfo);
-      
-      // Fetch user profile from backend API to get organization and role data
-      // Using takeUntil to cleanup subscription if component is destroyed
-      this.userProfileService.fetchUserProfile().pipe(takeUntil(this.destroy$)).subscribe({
-        next: (profile) => {
-          if (profile) {
-            console.log('[AuthCallbackComponent] User profile loaded from API');
-            this.roleService.setUserFromProfile(profile);
-          }
-        },
-        error: (error) => {
-          console.error('[AuthCallbackComponent] Error fetching user profile:', error);
-        }
-      });
     }
 
     return {

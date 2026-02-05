@@ -48,6 +48,9 @@ All AI/Copilot context is centralized in `.github/`:
 ### Key Files
 - `AUTH0_INTEGRATION.md` - Authentication setup
 - `MIGRATION_COMPLETE.md` - Auth0 migration notes
+- `OPENSOURCEKD_PACKAGE_FIX.md` - Fix for "JIT compiler unavailable" error with npm packages
+- `JIT_COMPILER_ERROR_FIX.md` - Fix for remote MFE component loading
+- `MODULE_FEDERATION_FIX.md` - Module Federation version compatibility
 
 ## 🔑 Key Features
 
