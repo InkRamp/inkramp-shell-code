@@ -2,8 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { RoleService, DummyDataService, MfeLoaderService, User, SalesExecutive, MfeConfig, UserInfo, UserProfileService, UserProfileData } from '@org/core-services';
-import { AuthService } from '@org/core-services';
+import { RoleService, DummyDataService, MfeLoaderService, User, SalesExecutive, MfeConfig, UserInfo, UserProfileService, UserProfileData } from '@opensourcekd/ng-common-libs';
+import { AuthService } from '@opensourcekd/ng-common-libs';
 import { Subscription } from 'rxjs';
 
 /**

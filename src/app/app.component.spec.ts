@@ -2,7 +2,7 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { AppComponent } from './app.component';
-import { AuthService, RoleService, MfeLoaderService } from '@org/core-services';
+import { AuthService, RoleService, MfeLoaderService } from '@opensourcekd/ng-common-libs';
 
 describe('AppComponent', () => {
   let component: AppComponent;
