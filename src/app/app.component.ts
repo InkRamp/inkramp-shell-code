@@ -33,11 +33,12 @@ export class AppComponent implements OnInit, OnDestroy {
   ){
     // Initialize MFE configs
     this.mfeLoader.setConfigs(MFE_CONFIGS);
+    console.log("WAKA MOJO 2", AUTH0_CONFIG);
   }
 
   async ngOnInit(): Promise<void> {
-    await this.handleOrganizationInvitation();
-    await this.syncAuthenticatedUser();
+    // await this.handleOrganizationInvitation();
+    // await this.syncAuthenticatedUser();
   }
 
   ngOnDestroy(): void {
