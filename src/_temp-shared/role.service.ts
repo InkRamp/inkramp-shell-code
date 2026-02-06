@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { User, UserRole, hasRequiredRole } from './models/roles.model';
-import { UserInfo } from '@opensourcekd/ng-common-libs';
+import { User, UserRole, hasRequiredRole, AuthUser } from './models/roles.model';
 import { UserProfileData, Role } from './user-profile.service';
 
 /**
@@ -59,11 +58,11 @@ export class RoleService {
 
   /**
    * Set user from Auth0 authentication
-   * Maps Auth0 UserInfo to internal User model with role
+   * Maps Auth0 user data to internal User model with role
    * Extracts role from token claims instead of email patterns
    * @param userInfo User information from Auth0
    */
-  setUserFromAuth(userInfo: UserInfo): void {
+  setUserFromAuth(userInfo: AuthUser): void {
     console.log('[RoleService] Setting user from Auth0 auth:', userInfo);
     
     const user = this.mapUserInfoToUser(userInfo);
@@ -72,12 +71,12 @@ export class RoleService {
   }
 
   /**
-   * Pure function to map UserInfo to User with role assignment
+   * Pure function to map auth user to User with role assignment
    * Extracts role from token claims (top-level or namespaced custom claims)
    * @param userInfo User information from Auth0
    * @returns Mapped User object with assigned role
    */
-  private mapUserInfoToUser(userInfo: UserInfo): User {
+  private mapUserInfoToUser(userInfo: AuthUser): User {
     const role = this.extractRoleFromToken(userInfo);
     
     return {
@@ -95,7 +94,7 @@ export class RoleService {
    * @param userInfo User information from Auth0 token
    * @returns Assigned UserRole
    */
-  private extractRoleFromToken(userInfo: UserInfo): UserRole {
+  private extractRoleFromToken(userInfo: AuthUser): UserRole {
     // Check top-level role claim first
     if (userInfo.role) {
       return this.mapStringToUserRole(userInfo.role);

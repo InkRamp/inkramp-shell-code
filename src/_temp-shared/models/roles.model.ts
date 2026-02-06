@@ -21,6 +21,18 @@ export interface User {
 }
 
 /**
+ * Basic authenticated user data from Auth0
+ * Simplified interface to avoid dependency on library types
+ */
+export interface AuthUser {
+  sub: string;
+  name?: string;
+  email?: string;
+  role?: string;
+  [key: string]: any; // Allow for additional dynamic claims
+}
+
+/**
  * Helper function to check if a role has required privilege
  * @param userRole Current user's role
  * @param requiredRole Minimum required role
