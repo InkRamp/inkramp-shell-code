@@ -51,10 +51,7 @@ export class GlobalErrorHandler implements ErrorHandler {
     // TODO: Integrate with a notification/toast service when available
     console.warn('[GlobalErrorHandler] User notification:', message);
     
-    // For now, use a simple alert (can be replaced with better UI)
-    if (typeof window !== 'undefined') {
-      // Don't block the UI with alerts, just log
-      console.warn('[User Notification]', message);
-    }
+    // For now, just log (can be replaced with better UI like toast/snackbar)
+    console.warn('[User Notification]', message);
   }
 }
