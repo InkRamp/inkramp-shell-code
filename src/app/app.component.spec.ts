@@ -100,7 +100,7 @@ describe('AppComponent', () => {
       });
     });
 
-    it('should not trigger login when both invitation and organization parameters present but user already authenticated', async () => {
+    it('should trigger login when both invitation and organization parameters present even if user already authenticated', async () => {
       mockAuthService.isAuthenticated.and.returnValue(Promise.resolve(true));
       mockActivatedRoute.queryParams = of({
         invitation: 'test-invitation-token',
@@ -110,7 +110,10 @@ describe('AppComponent', () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      expect(mockAuthService.login).not.toHaveBeenCalled();
+      expect(mockAuthService.login).toHaveBeenCalledWith(undefined, {
+        invitation: 'test-invitation-token',
+        organization: 'org_123456'
+      });
     });
 
     it('should handle invitation parameters without organization_name', async () => {
