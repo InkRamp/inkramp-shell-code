@@ -96,11 +96,24 @@ export class MfeLoaderService {
     console.log('[MfeLoaderService] Preloading', priorityConfigs.length, 'priority MFEs:',
       priorityConfigs.map(c => ({ name: c.name, priority: c.priority })));
 
+    // Use Promise.allSettled to continue even if some MFEs fail
     const loadPromises = priorityConfigs.map(config => this.loadMfe(config));
-    await Promise.all(loadPromises);
+    const results = await Promise.allSettled(loadPromises);
+    
+    // Log results
+    const successful = results.filter(r => r.status === 'fulfilled').length;
+    const failed = results.filter(r => r.status === 'rejected').length;
     
     // DEBUG_LOG: Preloading complete
-    console.log('[MfeLoaderService] Preloading complete');
+    console.log('[MfeLoaderService] Preloading complete:', {
+      total: priorityConfigs.length,
+      successful,
+      failed
+    });
+    
+    if (failed > 0) {
+      console.warn(`[MfeLoaderService] ${failed} MFE(s) failed to preload, but application continues`);
+    }
   }
 
   /**
@@ -175,7 +188,9 @@ export class MfeLoaderService {
       updatedLoadingMfes.delete(config.name);
       this.loadingMfesSubject.next(updatedLoadingMfes);
 
-      throw error;
+      // Don't re-throw the error - allow other MFEs to continue loading
+      console.warn(`[MfeLoaderService] MFE ${config.name} failed to load, but continuing with other MFEs`);
+      return null;
     }
   }
 
