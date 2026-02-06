@@ -49,8 +49,8 @@ describe('MfeWrapperComponent', () => {
     (component as any).handleError('Test error', {});
     expect(component.hasError()).toBe(true);
     
-    // Spy on ngAfterViewInit
-    spyOn(component, 'ngAfterViewInit');
+    // Spy on loadMfe method instead of ngAfterViewInit
+    spyOn<any>(component, 'loadMfe');
     
     // Call retry
     component.retryLoad();
@@ -61,7 +61,7 @@ describe('MfeWrapperComponent', () => {
     expect(component.errorMessage()).toBe('');
     
     // Should trigger reload
-    expect(component.ngAfterViewInit).toHaveBeenCalled();
+    expect((component as any).loadMfe).toHaveBeenCalled();
   });
 
   it('should handle missing MFE configuration gracefully', async () => {

@@ -36,6 +36,14 @@ export class MfeWrapperComponent implements AfterViewInit{
   ) {}
 
   async ngAfterViewInit(){
+    await this.loadMfe();
+  }
+
+  /**
+   * Load the MFE component
+   * Extracted from ngAfterViewInit to allow retry functionality
+   */
+  private async loadMfe(): Promise<void> {
     const options:LoadRemoteModuleScriptOptions | undefined = MFE.find(({remoteName})=>remoteName===this.name)
     if(!options) {
       const errorMsg = `MFE configuration not found for: ${this.name}`;
@@ -106,9 +114,9 @@ export class MfeWrapperComponent implements AfterViewInit{
     this.errorDetails.set(null);
     this.cdr.markForCheck();
     
-    // Clear the container and retry
+    // Clear the container and retry loading
     this.remoteContainer.clear();
-    this.ngAfterViewInit();
+    this.loadMfe();
   }
 
   /*constructor(

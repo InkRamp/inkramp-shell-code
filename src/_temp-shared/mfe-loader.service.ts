@@ -119,7 +119,8 @@ export class MfeLoaderService {
   /**
    * Load a specific MFE
    * @param config MFE configuration
-   * @returns Promise that resolves to the loaded module
+   * @returns Promise that resolves to the loaded module, or null if loading fails
+   * @description On error, returns null instead of throwing to allow other MFEs to continue loading
    */
   async loadMfe(config: MfeConfig): Promise<any> {
     const loadingMfes = this.loadingMfesSubject.value;
