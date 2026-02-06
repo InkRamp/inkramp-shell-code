@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
-import { API_CONFIG } from '../configs/api.config';
+import { APP_CONFIG } from '@opensourcekd/ng-common-libs';
 
 /**
  * Organization information from API
@@ -67,7 +67,7 @@ export class UserProfileService {
    * Fetch user profile from /auth/me endpoint
    * Requires valid authentication token in Authorization header
    * 
-   * Note: This method returns null if API_CONFIG is unavailable, allowing the app to continue
+   * Note: This method returns null if APP_CONFIG is unavailable, allowing the app to continue
    * functioning even without profile data. This differs from AuthService which throws errors
    * for missing AUTH0_CONFIG, since authentication is critical for app security while profile
    * data is optional/supplementary.
@@ -75,13 +75,13 @@ export class UserProfileService {
   fetchUserProfile(): Observable<UserProfileData | null> {
     console.log('[UserProfileService] Fetching user profile from API');
     
-    // Defensive check for API_CONFIG - returns null to allow graceful degradation
-    if (!API_CONFIG || !API_CONFIG.baseUrl) {
-      console.error('[UserProfileService] API_CONFIG or baseUrl is not defined');
+    // Defensive check for APP_CONFIG - returns null to allow graceful degradation
+    if (!APP_CONFIG || !APP_CONFIG.apiUrl) {
+      console.error('[UserProfileService] APP_CONFIG or apiUrl is not defined');
       return of(null);
     }
     
-    return this.http.get<UserProfileResponse>(`${API_CONFIG.baseUrl}/auth/me`).pipe(
+    return this.http.get<UserProfileResponse>(`${APP_CONFIG.apiUrl}/auth/me`).pipe(
       map((response: UserProfileResponse) => {
         if (response.success && response.data) {
           console.log('[UserProfileService] Profile loaded successfully');

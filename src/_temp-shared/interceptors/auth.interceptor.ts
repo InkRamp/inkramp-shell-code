@@ -1,7 +1,6 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { AuthService } from '@opensourcekd/ng-common-libs';
-import { API_CONFIG } from '../../configs/api.config';
+import { AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs';
 
 /**
  * Authentication HTTP Interceptor
@@ -56,14 +55,14 @@ const isAuthEndpoint = (url: string): boolean => {
   ];
   
   // Check if request is to our configured API - these SHOULD receive the token
-  // Handle case where API_CONFIG might be undefined in Module Federation context
+  // Handle case where APP_CONFIG might be undefined in Module Federation context
   try {
-    if (API_CONFIG && typeof API_CONFIG === 'object' && API_CONFIG.baseUrl && url.startsWith(API_CONFIG.baseUrl)) {
+    if (APP_CONFIG && typeof APP_CONFIG === 'object' && APP_CONFIG.apiUrl && url.startsWith(APP_CONFIG.apiUrl)) {
       return false; // Always add token to our API requests
     }
   } catch (error) {
-    // If API_CONFIG is not available (e.g., in MFE context), fall through to auth pattern check
-    console.warn('[authInterceptor] API_CONFIG not available, using pattern-based auth endpoint detection', error);
+    // If APP_CONFIG is not available (e.g., in MFE context), fall through to auth pattern check
+    console.warn('[authInterceptor] APP_CONFIG not available, using pattern-based auth endpoint detection', error);
   }
   
   return authPatterns.some(pattern => url.includes(pattern));

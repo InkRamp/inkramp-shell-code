@@ -5,15 +5,10 @@
  * 2. Integrated directly into the core application
  */
 
-export * from './core-services.service';
-export * from './core-services.component';
-
 // Services - Only services used in shell application
 export * from './role.service';
 export * from './dummy-data.service';
 export * from './mfe-loader.service';
-export * from './sse-event-from.service';
-export * from './sse-event-from.service2';
 export * from './user-profile.service';
 
 // Interceptors
