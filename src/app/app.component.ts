@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterOutlet, ActivatedRoute } from '@angular/router';
-import { AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs'; 
+import { AuthService, API_CONFIG } from '@opensourcekd/ng-common-libs'; 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -33,7 +33,7 @@ export class AppComponent implements OnInit, OnDestroy {
   ){
     // Initialize MFE configs
     this.mfeLoader.setConfigs(MFE_CONFIGS);
-    console.log("WAKA MOJO 2", APP_CONFIG);
+    console.log("WAKA MOJO 2", API_CONFIG);
   }
 
   async ngOnInit(): Promise<void> {
