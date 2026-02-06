@@ -1,4 +1,4 @@
-// src/angular/services/auth.service.ts
+// src/_temp-shared/auth.service.ts
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { EventBusService } from './event-bus.service';
