@@ -20,8 +20,8 @@ export function bootstrap() {
         // withInterceptors([cacheInterceptor]),  // Temporarily disabled
       ),
       // Explicitly provide library services to avoid JIT compilation issues
-      EventBusService,
-      AuthService
+      { provide: EventBusService, useClass: EventBusService },
+      { provide: AuthService, useClass: AuthService }
     ],
   });
 }
