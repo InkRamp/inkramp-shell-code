@@ -1,10 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterOutlet, ActivatedRoute } from '@angular/router';
-import { AuthService, UserInfo } from '@org/core-services'; 
+import { AuthService } from '@opensourcekd/ng-common-libs'; 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { RoleService, MfeLoaderService, User } from '@org/core-services';
+import { RoleService, MfeLoaderService, User, AuthUser } from '@org/core-services';
 import { MFE_CONFIGS } from '../configs/mfe';
 import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
@@ -65,7 +65,7 @@ export class AppComponent implements OnInit, OnDestroy {
   /**
    * Pure function to determine if user should be updated
    */
-  private shouldUpdateUser(currentUser: User | null, userInfo: UserInfo): boolean {
+  private shouldUpdateUser(currentUser: User | null, userInfo: AuthUser): boolean {
     return !currentUser || currentUser.id !== userInfo.sub;
   }
 

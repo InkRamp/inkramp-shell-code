@@ -5,6 +5,7 @@ import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/
 import { provideRouter } from '@angular/router';
 import { routes } from './app/app.routes';
 import { authInterceptor } from '@org/core-services';
+// import { AuthService, EventBusService } from '@opensourcekd/ng-common-libs';
 // import { cacheInterceptor } from '@org/core-services';  // Temporarily disabled - not needed for auth testing
 //import { OAuthModule } from 'angular-oauth2-oidc';
 
@@ -17,7 +18,10 @@ export function bootstrap() {
         withFetch(),
         withInterceptors([authInterceptor]),
         // withInterceptors([cacheInterceptor]),  // Temporarily disabled
-      )
+      ),
+      // Explicitly provide library services to avoid JIT compilation issues
+      // { provide: EventBusService, useClass: EventBusService },
+      // { provide: AuthService, useClass: AuthService }
     ],
   });
 }

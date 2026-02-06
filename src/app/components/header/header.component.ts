@@ -2,8 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { RoleService, DummyDataService, MfeLoaderService, User, SalesExecutive, MfeConfig, UserInfo, UserProfileService, UserProfileData } from '@org/core-services';
-import { AuthService } from '@org/core-services';
+import { RoleService, DummyDataService, MfeLoaderService, User, SalesExecutive, MfeConfig, UserProfileService, UserProfileData, AuthUser } from '@org/core-services';
+import { AuthService } from '@opensourcekd/ng-common-libs';
 import { Subscription } from 'rxjs';
 
 /**
@@ -89,7 +89,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   /**
    * Pure function to determine if user should be updated
    */
-  private shouldUpdateUser(currentUser: User | null, userInfo: UserInfo): boolean {
+  private shouldUpdateUser(currentUser: User | null, userInfo: AuthUser): boolean {
     return !currentUser || currentUser.id !== userInfo.sub;
   }
 
