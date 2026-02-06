@@ -1,2 +1,26 @@
-<p>mfe-wrapper works!</p>
-<ng-container #container></ng-container>
+<div class="mfe-wrapper">
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="mfe-loading">
+      <div class="loading-spinner"></div>
+      <p>Loading {{ name }}...</p>
+    </div>
+  }
+  
+  <!-- Error State -->
+  @else if (hasError()) {
+    <div class="mfe-error">
+      <div class="error-icon">⚠️</div>
+      <h3>Failed to Load Component</h3>
+      <p class="error-message">{{ errorMessage() }}</p>
+      <button class="retry-button" (click)="retryLoad()">Retry</button>
+      <details class="error-details">
+        <summary>Technical Details</summary>
+        <pre>{{ errorDetails() | json }}</pre>
+      </details>
+    </div>
+  }
+  
+  <!-- MFE Container -->
+  <ng-container #container></ng-container>
+</div>

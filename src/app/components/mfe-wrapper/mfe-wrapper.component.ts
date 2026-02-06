@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, EnvironmentInjector, Input, OnInit, Output, ViewChild, ViewContainerRef, createComponent, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import MFE, {InterfaceMfeUrl} from '../../../configs/mfe';
 import { MFE_CONFIGS } from '../../../configs/mfe';
@@ -6,6 +6,11 @@ import { loadRemoteModule, LoadRemoteModuleScriptOptions } from '@angular-archit
 import { MfeLoaderService } from '@org/core-services';
 import { CommonModule } from '@angular/common';
 
+/**
+ * MFE Wrapper Component with Error Boundary
+ * Handles dynamic loading of Module Federation remotes with graceful error handling
+ * Prevents individual MFE failures from crashing the entire application
+ */
 @Component({
   selector: 'app-mfe-wrapper',
   standalone: true,
@@ -19,10 +24,31 @@ export class MfeWrapperComponent implements AfterViewInit{
   @ViewChild('container', {read:ViewContainerRef, static:true})
   remoteContainer!:ViewContainerRef
 
+  // Error boundary state
+  isLoading = signal(true);
+  hasError = signal(false);
+  errorMessage = signal<string>('');
+  errorDetails = signal<any>(null);
+
+  constructor(
+    private environmentInjector: EnvironmentInjector,
+    private cdr: ChangeDetectorRef
+  ) {}
+
   async ngAfterViewInit(){
+    await this.loadMfe();
+  }
+
+  /**
+   * Load the MFE component
+   * Extracted from ngAfterViewInit to allow retry functionality
+   */
+  private async loadMfe(): Promise<void> {
     const options:LoadRemoteModuleScriptOptions | undefined = MFE.find(({remoteName})=>remoteName===this.name)
     if(!options) {
-      console.error(`[MfeWrapperComponent] MFE configuration not found for: ${this.name}`);
+      const errorMsg = `MFE configuration not found for: ${this.name}`;
+      console.error(`[MfeWrapperComponent] ${errorMsg}`);
+      this.handleError(errorMsg, { name: this.name, options: null });
       return;
     }
     
@@ -31,16 +57,66 @@ export class MfeWrapperComponent implements AfterViewInit{
       const remote = await loadRemoteModule(options);
       
       if (!remote || !remote.AppComponent) {
-        console.error(`[MfeWrapperComponent] MFE module or AppComponent not found for: ${this.name}`);
+        const errorMsg = `MFE module or AppComponent not found for: ${this.name}`;
+        console.error(`[MfeWrapperComponent] ${errorMsg}`);
+        this.handleError(errorMsg, { name: this.name, remote });
         return;
       }
       
       console.log(`[MfeWrapperComponent] Creating component for MFE: ${this.name}`);
-      this.remoteContainer.createComponent(remote.AppComponent);
+      
+      // Use createComponent with proper injector to avoid JIT compiler issues
+      // This ensures the component is created with the correct environment injector
+      const componentRef = createComponent(remote.AppComponent, {
+        environmentInjector: this.environmentInjector,
+        elementInjector: this.remoteContainer.injector
+      });
+      
+      // Attach the component to the view container
+      this.remoteContainer.insert(componentRef.hostView);
+      
       console.log(`[MfeWrapperComponent] MFE loaded successfully: ${this.name}`);
+      this.isLoading.set(false);
+      this.cdr.markForCheck();
     } catch (error) {
       console.error(`[MfeWrapperComponent] Error loading MFE ${this.name}:`, error);
+      this.handleError(`Failed to load MFE: ${this.name}`, error);
     }
+  }
+
+  /**
+   * Handle MFE loading errors gracefully
+   * Displays user-friendly error message without crashing the app
+   */
+  private handleError(message: string, details: any): void {
+    this.hasError.set(true);
+    this.isLoading.set(false);
+    this.errorMessage.set(message);
+    this.errorDetails.set(details);
+    
+    // Log detailed error for debugging
+    console.error('[MfeWrapperComponent] Error Details:', {
+      message,
+      details,
+      timestamp: new Date().toISOString()
+    });
+    
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Retry loading the MFE
+   */
+  retryLoad(): void {
+    this.hasError.set(false);
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    this.errorDetails.set(null);
+    this.cdr.markForCheck();
+    
+    // Clear the container and retry loading
+    this.remoteContainer.clear();
+    this.loadMfe();
   }
 
   /*constructor(
