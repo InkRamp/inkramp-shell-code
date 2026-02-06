@@ -1,9 +1,9 @@
-// src/_temp-shared/auth.service.ts
+// projects/core-services/src/lib/auth.service.ts
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { EventBusService } from './event-bus.service';
 import { Auth0Client as Auth0ClientType, createAuth0Client } from '@auth0/auth0-spa-js';
-import { jwtDecode } from 'jwt-decode';
 import { 
   AUTH0_CONFIG, 
   STORAGE_CONFIG, 
@@ -65,6 +65,7 @@ export interface UserData {
   providedIn: 'root'
 })
 export class AuthService {
+  id = 'auth of pokemon';
 
   // Standard JWT claims that should be excluded from additional claims
   private readonly STANDARD_JWT_CLAIMS = [
@@ -80,11 +81,10 @@ export class AuthService {
   public user$: Observable<UserInfo | null> = this.userSubject.asObservable();
 
   constructor(
+    private http: HttpClient,
     private eventBus: EventBusService
   ) {
-    console.log("[AuthService] Initializing Auth0 authentication service");
-    // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-    console.log('[AuthService] 🔍 DEBUG: Constructor called, starting initialization');
+    console.log("[AuthService] Initializing Auth0 authentication service from the SHELL");
     this.initializationPromise = this.initializeAuth0();
   }
 
@@ -94,33 +94,15 @@ export class AuthService {
   private async initializeAuth0(): Promise<void> {
     try {
       console.log("[AuthService] Starting Auth0 client initialization...");
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.log('[AuthService] 🔍 DEBUG: initializeAuth0 called');
       
       // Defensive check for AUTH0_CONFIG
       if (!AUTH0_CONFIG || typeof AUTH0_CONFIG !== 'object') {
-        // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-        console.error('[AuthService] 🔍 DEBUG: AUTH0_CONFIG validation failed - invalid or undefined');
         throw new Error('[AuthService] AUTH0_CONFIG is not defined or invalid');
       }
       
       if (!AUTH0_CONFIG.domain || !AUTH0_CONFIG.clientId) {
-        // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-        console.error('[AuthService] 🔍 DEBUG: AUTH0_CONFIG validation failed - missing domain or clientId', {
-          domain: AUTH0_CONFIG.domain,
-          clientId: AUTH0_CONFIG.clientId ? '[REDACTED]' : undefined
-        });
         throw new Error('[AuthService] AUTH0_CONFIG is missing required fields (domain, clientId)');
       }
-      
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.log('[AuthService] 🔍 DEBUG: Creating Auth0 client with config:', {
-        domain: AUTH0_CONFIG.domain,
-        clientId: AUTH0_CONFIG.clientId ? '[REDACTED]' : undefined,
-        redirectUri: AUTH0_CONFIG.redirectUri,
-        scope: AUTH0_CONFIG.scope,
-        audience: AUTH0_CONFIG.audience || 'not set'
-      });
       
       this.auth0Client = await createAuth0Client({
         domain: AUTH0_CONFIG.domain,
@@ -133,13 +115,9 @@ export class AuthService {
         cacheLocation: 'memory', // Use memory cache instead of localStorage
         useRefreshTokens: true, // Enable refresh tokens for better security
       });
-      console.log("[AuthService] Auth0 client initialized successfully");
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.log('[AuthService] 🔍 DEBUG: Auth0 client created successfully');
+      console.log("[AuthService] Auth0 client initialized successfully from SHELL");
     } catch (error) {
       console.error("[AuthService] Failed to initialize Auth0 client:", error);
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.error('[AuthService] 🔍 DEBUG: initializeAuth0 failed with error:', error);
       throw error;
     }
   }
@@ -163,9 +141,6 @@ export class AuthService {
    * @param options - Optional login options including invitation and organization parameters
    */
   async login(user?: string, options?: { invitation?: string; organization?: string }): Promise<void> {
-    // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-    console.log('[AuthService] 🔍 DEBUG: login() called', { user, options });
-    
     if (user) {
       console.log(`[AuthService] Logging in: ${user}`);
     }
@@ -173,18 +148,18 @@ export class AuthService {
     try {
       // Ensure Auth0 client is initialized
       await this.ensureInitialized();
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.log('[AuthService] 🔍 DEBUG: Auth0 client ensured initialized for login');
       
       // Capture current URL search parameters to preserve through auth flow
+      // Only capture if we're not already on the callback page
+      const currentPath = window.location.pathname;
+      const isCallbackPage = currentPath.includes('auth-callback');
+      
       let appState: any = undefined;
       
-      if (window.location.search) {
+      if (!isCallbackPage && window.location.search) {
         const currentSearchParams = window.location.search;
         appState = { returnTo: currentSearchParams };
         console.log('[AuthService] Preserving URL parameters through auth flow:', currentSearchParams);
-        // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-        console.log('[AuthService] 🔍 DEBUG: Captured URL search params for preservation:', currentSearchParams);
       }
 
       // Build authorization parameters
@@ -206,32 +181,13 @@ export class AuthService {
         console.log('[AuthService] Including organization parameter:', options.organization);
       }
 
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.log('[AuthService] 🔍 DEBUG: Authorization params prepared:', {
-        redirect_uri: authorizationParams.redirect_uri,
-        scope: authorizationParams.scope,
-        audience: authorizationParams.audience || 'not set',
-        connection: authorizationParams.connection || 'not set',
-        invitation: authorizationParams.invitation || 'not set',
-        organization: authorizationParams.organization || 'not set',
-        hasAppState: !!appState
-      });
-
       console.log('[AuthService] Starting Auth0 login redirect...');
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.log('[AuthService] 🔍 DEBUG: About to call loginWithRedirect');
       await this.auth0Client!.loginWithRedirect({
         authorizationParams,
         ...(appState && { appState })
       });
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.log('[AuthService] 🔍 DEBUG: loginWithRedirect completed (this may not be visible due to redirect)');
     } catch (error) {
       console.error("[AuthService] Login failed:", error);
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.error('[AuthService] 🔍 DEBUG: login() failed with error:', error);
-      // Emit login failure event
-      this.emitAuthEvent('login_failure', { error: error instanceof Error ? error.message : String(error) });
       throw error; // Re-throw to allow caller to handle
     }
   }
@@ -248,21 +204,13 @@ export class AuthService {
   async handleCallback(): Promise<{ success: boolean, appState?: any }> {
     try {
       console.log("[AuthService] Processing Auth0 callback...");
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.log('[AuthService] 🔍 DEBUG: handleCallback() called');
-      console.log('[AuthService] 🔍 DEBUG: Current URL:', window.location.href);
-      console.log('[AuthService] 🔍 DEBUG: URL params:', window.location.search);
       
       // Ensure Auth0 client is initialized
       await this.ensureInitialized();
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.log('[AuthService] 🔍 DEBUG: Auth0 client ensured initialized for callback');
       
       // Process the callback
       const result = await this.auth0Client!.handleRedirectCallback();
       console.log("[AuthService] Callback processed successfully");
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.log('[AuthService] 🔍 DEBUG: handleRedirectCallback result:', result);
       
       // Log preserved appState if present
       if (result.appState) {
@@ -272,71 +220,25 @@ export class AuthService {
       }
 
       // Get user info
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.log('[AuthService] 🔍 DEBUG: Fetching user info from Auth0');
       const user = await this.auth0Client!.getUser();
       if (user) {
-        // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-        console.log('[AuthService] 🔍 DEBUG: User info retrieved successfully');
         this.logUserClaims(user);
         this.setUserInfo(user as UserInfo);
       } else {
         console.warn('[AuthService] No user info returned from Auth0');
-        // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-        console.warn('[AuthService] 🔍 DEBUG: getUser() returned null or undefined');
-        // Emit login failure event
-        this.emitAuthEvent('login_failure', { error: 'No user info returned from Auth0' });
         return { success: false };
       }
 
       // Get and store access token
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.log('[AuthService] 🔍 DEBUG: Fetching access token');
       const token = await this.auth0Client!.getTokenSilently();
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.log('[AuthService] 🔍 DEBUG: Access token retrieved, length:', token?.length || 0);
       this.setToken(token);
-      
-      // Decode and print the token to console
-      this.decodeAndLogToken(token);
 
       console.log("[AuthService] Authentication successful");
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.log('[AuthService] 🔍 DEBUG: handleCallback() completed successfully');
-      // Emit login success event
-      this.emitAuthEvent('login_success', { user, appState: result.appState });
       return { success: true, appState: result.appState };
     } catch (error) {
       console.error("[AuthService] Error processing callback:", error);
       console.error("[AuthService] Error details:", JSON.stringify(error, null, 2));
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.error('[AuthService] 🔍 DEBUG: handleCallback() failed with error:', error);
-      console.error('[AuthService] 🔍 DEBUG: Error type:', typeof error);
-      console.error('[AuthService] 🔍 DEBUG: Error stack:', (error as any)?.stack);
-      // Emit login failure event
-      this.emitAuthEvent('login_failure', { error: error instanceof Error ? error.message : String(error) });
       return { success: false };
-    }
-  }
-
-  /**
-   * Decode and log the access token to console
-   * NOTE: This logs sensitive token information to console for debugging purposes.
-   * In production environments, consider disabling this or filtering console logs.
-   * @param token - The JWT access token
-   */
-  private decodeAndLogToken(token: string): void {
-    try {
-      console.log('='.repeat(80));
-      console.log('[AuthService] 🔓 DECODED ACCESS TOKEN:');
-      console.log('='.repeat(80));
-      
-      const decoded = jwtDecode(token);
-      console.log(JSON.stringify(decoded, null, 2));
-      
-      console.log('='.repeat(80));
-    } catch (error) {
-      console.error('[AuthService] Failed to decode token:', error);
     }
   }
 
@@ -439,15 +341,9 @@ export class AuthService {
    * Redirects to Auth0 logout endpoint and clears local state
    */
   async logout(): Promise<void> {
-    // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-    console.log('[AuthService] 🔍 DEBUG: logout() called');
-    
     // Clear local storage
     removeStorageItem(STORAGE_KEYS.ACCESS_TOKEN, STORAGE_CONFIG.TOKEN_STORAGE);
     removeStorageItem(STORAGE_KEYS.USER_INFO, STORAGE_CONFIG.USER_INFO_STORAGE);
-    // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-    console.log('[AuthService] 🔍 DEBUG: Storage cleared (token and user info removed)');
-    
     this.userSubject.next(null);
     this.emitAuthEvent('logout', null);
     
@@ -456,19 +352,13 @@ export class AuthService {
     // Logout from Auth0
     try {
       await this.ensureInitialized();
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.log('[AuthService] 🔍 DEBUG: About to call Auth0 logout, returnTo:', AUTH0_CONFIG.logoutUri);
       await this.auth0Client!.logout({
         logoutParams: {
           returnTo: AUTH0_CONFIG.logoutUri
         }
       });
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.log('[AuthService] 🔍 DEBUG: Auth0 logout completed (this may not be visible due to redirect)');
     } catch (error) {
       console.error('[AuthService] Error during Auth0 logout:', error);
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.error('[AuthService] 🔍 DEBUG: logout() failed with error:', error);
     }
   }
 
@@ -477,32 +367,20 @@ export class AuthService {
    * @returns string | null - Access token or null if not authenticated
    */
   async getToken(): Promise<string | null> {
-    // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-    console.log('[AuthService] 🔍 DEBUG: getToken() called');
-    
     // Try to get from storage first
     const storedToken = getStorageItem(STORAGE_KEYS.ACCESS_TOKEN, STORAGE_CONFIG.TOKEN_STORAGE);
     if (storedToken) {
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.log('[AuthService] 🔍 DEBUG: Token found in storage, length:', storedToken.length);
       return storedToken;
     }
 
-    // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-    console.log('[AuthService] 🔍 DEBUG: Token not in storage, fetching from Auth0');
-    
     // If not in storage, try to get from Auth0 client
     try {
       await this.ensureInitialized();
       const token = await this.auth0Client!.getTokenSilently();
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.log('[AuthService] 🔍 DEBUG: Token retrieved from Auth0, length:', token?.length || 0);
       this.setToken(token);
       return token;
     } catch (error) {
       console.error('[AuthService] Error getting token from Auth0:', error);
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.error('[AuthService] 🔍 DEBUG: getToken() failed:', error);
       return null;
     }
   }
@@ -521,12 +399,8 @@ export class AuthService {
    * @param token - Access token to store
    */
   private setToken(token: string): void {
-    // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-    console.log('[AuthService] 🔍 DEBUG: setToken() called, storing token in storage');
     setStorageItem(STORAGE_KEYS.ACCESS_TOKEN, token, STORAGE_CONFIG.TOKEN_STORAGE);
     this.emitAuthEvent('token_updated', { token });
-    // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-    console.log('[AuthService] 🔍 DEBUG: Token stored and token_updated event emitted');
   }
 
   /**
@@ -534,21 +408,13 @@ export class AuthService {
    * @returns boolean - True if user has valid token
    */
   async isAuthenticated(): Promise<boolean> {
-    // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-    console.log('[AuthService] 🔍 DEBUG: isAuthenticated() called');
     try {
       await this.ensureInitialized();
-      const result = await this.auth0Client!.isAuthenticated();
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.log('[AuthService] 🔍 DEBUG: isAuthenticated() result from Auth0:', result);
-      return result;
+      return await this.auth0Client!.isAuthenticated();
     } catch (error) {
       console.error('[AuthService] Error checking authentication status:', error);
       // Fallback to checking storage
-      const hasToken = !!getStorageItem(STORAGE_KEYS.ACCESS_TOKEN, STORAGE_CONFIG.TOKEN_STORAGE);
-      // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-      console.error('[AuthService] 🔍 DEBUG: isAuthenticated() failed, falling back to storage check:', hasToken);
-      return hasToken;
+      return !!getStorageItem(STORAGE_KEYS.ACCESS_TOKEN, STORAGE_CONFIG.TOKEN_STORAGE);
     }
   }
 
@@ -643,9 +509,6 @@ export class AuthService {
    * @param userInfo - User information to store
    */
   private setUserInfo(userInfo: UserInfo): void {
-    // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-    console.log('[AuthService] 🔍 DEBUG: setUserInfo() called');
-    
     setStorageItem(
       STORAGE_KEYS.USER_INFO, 
       JSON.stringify(userInfo), 
@@ -671,9 +534,6 @@ export class AuthService {
       });
     }
     
-    // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-    console.log('[AuthService] 🔍 DEBUG: User info stored in storage and userSubject updated');
-    
     this.emitAuthEvent('user_info_updated', userInfo);
   }
 
@@ -689,8 +549,6 @@ export class AuthService {
       payload,
       timestamp: new Date().toISOString()
     };
-    // TODO_REMOVE_DEBUG: Temporary debug log - remove after debugging
-    console.log('[AuthService] 🔍 DEBUG: emitAuthEvent() called, event type:', event.type);
     this.eventBus.sendEvent(JSON.stringify(event));
     console.log('[AuthService] Auth event emitted:', event.type);
   }
