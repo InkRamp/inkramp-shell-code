@@ -1,6 +1,6 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { AuthService } from '../auth.service';
+import { AuthService } from '@opensourcekd/ng-common-libs';
 import { API_CONFIG } from '../config/api.config';
 
 /**
