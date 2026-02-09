@@ -74,6 +74,11 @@ let auth0ConfigOptions: Auth0ConfigOptions | null = null;
  * Configure Auth0 settings for the application
  * This should be called once in your app.config.ts before using AuthService
  * 
+ * NOTE: In the current temporary implementation, AuthService uses AUTH0_CONFIG
+ * directly from config/auth.config.ts. This function is provided for API
+ * compatibility with the future @opensourcekd/ng-common-libs package where
+ * configuration will be dynamic rather than statically imported.
+ * 
  * @example
  * ```typescript
  * configureAuth0({
@@ -85,6 +90,7 @@ let auth0ConfigOptions: Auth0ConfigOptions | null = null;
  */
 export function configureAuth0(options: Auth0ConfigOptions): void {
   auth0ConfigOptions = options;
+  // TODO: When migrated to actual package, pass this config to AuthService
 }
 
 /**
