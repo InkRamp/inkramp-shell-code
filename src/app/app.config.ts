@@ -1,6 +1,6 @@
 import { ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient, withInterceptors, HttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { 
   authInterceptor,
   AuthService,
@@ -28,6 +28,6 @@ export const appConfig: ApplicationConfig = {
     ),
     // REQUIRED: Use factory functions for singleton behavior across MFEs
     { provide: EventBusService, useFactory: getEventBusService },
-    { provide: AuthService, useFactory: getAuthService, deps: [HttpClient, EventBusService] },
+    { provide: AuthService, useFactory: getAuthService },
   ]
 };

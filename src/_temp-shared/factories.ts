@@ -45,12 +45,14 @@ export function getEventBusService(): EventBusService {
  * ```typescript
  * providers: [
  *   { provide: EventBusService, useFactory: getEventBusService },
- *   { provide: AuthService, useFactory: getAuthService, deps: [HttpClient, EventBusService] }
+ *   { provide: AuthService, useFactory: getAuthService }
  * ]
  * ```
  */
-export function getAuthService(http: HttpClient, eventBus: EventBusService): AuthService {
+export function getAuthService(): AuthService {
   if (!authServiceInstance) {
+    const http = inject(HttpClient);
+    const eventBus = getEventBusService(); // Use singleton from factory
     authServiceInstance = new AuthService(http, eventBus);
   }
   return authServiceInstance;
