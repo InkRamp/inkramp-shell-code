@@ -29,3 +29,7 @@ export * from './models/mfe.model';
 // Config
 export * from './config/auth.config';
 export * from './config/api.config';
+export * from './config/core.config';
+
+// Factory functions for Module Federation singleton pattern
+export * from './factories';
