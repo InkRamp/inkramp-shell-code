@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterOutlet, ActivatedRoute } from '@angular/router';
-import { AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs';
+import { AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs'; 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
