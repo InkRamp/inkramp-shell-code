@@ -33,6 +33,7 @@ export class AppComponent implements OnInit, OnDestroy {
   ){
     // Initialize MFE configs
     this.mfeLoader.setConfigs(MFE_CONFIGS);
+    console.log("HEY JUDE, WAKA")
   }
 
   async ngOnInit(): Promise<void> {
