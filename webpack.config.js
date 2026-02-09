@@ -10,7 +10,7 @@ module.exports = withModuleFederationPlugin({
   },
 
   shared: {
-    ...shareAll({ singleton: true, strictVersion: false, requiredVersion: 'auto', eager: false }),
+    //...shareAll({ singleton: true, strictVersion: false, requiredVersion: 'auto', eager: false }),
     '@org/core-services': { singleton: true, strictVersion: false, requiredVersion: 'auto' },
     '@opensourcekd/ng-common-libs': { singleton: true, strictVersion: false, requiredVersion: 'auto' },
   },
