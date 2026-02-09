@@ -5,20 +5,13 @@ import {
   AuthService, 
   EventBusService, 
   getAuthService, 
-  getEventBusService,
-  configureAuth0,
-  APP_CONFIG
+  getEventBusService
 } from '@opensourcekd/ng-common-libs';
 import { authInterceptor } from '@org/core-services';
 
 import { routes } from './app.routes';
 
-// Configure Auth0 with values from the library
-configureAuth0({
-  domain: APP_CONFIG.auth0Domain,
-  clientId: APP_CONFIG.auth0ClientId,
-  audience: APP_CONFIG.apiUrl,
-});
+// Note: Auth0 configuration is done in bootstrap.ts before app initialization
 
 export const appConfig: ApplicationConfig = {
   providers: [
