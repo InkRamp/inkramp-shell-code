@@ -85,11 +85,6 @@ let auth0ConfigOptions: Auth0ConfigOptions | null = null;
  */
 export function configureAuth0(options: Auth0ConfigOptions): void {
   auth0ConfigOptions = options;
-  console.log('[configureAuth0] Auth0 configuration set:', {
-    domain: options.domain,
-    clientId: options.clientId,
-    audience: options.audience
-  });
 }
 
 /**
