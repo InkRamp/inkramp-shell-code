@@ -19,11 +19,17 @@ npm test         # Run unit tests
 
 ## 🏗️ Architecture
 
-### Core Services (`@org/core-services`)
-- **AuthService**: Auth0 OAuth2/OIDC authentication with sessionStorage
-- **RoleService**: RBAC and user permissions
-- **EventBusService**: Cross-MFE communication (mitt-based)
-- **API Services**: IncentiveRules, Incentives, Targets, Tasks
+### Core Services
+- **AuthService** & **EventBusService**: From `@opensourcekd/ng-common-libs`
+  - Auth0 OAuth2/OIDC authentication with sessionStorage
+  - Cross-MFE communication with mitt library
+  - Singleton pattern for Module Federation
+
+- **Application Services** (`@org/core-services`):
+  - **RoleService**: RBAC and user permissions
+  - **MfeLoaderService**: Dynamic MFE loading
+  - **UserProfileService**: User profile from backend API
+  - **DummyDataService**: Mock data for testing
 
 ### Role Hierarchy
 Super-Admin ⊃ Org-Admin ⊃ Team Lead ⊃ Sales Executive

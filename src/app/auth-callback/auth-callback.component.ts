@@ -1,7 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService, RoleService, UserProfileService } from '@org/core-services';
+import { AuthService } from '@opensourcekd/ng-common-libs';
+import { RoleService, UserProfileService } from '@org/core-services';
 import { Subject, takeUntil } from 'rxjs';
 
 interface AuthState {
