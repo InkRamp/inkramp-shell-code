@@ -12,7 +12,7 @@ describe('AppComponent', () => {
 
   beforeEach(async () => {
     // Create spy objects
-    mockAuthService = jasmine.createSpyObj('AuthService', ['isAuthenticated', 'login', 'getUser']);
+    mockAuthService = jasmine.createSpyObj('AuthService', ['isAuthenticated', 'login', 'getUser', 'isAuthenticatedSync']);
 
     // Setup mock activated route
     mockActivatedRoute = {
@@ -32,6 +32,7 @@ describe('AppComponent', () => {
 
     // Setup default mock return values
     mockAuthService.isAuthenticated.and.returnValue(Promise.resolve(false));
+    mockAuthService.isAuthenticatedSync.and.returnValue(false);
     mockAuthService.getUser.and.returnValue(null);
   });
 
