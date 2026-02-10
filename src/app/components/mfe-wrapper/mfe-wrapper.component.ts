@@ -3,7 +3,6 @@ import { ActivatedRoute } from '@angular/router';
 import MFE, {InterfaceMfeUrl} from '../../../configs/mfe';
 import { MFE_CONFIGS } from '../../../configs/mfe';
 import { loadRemoteModule, LoadRemoteModuleScriptOptions } from '@angular-architects/module-federation';
-import { MfeLoaderService } from '@org/core-services';
 import { CommonModule } from '@angular/common';
 
 @Component({

@@ -1,42 +1,21 @@
 <header class="app-header">
   <div class="header-left">
     <h1 class="app-title">Incentive Management System</h1>
-    <span *ngIf="currentUser && getOrganizationName()" class="org-display">
-      {{ getOrganizationName() }}
-    </span>
-  </div>
-  
-  <div class="header-center" *ngIf="currentUser && canViewOthers">
-    <div class="user-selector">
-      <label for="salesExecSelect">View data for:</label>
-      <span id="salesExecSelectDesc" class="visually-hidden">
-        Selecting a user will display their incentive data.
-      </span>
-      <select 
-        id="salesExecSelect" 
-        [(ngModel)]="selectedSalesExecutiveId" 
-        (change)="onSalesExecutiveChange()" 
-        aria-describedby="salesExecSelectDesc">
-        <option [value]="currentUser.id">My Data</option>
-        <option *ngFor="let exec of salesExecutives" [value]="exec.id">{{ exec.name }}</option>
-      </select>
-    </div>
   </div>
   
   <div class="header-right">
-    <span *ngIf="currentUser" class="user-info">
-      {{ currentUser.name }} ({{ currentUser.role }})
+    <span *ngIf="isAuthenticated && userInfo" class="user-info">
+      {{ userInfo.name }}
     </span>
-    <button *ngIf="currentUser" class="btn-logout" (click)="logout()">Logout</button>
-    <button *ngIf="!currentUser" class="btn-login" (click)="login()">Login</button>
+    <button *ngIf="isAuthenticated" class="btn-logout" (click)="logout()">Logout</button>
+    <button *ngIf="!isAuthenticated" class="btn-login" (click)="login()">Login</button>
   </div>
 </header>
 
-<nav class="app-nav" *ngIf="currentUser">
-  <a *ngFor="let mfe of availableMfes" 
-     [routerLink]="'/' + mfe.route" 
-     routerLinkActive="active"
-     class="nav-link">
-    {{ mfe.displayName }}
-  </a>
+<nav class="app-nav" *ngIf="isAuthenticated">
+  <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">Home</a>
+  <a routerLink="/rules" routerLinkActive="active" class="nav-link">Rules</a>
+  <a routerLink="/sales" routerLinkActive="active" class="nav-link">Sales</a>
+  <a routerLink="/reports" routerLinkActive="active" class="nav-link">Reports</a>
+  <a routerLink="/users" routerLinkActive="active" class="nav-link">Users</a>
 </nav>
