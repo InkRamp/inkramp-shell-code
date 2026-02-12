@@ -121,13 +121,15 @@ export class AuthExampleComponent {
 
 ```typescript
 import { Component, inject } from '@angular/core';
+import { APP_CONFIG, AppConfig } from '../bootstrap';
 
 @Component({
   selector: 'app-config-example',
   template: '...'
 })
 export class ConfigExampleComponent {
-  private config = inject('APP_CONFIG');
+  // Type-safe injection using InjectionToken
+  private config: AppConfig = inject(APP_CONFIG);
   
   ngOnInit() {
     console.log('API Base URL:', this.config.api.baseUrl);
@@ -148,8 +150,15 @@ import { EventBus } from '@opensourcekd/ng-common-libs/core';
 export class EventBusService {
   private eventBus = inject(EventBus);
   
-  sendEvent(eventType: string, data?: any): void {
-    this.eventBus.emit(eventType, data);
+  // Maintains backward compatibility with both signatures:
+  // Old: sendEvent('someString')
+  // New: sendEvent('eventType', { data })
+  sendEvent(eventTypeOrString: string, data?: any): void {
+    if (data === undefined) {
+      this.eventBus.emit(eventTypeOrString);
+    } else {
+      this.eventBus.emit(eventTypeOrString, data);
+    }
   }
   
   on<T = any>(eventType: string): Observable<T> {
@@ -162,6 +171,8 @@ export class EventBusService {
 }
 ```
 
+**Note**: The `sendEvent` method maintains backward compatibility with existing code that calls it with a single string parameter.
+
 ## Benefits
 
 1. **Framework-Agnostic**: Core services can be reused in non-Angular contexts
@@ -170,9 +181,29 @@ export class EventBusService {
 4. **Dependency Injection**: Services are available throughout the application
 5. **Testability**: Services can be easily mocked in tests
 
+## Security Considerations
+
+### Environment Files
+
+The environment files (`src/environments/environment.ts` and `environment.prod.ts`) currently contain Auth0 credentials committed to the repository. This is acceptable for development but **should be addressed for production**:
+
+1. **Production Credentials**: Never commit production credentials to source control
+2. **Environment Variables**: Use build-time environment variable replacement
+3. **Secure Configuration**: Consider using secure configuration management services
+4. **Separate Credentials**: Production should have its own Auth0 tenant and credentials
+
+### Token Storage
+
+The TokenManager is configured to use `sessionStorage` for better security:
+- Tokens are cleared when the browser tab/window is closed
+- Tokens are not accessible across tabs
+- Reduces risk compared to localStorage
+
 ## Migration Notes
 
 - The EventBusService now wraps the opensourcekd EventBus
 - TokenManager replaces custom token management logic
 - APP_CONFIG provides centralized access to configuration
 - All services use sessionStorage for better security
+- Backward compatibility is maintained for existing EventBusService calls
+
