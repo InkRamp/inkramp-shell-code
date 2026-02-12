@@ -17,12 +17,23 @@ export class EventBusService {
 
   /**
    * Send an event through the event bus
-   * @param eventType - Type/name of the event
+   * Maintains backward compatibility with the old single-parameter signature
+   * @param eventTypeOrString - Type/name of the event (or legacy string format)
    * @param data - Optional data to send with the event
    */
-  sendEvent(eventType: string, data?: any): void {
-    console.log('[EventBusService] sendEvent() called with:', eventType, data);
-    this.eventBus.emit(eventType, data);
+  sendEvent(eventTypeOrString: string, data?: any): void {
+    console.log('[EventBusService] sendEvent() called with:', eventTypeOrString, data);
+    
+    // Support both old and new signatures
+    if (data === undefined) {
+      // Legacy single-parameter call: sendEvent('someString')
+      // Emit the string as the event type with no data
+      this.eventBus.emit(eventTypeOrString);
+    } else {
+      // New two-parameter call: sendEvent('eventType', { data })
+      this.eventBus.emit(eventTypeOrString, data);
+    }
+    
     console.log('[EventBusService] Event emitted successfully');
   }
 

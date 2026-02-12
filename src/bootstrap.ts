@@ -6,6 +6,25 @@ import { routes } from './app/app.routes';
 import { authInterceptor } from '@opensourcekd/ng-common-libs';
 import { EventBus, TokenManager } from '@opensourcekd/ng-common-libs/core';
 import { environment } from './environments/environment';
+import { InjectionToken } from '@angular/core';
+
+/**
+ * Application Configuration Interface
+ */
+export interface AppConfig {
+  api: {
+    baseUrl: string;
+  };
+  auth: {
+    domain: string;
+    clientId: string;
+  };
+}
+
+/**
+ * Type-safe Injection Token for APP_CONFIG
+ */
+export const APP_CONFIG = new InjectionToken<AppConfig>('APP_CONFIG');
 
 // Create EventBus instance before bootstrap
 const eventBus = new EventBus();
@@ -18,8 +37,8 @@ tokenManager.configure({
   useSessionStorage: true  // Use sessionStorage for better security
 });
 
-// Create APP_CONFIG from environment
-export const APP_CONFIG = {
+// Create app configuration from environment
+const appConfig: AppConfig = {
   api: environment.api,
   auth: environment.auth
 };
@@ -36,8 +55,8 @@ export function bootstrap() {
       { provide: EventBus, useValue: eventBus },
       // Provide TokenManager instance
       { provide: TokenManager, useValue: tokenManager },
-      // Provide APP_CONFIG
-      { provide: 'APP_CONFIG', useValue: APP_CONFIG }
+      // Provide APP_CONFIG with type safety
+      { provide: APP_CONFIG, useValue: appConfig }
     ],
   });
 }
