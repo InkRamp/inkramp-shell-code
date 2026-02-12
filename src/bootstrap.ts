@@ -1,23 +1,33 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
-//import { importProvidersFrom } from '@angular/core';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { routes } from './app/app.routes';
-import { authInterceptor } from '@org/core-services';
-// import { cacheInterceptor } from '@org/core-services';  // Temporarily disabled - not needed for auth testing
-//import { OAuthModule } from 'angular-oauth2-oidc';
+import { authInterceptor } from '@opensourcekd/ng-common-libs';
+import { EventBus } from '@opensourcekd/ng-common-libs/core';
+import { environment } from './environments/environment';
+
+// Create EventBus instance before bootstrap
+const eventBus = new EventBus();
+
+// Create APP_CONFIG from environment
+export const APP_CONFIG = {
+  api: environment.api,
+  auth: environment.auth
+};
 
 export function bootstrap() {
   return bootstrapApplication(AppComponent, {
     providers: [
-      // provideHttpClient(),
       provideRouter(routes),
       provideHttpClient(
         withFetch(),
-        withInterceptors([authInterceptor]),
-        // withInterceptors([cacheInterceptor]),  // Temporarily disabled
-      )
+        withInterceptors([authInterceptor])
+      ),
+      // Provide EventBus instance
+      { provide: EventBus, useValue: eventBus },
+      // Provide APP_CONFIG
+      { provide: 'APP_CONFIG', useValue: APP_CONFIG }
     ],
   });
 }

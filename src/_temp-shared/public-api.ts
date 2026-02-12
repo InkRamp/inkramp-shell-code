@@ -29,3 +29,8 @@ export * from './models/mfe.model';
 // Config
 export * from './config/auth.config';
 export * from './config/api.config';
+
+// Re-export opensourcekd library classes
+export { EventBus } from '@opensourcekd/ng-common-libs/core';
+export { authInterceptor as openskdAuthInterceptor } from '@opensourcekd/ng-common-libs';
+
