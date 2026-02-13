@@ -8,8 +8,11 @@ const sharedDeps = shareAll({
   eager: false 
 });
 
-// Remove @opensourcekd/ng-common-libs from sharing so it gets bundled directly
-// This is needed because the library exports are not being properly resolved in Module Federation
+// Remove @opensourcekd/ng-common-libs from Module Federation sharing.
+// The library must be bundled directly because:
+// 1. It's an ESM module that webpack needs to resolve via package.json
+// 2. Module Federation creates an empty shared chunk when using path mappings
+// 3. Direct bundling ensures EventBus and other exports are available at runtime
 delete sharedDeps['@opensourcekd/ng-common-libs'];
 
 module.exports = withModuleFederationPlugin({
