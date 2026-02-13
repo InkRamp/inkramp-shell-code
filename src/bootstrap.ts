@@ -1,11 +1,9 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
-import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { routes } from './app/app.routes';
-// import { authInterceptor } from '@opensourcekd/ng-common-libs';  // Commented out for now - not required
 import { EventBus, AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs';
-import { authInterceptor } from '@org/core-services';
 
 // Create EventBus instance before bootstrap
 const eventBus = new EventBus();
@@ -22,13 +20,17 @@ const authService = new AuthService(
   eventBus
 );
 
+/**
+ * Application bootstrap
+ * NOTE: Auth interceptor disabled - configure separately if needed
+ */
 export function bootstrap() {
   return bootstrapApplication(AppComponent, {
     providers: [
       provideRouter(routes),
       provideHttpClient(
-        withFetch(),
-        withInterceptors([authInterceptor])
+        withFetch()
+        // NOTE: Auth interceptor removed - configure via opensourcekd library if needed
       ),
       // Provide EventBus instance
       { provide: EventBus, useValue: eventBus },

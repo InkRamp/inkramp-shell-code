@@ -1,15 +1,16 @@
 import { ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { authInterceptor } from '@org/core-services';
+import { provideHttpClient } from '@angular/common/http';
 
 import { routes } from './app.routes';
 
+/**
+ * Application configuration
+ * Note: Auth interceptor removed as auth is now handled by @opensourcekd/ng-common-libs
+ */
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes), 
-    provideHttpClient(
-      withInterceptors([authInterceptor])
-    )
+    provideHttpClient()
   ]
 };
