@@ -1,69 +1,46 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { RoleService, UserRole } from '@org/core-services';
+
+/**
+ * DEPRECATED: Role-based guards disabled
+ * All role-based functionality moved to @opensourcekd/ng-common-libs
+ * These guards now allow all access
+ */
 
 /**
  * Route guard to check if user has required role
- * @param allowedRoles Array of roles that can access the route
- * @returns CanActivateFn
+ * @deprecated All guards now allow access - role checking disabled
  */
-export function roleGuard(allowedRoles: UserRole[]): CanActivateFn {
+export function roleGuard(allowedRoles: string[]): CanActivateFn {
   return () => {
-    const roleService = inject(RoleService);
-    const router = inject(Router);
-
-    // DEBUG_LOG: Guard checking access
-    console.log('[RoleGuard] Checking access for allowed roles:', allowedRoles);
-
-    const currentUser = roleService.getCurrentUser();
-
-    if (!currentUser) {
-      // DEBUG_LOG: No user found
-      console.warn('[RoleGuard] No user found, redirecting to home');
-      router.navigate(['/']);
-      return false;
-    }
-
-    // DEBUG_LOG: Current user found
-    console.log('[RoleGuard] Current user:', currentUser.name, 'Role:', currentUser.role);
-
-    if (!allowedRoles.includes(currentUser.role)) {
-      // DEBUG_LOG: User not authorized
-      console.warn(`[RoleGuard] User role ${currentUser.role} not allowed, redirecting to home`);
-      console.warn('[RoleGuard] Allowed roles:', allowedRoles);
-      router.navigate(['/']);
-      return false;
-    }
-
-    // DEBUG_LOG: Access granted
-    console.log('[RoleGuard] Access granted for user:', currentUser.name);
+    console.warn('[RoleGuard] DEPRECATED: Role checking disabled, allowing all access');
     return true;
   };
 }
 
 /**
  * Guard to check if user is admin or team lead
+ * @deprecated Allows all access - role checking disabled
  */
-export const adminGuard: CanActivateFn = roleGuard([
-  UserRole.SUPER_ADMIN,
-  UserRole.ORG_ADMIN,
-  UserRole.TEAM_LEAD
-]);
+export const adminGuard: CanActivateFn = () => {
+  console.warn('[adminGuard] DEPRECATED: Allowing all access');
+  return true;
+};
 
 /**
  * Guard to check if user is admin only
+ * @deprecated Allows all access - role checking disabled
  */
-export const superAdminGuard: CanActivateFn = roleGuard([
-  UserRole.SUPER_ADMIN,
-  UserRole.ORG_ADMIN
-]);
+export const superAdminGuard: CanActivateFn = () => {
+  console.warn('[superAdminGuard] DEPRECATED: Allowing all access');
+  return true;
+};
 
 /**
  * Guard to check if user has any role (sales executive and above)
+ * @deprecated Allows all access - role checking disabled
  */
-export const allRolesGuard: CanActivateFn = roleGuard([
-  UserRole.SUPER_ADMIN,
-  UserRole.ORG_ADMIN,
-  UserRole.TEAM_LEAD,
-  UserRole.SALES_EXECUTIVE
-]);
+export const allRolesGuard: CanActivateFn = () => {
+  console.warn('[allRolesGuard] DEPRECATED: Allowing all access');
+  return true;
+};
