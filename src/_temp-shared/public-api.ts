@@ -6,14 +6,13 @@
  */
 
 export * from './core-services.service';
-export * from './auth.service';
 export * from './core-services.component';
 
 // Services - Only services used in shell application
 export * from './role.service';
 export * from './dummy-data.service';
 export * from './mfe-loader.service';
-export * from './event-bus.service';
+export * from './placeholder.service';
 export * from './sse-event-from.service';
 export * from './sse-event-from.service2';
 export * from './user-profile.service';
@@ -29,3 +28,8 @@ export * from './models/mfe.model';
 // Config
 export * from './config/auth.config';
 export * from './config/api.config';
+
+// Re-export opensourcekd library classes and types
+export { EventBus, AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs';
+export type { UserInfo, UserData } from '@opensourcekd/ng-common-libs';
+

@@ -2,7 +2,8 @@
   "compileOnSave": false,
   "compilerOptions": {
     "paths": {
-      "@org/core-services": ["./src/_temp-shared/public-api.ts"]
+      "@org/core-services": ["./src/_temp-shared/public-api.ts"],
+      "@opensourcekd/ng-common-libs": ["./node_modules/@opensourcekd/ng-common-libs/dist/index.d.ts"]
     },
     "outDir": "./dist/out-tsc",
     "strict": true,
