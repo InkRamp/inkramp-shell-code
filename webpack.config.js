@@ -46,6 +46,7 @@ const config = withModuleFederationPlugin({
 // This fixes the issue where tsconfig path mapping points to .d.ts file
 config.resolve = config.resolve || {};
 config.resolve.alias = config.resolve.alias || {};
-config.resolve.alias['@opensourcekd/ng-common-libs'] = path.resolve(__dirname, 'node_modules/@opensourcekd/ng-common-libs/dist/index.mjs');
+// Use require.resolve to handle different package installation locations (monorepos, hoisting, etc.)
+config.resolve.alias['@opensourcekd/ng-common-libs'] = require.resolve('@opensourcekd/ng-common-libs').replace(/index\.(cjs|d\.ts)$/, 'index.mjs');
 
 module.exports = config;
