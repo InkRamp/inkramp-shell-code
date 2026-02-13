@@ -7,7 +7,6 @@ import { EventBus, AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs'
 
 // Create EventBus instance before bootstrap with 'shell' identifier
 const eventBus = new EventBus({ id: 'shell' });
-console.log('[Shell Bootstrap] EventBus created with id:', eventBus.getId());
 
 // Create AuthService instance with configuration from library's APP_CONFIG and 'shell' identifier
 const authService = new AuthService(
@@ -23,7 +22,6 @@ const authService = new AuthService(
   undefined, // storageKeys - use defaults
   { id: 'shell' } // options - provide id for debugging
 );
-console.log('[Shell Bootstrap] AuthService created with id:', authService.getId());
 
 /**
  * Application bootstrap
