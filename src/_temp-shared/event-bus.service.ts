@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { EventBus } from '@opensourcekd/ng-common-libs/core';
+import { EventBus } from '@opensourcekd/ng-common-libs';
 import { Observable } from 'rxjs';
 
 /**
