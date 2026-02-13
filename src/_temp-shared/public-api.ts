@@ -13,7 +13,7 @@ export * from './core-services.component';
 export * from './role.service';
 export * from './dummy-data.service';
 export * from './mfe-loader.service';
-export * from './event-bus.service';
+export * from './placeholder.service';
 export * from './sse-event-from.service';
 export * from './sse-event-from.service2';
 export * from './user-profile.service';

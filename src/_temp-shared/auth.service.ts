@@ -2,7 +2,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { EventBusService } from './event-bus.service';
+import { EventBus } from '@opensourcekd/ng-common-libs';
 import { Auth0Client as Auth0ClientType, createAuth0Client } from '@auth0/auth0-spa-js';
 import { 
   AUTH0_CONFIG, 
@@ -82,7 +82,7 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private eventBus: EventBusService
+    private eventBus: EventBus
   ) {
     console.log("[AuthService] Initializing Auth0 authentication service from the SHELL");
     this.initializationPromise = this.initializeAuth0();
@@ -549,7 +549,7 @@ export class AuthService {
       payload,
       timestamp: new Date().toISOString()
     };
-    this.eventBus.sendEvent(JSON.stringify(event));
+    this.eventBus.emit(event.type, event);
     console.log('[AuthService] Auth event emitted:', event.type);
   }
 }
