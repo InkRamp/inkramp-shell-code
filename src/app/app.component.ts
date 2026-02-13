@@ -33,8 +33,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     console.log('[AppComponent] ngOnInit (minimal functionality)');
-    console.log('[Shell Bootstrap] EventBus created with id:', this.eventBus.getId());
-    console.log('[Shell Bootstrap] AuthService created with id:', this.authService.getId());
+    console.log('[AppComponent] EventBus id:', this.eventBus.getId());
+    console.log('[AppComponent] AuthService id:', this.authService.getId());
     // NOTE: Auth and MFE initialization disabled - migrate to @opensourcekd/ng-common-libs
   }
 
