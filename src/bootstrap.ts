@@ -5,10 +5,11 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app/app.routes';
 import { EventBus, AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs';
 
-// Create EventBus instance before bootstrap
-const eventBus = new EventBus();
+// Create EventBus instance before bootstrap with 'shell' identifier
+const eventBus = new EventBus({ id: 'shell' });
+console.log('[Shell Bootstrap] EventBus created with id:', eventBus.getId());
 
-// Create AuthService instance with configuration from library's APP_CONFIG
+// Create AuthService instance with configuration from library's APP_CONFIG and 'shell' identifier
 const authService = new AuthService(
   {
     domain: APP_CONFIG.auth0Domain,
@@ -17,8 +18,12 @@ const authService = new AuthService(
     logoutUri: window.location.origin,
     scope: 'openid profile email'
   },
-  eventBus
+  eventBus,
+  undefined,
+  undefined,
+  { id: 'shell' }
 );
+console.log('[Shell Bootstrap] AuthService created with id:', authService.getId());
 
 /**
  * Application bootstrap
