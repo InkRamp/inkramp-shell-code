@@ -1,5 +1,17 @@
 const { shareAll, withModuleFederationPlugin } = require('@angular-architects/module-federation/webpack');
 
+// Get all shared dependencies
+const sharedDeps = shareAll({ 
+  singleton: true, 
+  strictVersion: false, 
+  requiredVersion: 'auto', 
+  eager: false 
+});
+
+// Remove @opensourcekd/ng-common-libs from sharing so it gets bundled directly
+// This is needed because the library exports are not being properly resolved in Module Federation
+delete sharedDeps['@opensourcekd/ng-common-libs'];
+
 module.exports = withModuleFederationPlugin({
 
   name: 'shell',
@@ -10,9 +22,8 @@ module.exports = withModuleFederationPlugin({
   },
 
   shared: {
-    ...shareAll({ singleton: true, strictVersion: false, requiredVersion: 'auto', eager: false }),
+    ...sharedDeps,
     '@org/core-services': { singleton: true, strictVersion: false, requiredVersion: 'auto' },
-    '@opensourcekd/ng-common-libs': { singleton: true, strictVersion: false, requiredVersion: 'auto' },
   },
 
   // // Expose shared services for MFEs from _temp-shared folder
