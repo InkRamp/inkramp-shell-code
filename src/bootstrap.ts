@@ -1,23 +1,43 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
-//import { importProvidersFrom } from '@angular/core';
-import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { routes } from './app/app.routes';
-import { authInterceptor } from '@org/core-services';
-// import { cacheInterceptor } from '@org/core-services';  // Temporarily disabled - not needed for auth testing
-//import { OAuthModule } from 'angular-oauth2-oidc';
+import { EventBus, AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs';
 
+// Create EventBus instance before bootstrap
+const eventBus = new EventBus();
+
+// Create AuthService instance with configuration from library's APP_CONFIG
+const authService = new AuthService(
+  {
+    domain: APP_CONFIG.auth0Domain,
+    clientId: APP_CONFIG.auth0ClientId,
+    redirectUri: window.location.origin + '/auth-callback',
+    logoutUri: window.location.origin,
+    scope: 'openid profile email'
+  },
+  eventBus
+);
+
+/**
+ * Application bootstrap
+ * NOTE: Auth interceptor disabled - configure separately if needed
+ */
 export function bootstrap() {
   return bootstrapApplication(AppComponent, {
     providers: [
-      // provideHttpClient(),
       provideRouter(routes),
       provideHttpClient(
-        withFetch(),
-        withInterceptors([authInterceptor]),
-        // withInterceptors([cacheInterceptor]),  // Temporarily disabled
-      )
+        withFetch()
+        // NOTE: Auth interceptor removed - configure via opensourcekd library if needed
+      ),
+      // Provide EventBus instance
+      { provide: EventBus, useValue: eventBus },
+      // Provide AuthService instance
+      { provide: AuthService, useValue: authService },
+      // Provide APP_CONFIG from opensourcekd library
+      { provide: 'APP_CONFIG', useValue: APP_CONFIG }
     ],
   });
 }
