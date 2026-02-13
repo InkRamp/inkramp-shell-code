@@ -1,21 +1,7 @@
 const { shareAll, withModuleFederationPlugin } = require('@angular-architects/module-federation/webpack');
+const path = require('path');
 
-// Get all shared dependencies
-const sharedDeps = shareAll({ 
-  singleton: true, 
-  strictVersion: false, 
-  requiredVersion: 'auto', 
-  eager: false 
-});
-
-// Remove @opensourcekd/ng-common-libs from Module Federation sharing.
-// The library must be bundled directly because:
-// 1. It's an ESM module that webpack needs to resolve via package.json
-// 2. Module Federation creates an empty shared chunk when using path mappings
-// 3. Direct bundling ensures EventBus and other exports are available at runtime
-delete sharedDeps['@opensourcekd/ng-common-libs'];
-
-module.exports = withModuleFederationPlugin({
+const config = withModuleFederationPlugin({
 
   name: 'shell',
 
@@ -25,8 +11,17 @@ module.exports = withModuleFederationPlugin({
   },
 
   shared: {
-    ...sharedDeps,
+    ...shareAll({ singleton: true, strictVersion: false, requiredVersion: 'auto', eager: false }),
     '@org/core-services': { singleton: true, strictVersion: false, requiredVersion: 'auto' },
+    // Load @opensourcekd/ng-common-libs eagerly to ensure it's available at bootstrap time
+    // eager: true makes the library load immediately with the main bundle instead of lazy loading
+    // This fixes the "EventBus is not a constructor" error while maintaining singleton behavior across MFEs
+    '@opensourcekd/ng-common-libs': { 
+      singleton: true, 
+      strictVersion: false, 
+      requiredVersion: 'auto', 
+      eager: true
+    },
   },
 
   // // Expose shared services for MFEs from _temp-shared folder
@@ -46,3 +41,11 @@ module.exports = withModuleFederationPlugin({
   // },
 
 });
+
+// Override webpack's resolve to use the actual library implementation
+// This fixes the issue where tsconfig path mapping points to .d.ts file
+config.resolve = config.resolve || {};
+config.resolve.alias = config.resolve.alias || {};
+config.resolve.alias['@opensourcekd/ng-common-libs'] = path.resolve(__dirname, 'node_modules/@opensourcekd/ng-common-libs/dist/index.mjs');
+
+module.exports = config;
