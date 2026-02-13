@@ -19,9 +19,9 @@ const authService = new AuthService(
     scope: 'openid profile email'
   },
   eventBus,
-  undefined,
-  undefined,
-  { id: 'shell' }
+  undefined, // storageConfig - use defaults
+  undefined, // storageKeys - use defaults
+  { id: 'shell' } // options - provide id for debugging
 );
 console.log('[Shell Bootstrap] AuthService created with id:', authService.getId());
 
