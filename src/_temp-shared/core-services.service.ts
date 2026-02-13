@@ -12,7 +12,7 @@ export class CoreServicesService {
     console.log('[CoreServicesService] Dummy placeholder service initialized');
   }
 
-  getDummyData(): string {
-    return 'This is a dummy placeholder service';
+  getPlaceholderMessage(): string {
+    return 'This is a dummy placeholder service - all implementations moved to @opensourcekd/ng-common-libs';
   }
 }

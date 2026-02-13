@@ -9,6 +9,7 @@ import { CanActivateFn, Router } from '@angular/router';
 
 /**
  * Route guard to check if user has required role
+ * @param allowedRoles Retained for API compatibility but not used (role checking disabled)
  * @deprecated All guards now allow access - role checking disabled
  */
 export function roleGuard(allowedRoles: string[]): CanActivateFn {

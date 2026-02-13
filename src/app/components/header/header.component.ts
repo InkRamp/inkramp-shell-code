@@ -5,6 +5,14 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 /**
+ * Stub interfaces for disabled functionality
+ */
+interface StubUser { id?: string; name?: string; email?: string; role?: string; }
+interface StubProfile { organizations?: Array<{ displayName?: string }>; }
+interface StubMfe { remoteName?: string; displayName?: string; route?: string; }
+interface StubSalesExecutive { id?: string; name?: string; }
+
+/**
  * Header component for the application
  * NOTE: Role/Auth/MFE services disabled - migrate to @opensourcekd/ng-common-libs
  */
@@ -16,10 +24,10 @@ import { Subscription } from 'rxjs';
   styleUrl: './header.component.scss'
 })
 export class HeaderComponent implements OnInit, OnDestroy {
-  currentUser: any = null;
-  userProfile: any = null;
-  availableMfes: any[] = [];
-  salesExecutives: any[] = [];
+  currentUser: StubUser | null = null;
+  userProfile: StubProfile | null = null;
+  availableMfes: StubMfe[] = [];
+  salesExecutives: StubSalesExecutive[] = [];
   selectedSalesExecutiveId: string = '';
   canViewOthers: boolean = false;
   private subscriptions = new Subscription();
