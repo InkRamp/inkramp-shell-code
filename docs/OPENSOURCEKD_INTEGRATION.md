@@ -1,62 +1,65 @@
-# OpenSourceKD Library Integration
+# OpenSourceKD Library Integration (v2.0.4)
 
-This document explains how the application consumes the `@opensourcekd/ng-common-libs` library with pure TypeScript services.
+This document explains how the application consumes the `@opensourcekd/ng-common-libs` library (v2.0.4) with pure TypeScript services.
 
 ## Overview
 
 The application uses framework-agnostic services from the opensourcekd library, configured and provided at bootstrap time using the `useValue` pattern.
 
+## Library Version
+
+Current version: **2.0.4**
+
+Key changes from v1.x:
+- No more `/core` and `/angular` subpath exports
+- All exports available directly from `@opensourcekd/ng-common-libs`
+- Includes `AuthService` for Auth0 integration
+- Includes `APP_CONFIG` with build-time configuration
+
 ## Configuration
 
-### Environment Setup
+### APP_CONFIG from Library
 
-Environment-specific configuration is centralized in `src/environments/environment.ts`:
+The library provides `APP_CONFIG` with environment-specific values configured at build time:
 
 ```typescript
-export const environment = {
-  production: false,
-  
-  auth: {
-    domain: 'dev-26sow24tone5na8a.us.auth0.com',
-    clientId: 'EdkPy5co65jESIAT8T9SBy5X4cmeolhl'
-  },
-  
-  api: {
-    baseUrl: 'https://tmzuktmjy7.execute-api.us-east-1.amazonaws.com'
-  }
-};
+import { APP_CONFIG } from '@opensourcekd/ng-common-libs';
+
+// Available configuration:
+APP_CONFIG.auth0Domain    // Auth0 domain
+APP_CONFIG.auth0ClientId  // Auth0 client ID
+APP_CONFIG.apiUrl         // Backend API URL
 ```
+
+**Note**: These values are replaced during the library's build process using GitHub repository variables. No local environment files are needed.
 
 ### Bootstrap Configuration
 
 Services are instantiated and configured before Angular bootstraps in `src/bootstrap.ts`:
 
 ```typescript
-import { EventBus, TokenManager } from '@opensourcekd/ng-common-libs/core';
-import { environment } from './environments/environment';
+import { EventBus, AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs';
 
 // Create EventBus instance
 const eventBus = new EventBus();
 
-// Create and configure TokenManager
-const tokenManager = new TokenManager();
-tokenManager.configure({
-  tokenKey: 'auth0_access_token',
-  refreshTokenKey: 'auth0_refresh_token',
-  useSessionStorage: true
-});
-
-// Create APP_CONFIG
-export const APP_CONFIG = {
-  api: environment.api,
-  auth: environment.auth
-};
+// Create AuthService instance with library's APP_CONFIG
+const authService = new AuthService(
+  {
+    domain: APP_CONFIG.auth0Domain,
+    clientId: APP_CONFIG.auth0ClientId,
+    redirectUri: window.location.origin + '/auth-callback',
+    logoutUri: window.location.origin,
+    scope: 'openid profile email'
+  },
+  eventBus
+);
 
 // Provide instances in bootstrap
 bootstrapApplication(AppComponent, {
   providers: [
     { provide: EventBus, useValue: eventBus },
-    { provide: TokenManager, useValue: tokenManager },
+    { provide: AuthService, useValue: authService },
     { provide: 'APP_CONFIG', useValue: APP_CONFIG }
   ]
 });
@@ -68,7 +71,7 @@ bootstrapApplication(AppComponent, {
 
 ```typescript
 import { Component, inject } from '@angular/core';
-import { EventBus } from '@opensourcekd/ng-common-libs/core';
+import { EventBus } from '@opensourcekd/ng-common-libs';
 
 @Component({
   selector: 'app-example',
@@ -91,49 +94,59 @@ export class ExampleComponent {
 }
 ```
 
-### Injecting TokenManager
+### Injecting AuthService
 
 ```typescript
 import { Component, inject } from '@angular/core';
-import { TokenManager } from '@opensourcekd/ng-common-libs/core';
+import { AuthService } from '@opensourcekd/ng-common-libs';
 
 @Component({
   selector: 'app-auth-example',
   template: '...'
 })
 export class AuthExampleComponent {
-  private tokenManager = inject(TokenManager);
+  private authService = inject(AuthService);
   
-  checkAuth() {
-    if (this.tokenManager.isAuthenticated()) {
-      const userData = this.tokenManager.getUserFromToken();
-      console.log('User data:', userData);
+  async login() {
+    await this.authService.login();
+  }
+  
+  async checkAuth() {
+    if (await this.authService.isAuthenticated()) {
+      const user = this.authService.getUser();
+      console.log('User:', user);
     }
   }
   
-  storeToken(token: string) {
-    this.tokenManager.setToken(token);
+  async logout() {
+    await this.authService.logout();
   }
 }
+```
+
+### Injecting TokenManager
+
+**Note**: TokenManager is no longer provided in v2.0.4. Use AuthService for authentication needs.
 ```
 
 ### Injecting APP_CONFIG
 
 ```typescript
 import { Component, inject } from '@angular/core';
-import { APP_CONFIG, AppConfig } from '../bootstrap';
+import { APP_CONFIG } from '@opensourcekd/ng-common-libs';
 
 @Component({
   selector: 'app-config-example',
   template: '...'
 })
 export class ConfigExampleComponent {
-  // Type-safe injection using InjectionToken
-  private config: AppConfig = inject(APP_CONFIG);
+  // Inject APP_CONFIG from library
+  private config = inject('APP_CONFIG');
   
   ngOnInit() {
-    console.log('API Base URL:', this.config.api.baseUrl);
-    console.log('Auth Domain:', this.config.auth.domain);
+    console.log('API URL:', this.config.apiUrl);
+    console.log('Auth0 Domain:', this.config.auth0Domain);
+    console.log('Auth0 Client ID:', this.config.auth0ClientId);
   }
 }
 ```
@@ -144,7 +157,7 @@ For backward compatibility and convenience, the application provides an Angular 
 
 ```typescript
 import { Injectable, inject } from '@angular/core';
-import { EventBus } from '@opensourcekd/ng-common-libs/core';
+import { EventBus } from '@opensourcekd/ng-common-libs';
 
 @Injectable({ providedIn: 'root' })
 export class EventBusService {
@@ -176,34 +189,68 @@ export class EventBusService {
 ## Benefits
 
 1. **Framework-Agnostic**: Core services can be reused in non-Angular contexts
-2. **Centralized Configuration**: All configuration happens at bootstrap time
+2. **Centralized Configuration**: Configuration managed at library build time via GitHub variables
 3. **Type Safety**: Full TypeScript support with type definitions
 4. **Dependency Injection**: Services are available throughout the application
 5. **Testability**: Services can be easily mocked in tests
+6. **No Local Config Files**: Eliminates environment file dependencies for microapps
+
+## Migration from v1.x to v2.0.4
+
+### Breaking Changes
+
+1. **No subpath exports**: 
+   - Old: `@opensourcekd/ng-common-libs/core`
+   - New: `@opensourcekd/ng-common-libs`
+
+2. **AuthService available**: New full-featured Auth0 service included
+
+3. **APP_CONFIG provided**: No need for local environment files
+
+4. **TokenManager removed**: Use AuthService for authentication
+
+### Migration Steps
+
+1. Update imports:
+   ```typescript
+   // Before
+   import { EventBus } from '@opensourcekd/ng-common-libs/core';
+   
+   // After
+   import { EventBus } from '@opensourcekd/ng-common-libs';
+   ```
+
+2. Remove local environment files
+
+3. Use APP_CONFIG from library:
+   ```typescript
+   import { APP_CONFIG } from '@opensourcekd/ng-common-libs';
+   ```
+
+4. Update tsconfig.json to remove subpath mappings
 
 ## Security Considerations
 
-### Environment Files
+### APP_CONFIG Values
 
-The environment files (`src/environments/environment.ts` and `environment.prod.ts`) currently contain Auth0 credentials committed to the repository. This is acceptable for development but **should be addressed for production**:
-
-1. **Production Credentials**: Never commit production credentials to source control
-2. **Environment Variables**: Use build-time environment variable replacement
-3. **Secure Configuration**: Consider using secure configuration management services
-4. **Separate Credentials**: Production should have its own Auth0 tenant and credentials
+The APP_CONFIG values are set during the library's build process using GitHub repository variables:
+- Not visible in library source code
+- Different values per environment
+- Managed centrally for all consuming applications
 
 ### Token Storage
 
-The TokenManager is configured to use `sessionStorage` for better security:
+The AuthService uses configurable storage (sessionStorage by default):
 - Tokens are cleared when the browser tab/window is closed
 - Tokens are not accessible across tabs
 - Reduces risk compared to localStorage
 
 ## Migration Notes
 
-- The EventBusService now wraps the opensourcekd EventBus
-- TokenManager replaces custom token management logic
+- The EventBusService now wraps the opensourcekd EventBus (v2.0.4)
+- AuthService replaces custom Auth0 integration
 - APP_CONFIG provides centralized access to configuration
-- All services use sessionStorage for better security
+- All services use sessionStorage for security
 - Backward compatibility is maintained for existing EventBusService calls
+- No local environment files reduces dependencies for microapps
 
