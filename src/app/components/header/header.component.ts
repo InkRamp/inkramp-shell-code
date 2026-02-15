@@ -14,7 +14,12 @@ interface StubSalesExecutive { id?: string; name?: string; }
 
 /**
  * Header component for the application
- * Login/logout functionality enabled via AuthService
+ * Login/logout functionality enabled via AuthService from @opensourcekd/ng-common-libs
+ * 
+ * MIGRATION NOTE: Transitioned from stub interfaces to real authentication
+ * - currentUser now uses UserInfo from AuthService instead of StubUser
+ * - login() and logout() now use AuthService methods instead of console warnings
+ * - Authentication state is tracked via authService.user$ observable
  */
 @Component({
   selector: 'app-header',
