@@ -17,7 +17,7 @@
         [(ngModel)]="selectedSalesExecutiveId" 
         (change)="onSalesExecutiveChange()" 
         aria-describedby="salesExecSelectDesc">
-        <option [value]="currentUser.id">My Data</option>
+        <option [value]="currentUser.sub">My Data</option>
         <option *ngFor="let exec of salesExecutives" [value]="exec.id">{{ exec.name }}</option>
       </select>
     </div>
