@@ -82,18 +82,19 @@ export const MFE_CONFIGS: MfeConfig[] = [
     //     priority: 6,
     //     icon: 'chart'
     // },
-    {
-        id: 'mfe-users-crud',
-        name: 'users-crud',
-        displayName: 'User Management',
-        remoteName: 'usersCrud',
-        exposedModule: './Component',
-        url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-USERS_CRUD/remoteEntry.js',
-        route: 'users',
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN],
-        priority: 7,
-        icon: 'users'
-    }
+    // Temporarily commented out external MFE for testing
+    // {
+    //     id: 'mfe-users-crud',
+    //     name: 'users-crud',
+    //     displayName: 'User Management',
+    //     remoteName: 'usersCrud',
+    //     exposedModule: './Component',
+    //     url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-USERS_CRUD/remoteEntry.js',
+    //     route: 'users',
+    //     allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN],
+    //     priority: 7,
+    //     icon: 'users'
+    // }
 ];
 
 /**
