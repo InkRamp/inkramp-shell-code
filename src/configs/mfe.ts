@@ -84,18 +84,18 @@ export const MFE_CONFIGS: MfeConfig[] = [
     // },
     // TODO: Re-enable when external MFE is available or when testing with proper MFE infrastructure
     // Temporarily disabled to allow app to run without external dependencies during development
-    // {
-    //     id: 'mfe-users-crud',
-    //     name: 'users-crud',
-    //     displayName: 'User Management',
-    //     remoteName: 'usersCrud',
-    //     exposedModule: './Component',
-    //     url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-USERS_CRUD/remoteEntry.js',
-    //     route: 'users',
-    //     allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN],
-    //     priority: 7,
-    //     icon: 'users'
-    // }
+    {
+        id: 'mfe-users-crud',
+        name: 'users-crud',
+        displayName: 'User Management',
+        remoteName: 'usersCrud',
+        exposedModule: './Component',
+        url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-USERS_CRUD/remoteEntry.js',
+        route: 'users',
+        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN],
+        priority: 7,
+        icon: 'users'
+    }
 ];
 
 /**
