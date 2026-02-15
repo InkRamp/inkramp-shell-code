@@ -10,6 +10,11 @@ The application uses framework-agnostic services from the opensourcekd library, 
 
 Current version: **2.0.7**
 
+**Version History:**
+- v2.0.7 - Current version (updated 2026-02-15)
+- v2.0.6 - Previous version
+- v2.0.5 - Documentation baseline
+
 Key changes from v1.x:
 - No more `/core` and `/angular` subpath exports
 - All exports available directly from `@opensourcekd/ng-common-libs`
