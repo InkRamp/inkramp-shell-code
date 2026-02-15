@@ -1,6 +1,6 @@
-# OpenSourceKD Library Integration (v2.0.5)
+# OpenSourceKD Library Integration (v2.0.7)
 
-This document explains how the application consumes the `@opensourcekd/ng-common-libs` library (v2.0.5) with pure TypeScript services.
+This document explains how the application consumes the `@opensourcekd/ng-common-libs` library (v2.0.7) with pure TypeScript services.
 
 ## Overview
 
@@ -8,7 +8,7 @@ The application uses framework-agnostic services from the opensourcekd library, 
 
 ## Library Version
 
-Current version: **2.0.5**
+Current version: **2.0.7**
 
 Key changes from v1.x:
 - No more `/core` and `/angular` subpath exports
@@ -126,7 +126,7 @@ export class AuthExampleComponent {
 
 ### Injecting TokenManager
 
-**Note**: TokenManager is no longer provided in v2.0.5. Use AuthService for authentication needs.
+**Note**: TokenManager is no longer provided in v2.0.7. Use AuthService for authentication needs.
 ```
 
 ### Injecting APP_CONFIG
@@ -195,7 +195,7 @@ export class EventBusService {
 5. **Testability**: Services can be easily mocked in tests
 6. **No Local Config Files**: Eliminates environment file dependencies for microapps
 
-## Migration from v1.x to v2.0.5
+## Migration from v1.x to v2.0.7
 
 ### Breaking Changes
 
@@ -247,7 +247,7 @@ The AuthService uses configurable storage (sessionStorage by default):
 
 ## Migration Notes
 
-- The EventBusService now wraps the opensourcekd EventBus (v2.0.5)
+- The EventBusService now wraps the opensourcekd EventBus (v2.0.7)
 - AuthService replaces custom Auth0 integration
 - APP_CONFIG provides centralized access to configuration
 - All services use sessionStorage for security
