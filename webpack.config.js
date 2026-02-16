@@ -10,9 +10,9 @@ module.exports = withModuleFederationPlugin({
   },
 
   shared: {
-    ...shareAll({ singleton: true, strictVersion: false, requiredVersion: 'auto', eager: false }),
+    ...shareAll({ singleton: true, strictVersion: true, requiredVersion: 'auto', eager: false }),
     '@org/core-services': { singleton: true, strictVersion: false, requiredVersion: 'auto' },
-    '@opensourcekd/ng-common-libs': { singleton: true, strictVersion: false, requiredVersion: 'auto' },
+    '@opensourcekd/ng-common-libs': { singleton: true, strictVersion: true, requiredVersion: 'auto' },
   },
 
   // // Expose shared services for MFEs from _temp-shared folder

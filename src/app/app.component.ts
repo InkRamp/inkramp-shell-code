@@ -36,6 +36,9 @@ export class AppComponent implements OnInit, OnDestroy {
     console.log('[AppComponent] EventBus id:', this.eventBus.getId());
     console.log('[AppComponent] AuthService id:', this.authService.getId());
     // NOTE: Auth and MFE initialization disabled - migrate to @opensourcekd/ng-common-libs
+    if (window.location.search.includes('code=')) {
+      await this.authService.handleCallback();
+    }
   }
 
   ngOnDestroy(): void {
