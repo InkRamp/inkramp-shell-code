@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { Router, RouterOutlet, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
+import { EventBus, AuthService } from '@opensourcekd/ng-common-libs';
 
 /**
  * Root application component
@@ -20,6 +21,8 @@ import { FooterComponent } from './components/footer/footer.component';
 export class AppComponent implements OnInit, OnDestroy {
   title = 'Incentive Management System';
   private subscriptions = new Subscription();
+  private eventBus = inject(EventBus);
+  private authService = inject(AuthService);
 
   constructor(
     private router: Router,
@@ -30,7 +33,12 @@ export class AppComponent implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     console.log('[AppComponent] ngOnInit (minimal functionality)');
+    console.log('[AppComponent] EventBus id:', this.eventBus.getId());
+    console.log('[AppComponent] AuthService id:', this.authService.getId());
     // NOTE: Auth and MFE initialization disabled - migrate to @opensourcekd/ng-common-libs
+    if (window.location.search.includes('code=')) {
+      await this.authService.handleCallback();
+    }
   }
 
   ngOnDestroy(): void {

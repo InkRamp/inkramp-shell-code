@@ -1,20 +1,25 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { AuthService, UserInfo } from '@opensourcekd/ng-common-libs';
 
 /**
  * Stub interfaces for disabled functionality
  */
-interface StubUser { id?: string; name?: string; email?: string; role?: string; }
 interface StubProfile { organizations?: Array<{ displayName?: string }>; }
 interface StubMfe { remoteName?: string; displayName?: string; route?: string; }
 interface StubSalesExecutive { id?: string; name?: string; }
 
 /**
  * Header component for the application
- * NOTE: Role/Auth/MFE services disabled - migrate to @opensourcekd/ng-common-libs
+ * Login/logout functionality enabled via AuthService from @opensourcekd/ng-common-libs
+ * 
+ * MIGRATION NOTE: Transitioned from stub interfaces to real authentication
+ * - currentUser now uses UserInfo from AuthService instead of StubUser
+ * - login() and logout() now use AuthService methods instead of console warnings
+ * - Authentication state is tracked via authService.user$ observable
  */
 @Component({
   selector: 'app-header',
@@ -24,22 +29,29 @@ interface StubSalesExecutive { id?: string; name?: string; }
   styleUrl: './header.component.scss'
 })
 export class HeaderComponent implements OnInit, OnDestroy {
-  currentUser: StubUser | null = null;
+  currentUser: UserInfo | null = null;
   userProfile: StubProfile | null = null;
   availableMfes: StubMfe[] = [];
   salesExecutives: StubSalesExecutive[] = [];
   selectedSalesExecutiveId: string = '';
   canViewOthers: boolean = false;
   private subscriptions = new Subscription();
+  private authService = inject(AuthService);
 
   constructor(
     private router: Router
   ) {
-    console.warn('[HeaderComponent] Services disabled - migrate to @opensourcekd/ng-common-libs');
+    console.log('[HeaderComponent] Initialized with AuthService');
   }
 
   ngOnInit(): void {
-    // NOTE: Auth/Role services disabled
+    // Subscribe to auth state changes
+    this.subscriptions.add(
+      this.authService.user$.subscribe((user) => {
+        this.currentUser = user;
+        console.log('[HeaderComponent] User state changed:', user?.email || 'Not logged in');
+      })
+    );
   }
 
   ngOnDestroy(): void {
@@ -47,11 +59,17 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   login(): void {
-    console.warn('[HeaderComponent] Login disabled');
+    console.log('[HeaderComponent] Initiating login');
+    this.authService.login().catch(error => {
+      console.error('[HeaderComponent] Login failed:', error);
+    });
   }
 
   logout(): void {
-    console.warn('[HeaderComponent] Logout disabled');
+    console.log('[HeaderComponent] Initiating logout');
+    this.authService.logout().catch(error => {
+      console.error('[HeaderComponent] Logout failed:', error);
+    });
   }
 
   onSalesExecutiveChange(): void {

@@ -82,6 +82,8 @@ export const MFE_CONFIGS: MfeConfig[] = [
     //     priority: 6,
     //     icon: 'chart'
     // },
+    // TODO: Re-enable when external MFE is available or when testing with proper MFE infrastructure
+    // Temporarily disabled to allow app to run without external dependencies during development
     {
         id: 'mfe-users-crud',
         name: 'users-crud',
