@@ -3,27 +3,23 @@ import { AppComponent } from './app/app.component';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { routes } from './app/app.routes';
-import { EventBus, AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs';
+import { EventBus, AuthService, APP_CONFIG, configureAuth0, createAuthService } from '@opensourcekd/ng-common-libs';
+
+// Configure Auth0 using app-level settings
+configureAuth0({
+  domain: APP_CONFIG.auth0Domain,
+  clientId: APP_CONFIG.auth0ClientId,
+  audience: APP_CONFIG.apiUrl,
+  redirectUri: `${window.location.origin}/i17e`,
+  logoutUri: `${window.location.origin}/i17e`,
+  scope: 'openid profile email'
+});
 
 // Create EventBus instance before bootstrap with 'shell' identifier
 const eventBus = new EventBus({ id: 'shell' });
 
-// Create AuthService instance with configuration from library's APP_CONFIG and 'shell' identifier
-console.log("Hey JOJO", APP_CONFIG)
-const authService = new AuthService(
-  {
-    domain: APP_CONFIG.auth0Domain,
-    clientId: APP_CONFIG.auth0ClientId,
-    audience: 'https://something', //APP_CONFIG.apiUrl,
-    redirectUri: `${window.location.origin}/i17e`,
-    logoutUri: `${window.location.origin}/i17e`,
-    scope: 'openid profile email'
-  },
-  eventBus,
-  undefined, // storageConfig - use defaults
-  undefined, // storageKeys - use defaults
-  { id: 'shell' } // options - provide id for debugging
-);
+// Create AuthService using the library helper, pre-configured via configureAuth0()
+const authService = createAuthService(eventBus);
 
 /**
  * Application bootstrap
