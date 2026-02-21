@@ -9,6 +9,7 @@ import { EventBus, AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs'
 const eventBus = new EventBus({ id: 'shell' });
 
 // Create AuthService instance with configuration from library's APP_CONFIG and 'shell' identifier
+console.log("Hey JOJO", APP_CONFIG)
 const authService = new AuthService(
   {
     domain: APP_CONFIG.auth0Domain,
