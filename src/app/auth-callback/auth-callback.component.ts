@@ -1,17 +1,12 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
-
-interface AuthState {
-  message: string;
-  isProcessing: boolean;
-  redirectDelayMs: number;
-}
+import { AuthService } from '@opensourcekd/ng-common-libs';
 
 /**
  * Auth callback component
- * NOTE: Auth functionality disabled - migrate to @opensourcekd/ng-common-libs
+ * Handles the OAuth2 redirect callback from Auth0
  */
 @Component({
   selector: 'app-auth-callback',
@@ -34,19 +29,31 @@ interface AuthState {
   `]
 })
 export class AuthCallbackComponent implements OnInit, OnDestroy {
-  message = 'Authentication disabled - redirecting...';
-  isProcessing = false;
+  message = 'Processing authentication...';
+  isProcessing = true;
   private destroy$ = new Subject<void>();
+  private authService = inject(AuthService);
 
   constructor(
     private route: ActivatedRoute,
     private router: Router
-  ) {
-    console.warn('[AuthCallbackComponent] Auth services disabled');
-  }
+  ) {}
 
   async ngOnInit(): Promise<void> {
-    // Immediately redirect to home since auth is disabled
+    if (window.location.search.includes('code=')) {
+      try {
+        const result = await this.authService.handleCallback();
+        if (result.success) {
+          this.message = 'Authentication successful! Redirecting...';
+        } else {
+          this.message = 'Authentication could not be completed. Redirecting to home...';
+        }
+      } catch (error) {
+        console.error('[AuthCallbackComponent] Callback handling failed:', error);
+        this.message = 'An error occurred during authentication. Please try logging in again.';
+      }
+    }
+    this.isProcessing = false;
     setTimeout(() => {
       this.router.navigate(['/']);
     }, 1500);
