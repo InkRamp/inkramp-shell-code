@@ -1,47 +1,67 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-
-/**
- * DEPRECATED: Role-based guards disabled
- * All role-based functionality moved to @opensourcekd/ng-common-libs
- * These guards now allow all access
- */
+import { AuthService } from '@opensourcekd/ng-common-libs';
 
 /**
  * Route guard to check if user has required role
- * @param allowedRoles Retained for API compatibility but not used (role checking disabled)
- * @deprecated All guards now allow access - role checking disabled
+ * @param allowedRoles Reserved for future role-based access control; currently only authentication is checked
+ * TODO: Implement role-based access control using UserData from AuthService.getUserData()
  */
 export function roleGuard(allowedRoles: string[]): CanActivateFn {
   return () => {
-    console.warn('[RoleGuard] DEPRECATED: Role checking disabled, allowing all access');
+    const authService = inject(AuthService);
+    const router = inject(Router);
+    if (!authService.isAuthenticatedSync()) {
+      authService.login().catch(error => {
+        console.error('[RoleGuard] Login redirect failed:', error);
+      });
+      return router.parseUrl('/');
+    }
     return true;
   };
 }
 
 /**
- * Guard to check if user is admin or team lead
- * @deprecated Allows all access - role checking disabled
+ * Guard to check if user is authenticated (admin or team lead routes)
  */
 export const adminGuard: CanActivateFn = () => {
-  console.warn('[adminGuard] DEPRECATED: Allowing all access');
+  const authService = inject(AuthService);
+  const router = inject(Router);
+  if (!authService.isAuthenticatedSync()) {
+    authService.login().catch(error => {
+      console.error('[adminGuard] Login redirect failed:', error);
+    });
+    return router.parseUrl('/');
+  }
   return true;
 };
 
 /**
- * Guard to check if user is admin only
- * @deprecated Allows all access - role checking disabled
+ * Guard to check if user is authenticated (super-admin routes)
  */
 export const superAdminGuard: CanActivateFn = () => {
-  console.warn('[superAdminGuard] DEPRECATED: Allowing all access');
+  const authService = inject(AuthService);
+  const router = inject(Router);
+  if (!authService.isAuthenticatedSync()) {
+    authService.login().catch(error => {
+      console.error('[superAdminGuard] Login redirect failed:', error);
+    });
+    return router.parseUrl('/');
+  }
   return true;
 };
 
 /**
- * Guard to check if user has any role (sales executive and above)
- * @deprecated Allows all access - role checking disabled
+ * Guard to check if user is authenticated (all authenticated roles)
  */
 export const allRolesGuard: CanActivateFn = () => {
-  console.warn('[allRolesGuard] DEPRECATED: Allowing all access');
+  const authService = inject(AuthService);
+  const router = inject(Router);
+  if (!authService.isAuthenticatedSync()) {
+    authService.login().catch(error => {
+      console.error('[allRolesGuard] Login redirect failed:', error);
+    });
+    return router.parseUrl('/');
+  }
   return true;
 };
