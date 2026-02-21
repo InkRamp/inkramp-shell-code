@@ -13,8 +13,8 @@ const authService = new AuthService(
   {
     domain: APP_CONFIG.auth0Domain,
     clientId: APP_CONFIG.auth0ClientId,
-    audience: APP_CONFIG.apiUrl,
-    redirectUri: `${window.location.origin}/i17e`,
+    audience: 'https://something',
+    redirectUri: `${window.location.origin}/i17e`, //'/auth-callback',
     logoutUri: `${window.location.origin}/i17e`,
     scope: 'openid profile email'
   },
