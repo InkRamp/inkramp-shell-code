@@ -40,16 +40,18 @@ export class AuthCallbackComponent implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    try {
-      const result = await this.authService.handleCallback();
-      if (result.success) {
-        this.message = 'Authentication successful! Redirecting...';
-      } else {
-        this.message = 'Authentication could not be completed. Redirecting to home...';
+    if (window.location.search.includes('code=')) {
+      try {
+        const result = await this.authService.handleCallback();
+        if (result.success) {
+          this.message = 'Authentication successful! Redirecting...';
+        } else {
+          this.message = 'Authentication could not be completed. Redirecting to home...';
+        }
+      } catch (error) {
+        console.error('[AuthCallbackComponent] Callback handling failed:', error);
+        this.message = 'An error occurred during authentication. Please try logging in again.';
       }
-    } catch (error) {
-      console.error('[AuthCallbackComponent] Callback handling failed:', error);
-      this.message = 'An error occurred during authentication. Please try logging in again.';
     }
     this.isProcessing = false;
     setTimeout(() => {
