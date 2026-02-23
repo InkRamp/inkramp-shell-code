@@ -24,7 +24,7 @@ export const routes: Routes = [
     {
         path: 'rules',
         component: RulesPageComponent,
-        canActivate: [roleGuard(['super-admin', 'org-admin', 'team-lead'])]
+        canActivate: [roleGuard(['super-admin', 'org-admin', 'org-lead'])]
     },
     {
         path: 'sales',

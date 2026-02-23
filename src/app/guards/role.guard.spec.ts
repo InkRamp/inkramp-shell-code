@@ -96,9 +96,9 @@ describe('Role Guards', () => {
       expect(result).toBe(true);
     });
 
-    it('should allow access when user has team-lead role', () => {
+    it('should allow access when user has org-lead role', () => {
       authServiceMock.isAuthenticatedSync.and.returnValue(true);
-      mockToken({ hdfc: ['team-lead'] });
+      mockToken({ hdfc: ['org-lead'] });
       const result = TestBed.runInInjectionContext(() => allRolesGuard({} as any, {} as any));
       expect(result).toBe(true);
     });
@@ -120,9 +120,9 @@ describe('Role Guards', () => {
   describe('roleGuard', () => {
     it('should allow access when user has one of the allowed roles across any org', () => {
       authServiceMock.isAuthenticatedSync.and.returnValue(true);
-      mockToken({ org1: ['team-lead'], org2: ['org-admin'] });
+      mockToken({ org1: ['org-lead'], org2: ['org-admin'] });
       const result = TestBed.runInInjectionContext(() =>
-        roleGuard(['super-admin', 'org-admin', 'team-lead'])({} as any, {} as any)
+        roleGuard(['super-admin', 'org-admin', 'org-lead'])({} as any, {} as any)
       );
       expect(result).toBe(true);
     });

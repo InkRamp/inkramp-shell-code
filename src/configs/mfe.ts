@@ -7,7 +7,7 @@ import { LoadRemoteModuleScriptOptions } from "@angular-architects/module-federa
 export enum UserRole {
   SUPER_ADMIN = 'super-admin',
   ORG_ADMIN = 'org-admin',
-  TEAM_LEAD = 'team-lead',
+  ORG_LEAD = 'org-lead',
   SALES_EXECUTIVE = 'sales-executive'
 }
 
@@ -54,7 +54,7 @@ export const MFE_CONFIGS: MfeConfig[] = [
         exposedModule: './Component',
         url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-CRUD_RULES/remoteEntry.js',
         route: 'rules',
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.TEAM_LEAD],
+        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ORG_LEAD],
         priority: 8,
         icon: 'settings'
     },
@@ -66,7 +66,7 @@ export const MFE_CONFIGS: MfeConfig[] = [
         exposedModule: './Component',
         url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-MY_SALES/remoteEntry.js',
         route: 'sales',
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.TEAM_LEAD, UserRole.SALES_EXECUTIVE],
+        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ORG_LEAD, UserRole.SALES_EXECUTIVE],
         priority: 7,
         icon: 'list'
     },
@@ -78,7 +78,7 @@ export const MFE_CONFIGS: MfeConfig[] = [
         exposedModule: './Component',
         url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-MY_REPORT/remoteEntry.js',
         route: 'reports',
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.TEAM_LEAD, UserRole.SALES_EXECUTIVE],
+        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ORG_LEAD, UserRole.SALES_EXECUTIVE],
         priority: 6,
         icon: 'chart'
     },

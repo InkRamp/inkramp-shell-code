@@ -61,5 +61,5 @@ export const superAdminGuard: CanActivateFn = (route, state) => {
  * Guard for all authenticated users with any valid role
  */
 export const allRolesGuard: CanActivateFn = (route, state) => {
-  return roleGuard(['super-admin', 'org-admin', 'team-lead', 'sales-executive'])(route, state);
+  return roleGuard(['super-admin', 'org-admin', 'org-lead', 'sales-executive'])(route, state);
 };
