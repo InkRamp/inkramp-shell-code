@@ -9,11 +9,12 @@ import { EventBus, AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs'
 const eventBus = new EventBus({ id: 'shell' });
 
 // Create AuthService instance with configuration from library's APP_CONFIG and 'shell' identifier
+console.log("Hey JOJO", APP_CONFIG)
 const authService = new AuthService(
   {
     domain: APP_CONFIG.auth0Domain,
     clientId: APP_CONFIG.auth0ClientId,
-    audience: APP_CONFIG.apiUrl,
+    audience: 'https://something', //APP_CONFIG.apiUrl,
     redirectUri: `${window.location.origin}/i17e`,
     logoutUri: `${window.location.origin}/i17e`,
     scope: 'openid profile email'
