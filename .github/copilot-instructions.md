@@ -38,6 +38,76 @@
 - **MfeLoaderService**: Dynamic MFE loading
 - **DummyDataService**: Mock data for development
 
+## Auth Journey Requirements
+
+**Every feature that involves authentication MUST account for all default journeys:**
+
+| Journey | EventBus event | Required handling |
+|---------|---------------|-------------------|
+| Successful login (OAuth callback) | `auth:login_success` | Navigate to returnTo / home; re-render navigation |
+| Login failure | `auth:login_failure` | Show error feedback; clear nav state |
+| Logout | `auth:logout` | Clear nav state; redirect to home or login |
+| Session expired | `auth:session_expired` | Clear nav state; redirect to login |
+| Token refreshed | `auth:token_updated` | No UI change required (transparent) |
+
+### EventBus Auth Subscription Pattern
+
+Any shell component that shows auth-gated UI (e.g. navigation, user profile) **must**:
+
+1. Subscribe to `user$` (for in-zone state changes, e.g. on page load from sessionStorage)
+2. Subscribe to the relevant EventBus auth events (for out-of-zone changes, e.g. OAuth callback)
+3. Store every subscription in a `Subscription` composite and call `unsubscribe()` in `ngOnDestroy`
+
+```typescript
+// In ngOnInit — dual subscription for complete coverage
+this.subscriptions.add(
+  this.authService.user$.subscribe(user => { /* update state */ })
+);
+this.subscriptions.add(
+  this.eventBus.on('auth:login_success').subscribe(() => { /* refresh nav */ })
+);
+this.subscriptions.add(
+  this.eventBus.on('auth:logout').subscribe(() => { /* clear nav */ })
+);
+this.subscriptions.add(
+  this.eventBus.on('auth:login_failure').subscribe(() => { /* clear nav */ })
+);
+this.subscriptions.add(
+  this.eventBus.on('auth:session_expired').subscribe(() => { /* clear nav, redirect */ })
+);
+
+// In ngOnDestroy
+ngOnDestroy(): void {
+  this.subscriptions.unsubscribe();
+}
+```
+
+### OAuth Callback Handling (AppComponent)
+
+The OAuth redirect lands back at the app root with `?code=`. After calling
+`authService.handleCallback()`, the `auth:login_success` EventBus event fires.
+Subscribe to that event and use `Router.navigate()` (which runs inside NgZone) to
+navigate to the target route. This forces Angular change detection so gated UI
+(e.g. navigation links) becomes visible **without** requiring a page refresh.
+
+```typescript
+// Subscribe BEFORE calling handleCallback so the event is never missed
+this.subscriptions.add(
+  this.eventBus.on<{ appState?: { returnTo?: string } }>('auth:login_success').subscribe(payload => {
+    this.router.navigate([payload?.appState?.returnTo || '/'], { replaceUrl: true });
+  })
+);
+
+if (window.location.search.includes('code=')) {
+  try {
+    await this.authService.handleCallback();
+  } catch (error) {
+    console.error('Auth callback failed:', error);
+    this.router.navigate(['/'], { replaceUrl: true });
+  }
+}
+```
+
 ## Code Standards
 
 ### Always Do
@@ -47,6 +117,7 @@
 4. Use **RxJS operators** correctly (takeUntilDestroyed, async pipe)
 5. Implement **loading states** and error states for async operations
 6. Use **sessionStorage** for tokens (NOT localStorage)
+7. Handle **all auth journeys** (login success/failure, logout, session expiry) — see Auth Journey Requirements above
 
 ### Never Do
 1. Direct cross-MFE imports - use EventBusService
@@ -54,6 +125,7 @@
 3. Log sensitive data (passwords, tokens, account numbers)
 4. Bypass AuthService for API calls
 5. Hardcode styles - use SCSS tokens
+6. Rely solely on `user$` for auth-gated UI — **always pair it with EventBus auth event subscriptions**
 
 ## File Organization
 
