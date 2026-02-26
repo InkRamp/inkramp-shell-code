@@ -3,23 +3,27 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { AuthService, UserInfo } from '@opensourcekd/ng-common-libs';
+import { AuthService, UserInfo, TokenPayload } from '@opensourcekd/ng-common-libs';
+import { MFE_CONFIGS, MfeConfig } from '../../../configs/mfe';
 
 /**
  * Stub interfaces for disabled functionality
  */
-interface StubProfile { organizations?: Array<{ displayName?: string }>; }
-interface StubMfe { remoteName?: string; displayName?: string; route?: string; }
 interface StubSalesExecutive { id?: string; name?: string; }
+
+/**
+ * Extended token payload including the org_and_roles custom claim.
+ * Structure: { "hdfc": ["super-admin", "org-admin"], ... }
+ */
+interface OrgRolesTokenPayload extends TokenPayload {
+  org_and_roles?: Record<string, string[]>;
+}
 
 /**
  * Header component for the application
  * Login/logout functionality enabled via AuthService from @opensourcekd/ng-common-libs
- * 
- * MIGRATION NOTE: Transitioned from stub interfaces to real authentication
- * - currentUser now uses UserInfo from AuthService instead of StubUser
- * - login() and logout() now use AuthService methods instead of console warnings
- * - Authentication state is tracked via authService.user$ observable
+ * Navigation links are derived from MFE_CONFIGS filtered by the authenticated user's roles,
+ * respecting the role hierarchy: super-admin > org-admin > org-lead > sales-executive.
  */
 @Component({
   selector: 'app-header',
@@ -30,8 +34,7 @@ interface StubSalesExecutive { id?: string; name?: string; }
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   currentUser: UserInfo | null = null;
-  userProfile: StubProfile | null = null;
-  availableMfes: StubMfe[] = [];
+  availableMfes: MfeConfig[] = [];
   salesExecutives: StubSalesExecutive[] = [];
   selectedSalesExecutiveId: string = '';
   canViewOthers: boolean = false;
@@ -49,9 +52,25 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.authService.user$.subscribe((user) => {
         this.currentUser = user;
+        this.availableMfes = user ? this.getAvailableMfes() : [];
         console.log('[HeaderComponent] User state changed:', user?.email || 'Not logged in');
       })
     );
+  }
+
+  /**
+   * Returns MFE configs accessible to the current user based on their roles.
+   * Roles are extracted from the org_and_roles claim across all orgs.
+   * The role hierarchy (super-admin > org-admin > org-lead > sales-executive)
+   * is encoded in each MfeConfig's allowedRoles array.
+   */
+  private getAvailableMfes(): MfeConfig[] {
+    const token = this.authService.getDecodedToken() as OrgRolesTokenPayload | null;
+    if (!token?.org_and_roles) return [];
+    const userRoles = Object.values(token.org_and_roles).flat();
+    return MFE_CONFIGS
+      .filter(mfe => mfe.allowedRoles.some(role => userRoles.includes(role)))
+      .sort((a, b) => b.priority - a.priority);
   }
 
   ngOnDestroy(): void {
