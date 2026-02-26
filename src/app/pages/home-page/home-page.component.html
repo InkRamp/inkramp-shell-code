@@ -1,6 +1,6 @@
 <div class="home-container">
   <h1>Incentive Management System</h1>
-  <p class="welcome-text">Welcome to the Incentive Management System. Use the navigation menu to access the available modules based on your role.</p>
-  
-  <app-mfe-wrapper [name]="'usersCrud'"></app-mfe-wrapper>
+  @if (!isLoggedIn) {
+    <p class="welcome-text">Welcome! Please log in to access the system.</p>
+  }
 </div>
