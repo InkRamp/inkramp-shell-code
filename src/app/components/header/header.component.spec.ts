@@ -1,13 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
-import { AuthService, EventBus, UserInfo, TokenPayload } from '@opensourcekd/ng-common-libs';
+import { AuthService, EventBus, UserInfo } from '@opensourcekd/ng-common-libs';
 import { HeaderComponent } from './header.component';
-import { UserRole } from '../../../configs/mfe';
-
-interface OrgRolesTokenPayload extends TokenPayload {
-  org_and_roles?: Record<string, string[]>;
-}
+import { UserRole, OrgRolesTokenPayload } from '../../../configs/mfe';
 
 describe('HeaderComponent', () => {
   let component: HeaderComponent;

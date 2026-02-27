@@ -109,17 +109,10 @@ this.subscriptions.add(
   this.eventBus.on<{ appState?: { returnTo?: string } }>('auth:login_success').subscribe(payload => {
     this.ngZone.run(() => {
       // handleCallback() already removed code/state via history.replaceState.
-      const returnTo = payload?.appState?.returnTo;
-      if (returnTo) {
-        // Honour an explicit pre-login destination.
-        this.router.navigate([returnTo], { replaceUrl: true });
-      } else {
-        // Navigate to the first route the user is allowed to access so that
-        // the first nav link is always active immediately after login.
-        const firstRoute = this.getFirstAvailableRoute();
-        if (firstRoute) {
-          this.router.navigate([firstRoute], { replaceUrl: true });
-        }
+      // ?? null-coalescing: prefer returnTo, fall back to first accessible route (no nesting).
+      const targetRoute = payload?.appState?.returnTo ?? this.getFirstAvailableRoute();
+      if (targetRoute) {
+        this.router.navigate([targetRoute], { replaceUrl: true });
       }
     });
   })
@@ -162,6 +155,11 @@ if (window.location.search.includes('code=')) {
 6. Use **sessionStorage** for tokens (NOT localStorage)
 7. Handle **all auth journeys** (login success/failure, logout, session expiry) — see Auth Journey Requirements above
 8. After `auth:login_success` with no `returnTo`, navigate to the user's first available MFE route using `getFirstAvailableRoute()` (see OAuth Callback Handling above)
+9. Write **pure functions** for all data-transformation and filtering logic — functions must take all inputs as parameters and have no side effects, making them independently testable
+10. Follow **SOLID** principles — in particular SRP (one function/class does one thing) and DIP (depend on abstractions, not implementations)
+11. Follow **DRY** — extract shared logic to a single source of truth; never duplicate type definitions or data-transformation functions across files
+12. Follow **YAGNI** — don't add types, methods, or abstractions until they are actually needed; prefer the simplest implementation that satisfies the requirement
+13. Use **declarative syntax** — prefer `??`, optional chaining (`?.`), array operators (`filter`, `sort`, `map`), and early returns/guard clauses over nested `if/else` trees
 
 ### Never Do
 1. Direct cross-MFE imports - use EventBusService
@@ -172,6 +170,34 @@ if (window.location.search.includes('code=')) {
 6. Rely solely on `user$` for auth-gated UI — **always pair it with EventBus auth event subscriptions**
 7. Use `Router.navigate()` as the sole mechanism to trigger change detection after auth events — use `NgZone.run()` instead so non-auth query params are not discarded
 8. Add a default redirect in the **auth callback error path** — this discards non-auth query params; the library emits `auth:login_failure` via EventBus which is sufficient. (On the success path, navigate to `returnTo` or the first available route — see OAuth Callback Handling above.)
+9. Nest conditionals — flatten with `??` null coalescing, optional chaining, or guard-clause early returns:
+
+   ```typescript
+   // ❌ nested if
+   if (a) { doA(); } else { if (b) { doB(); } }
+
+   // ✅ flat with ?? and guard clause
+   const target = a ?? b;
+   if (!target) return;
+   doWith(target);
+   ```
+
+10. Duplicate interface or type definitions across files — define once, export once, import everywhere
+11. Write methods that mix I/O (reading from services) with data transformation — separate the impure read from the pure transform:
+
+    ```typescript
+    // ❌ impure method: reads service AND transforms
+    private getRoute(): string | null {
+      const token = this.service.getToken();
+      return token?.roles?.length ? `/${sort(token.roles)[0]}` : null;
+    }
+
+    // ✅ separate pure function + thin adapter
+    export function getHighestPriorityRoute(userRoles: string[]): string | null { ... }  // pure, in mfe.ts
+    private getRoute(): string | null {                                                   // adapter: just reads + delegates
+      return getHighestPriorityRoute(extractUserRoles(this.service.getToken() as OrgRolesTokenPayload | null));
+    }
+    ```
 
 ## File Organization
 

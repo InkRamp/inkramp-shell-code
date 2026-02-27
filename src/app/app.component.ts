@@ -5,12 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
-import { EventBus, AuthService, TokenPayload } from '@opensourcekd/ng-common-libs';
-import { MFE_CONFIGS } from '../configs/mfe';
-
-interface OrgRolesTokenPayload extends TokenPayload {
-  org_and_roles?: Record<string, string[]>;
-}
+import { EventBus, AuthService } from '@opensourcekd/ng-common-libs';
+import { OrgRolesTokenPayload, extractUserRoles, getHighestPriorityRoute } from '../configs/mfe';
 
 /**
  * Root application component
@@ -51,14 +47,9 @@ export class AppComponent implements OnInit, OnDestroy {
       this.eventBus.on<{ appState?: { returnTo?: string } }>('auth:login_success').subscribe((payload) => {
         console.log('[AppComponent] auth:login_success received');
         this.ngZone.run(() => {
-          const returnTo = payload?.appState?.returnTo;
-          if (returnTo) {
-            this.router.navigate([returnTo], { replaceUrl: true });
-          } else {
-            const firstRoute = this.getFirstAvailableRoute();
-            if (firstRoute) {
-              this.router.navigate([firstRoute], { replaceUrl: true });
-            }
+          const targetRoute = payload?.appState?.returnTo ?? this.getFirstAvailableRoute();
+          if (targetRoute) {
+            this.router.navigate([targetRoute], { replaceUrl: true });
           }
         });
       })
@@ -102,12 +93,7 @@ export class AppComponent implements OnInit, OnDestroy {
   /** Returns the highest-priority route the current user has access to, or null if none. */
   private getFirstAvailableRoute(): string | null {
     const token = this.authService.getDecodedToken() as OrgRolesTokenPayload | null;
-    if (!token?.org_and_roles) return null;
-    const userRoles = Object.values(token.org_and_roles).flat();
-    const sorted = MFE_CONFIGS
-      .filter(mfe => mfe.allowedRoles.some(role => userRoles.includes(role)))
-      .sort((a, b) => b.priority - a.priority);
-    return sorted.length > 0 ? `/${sorted[0].route}` : null;
+    return getHighestPriorityRoute(extractUserRoles(token));
   }
 
   ngOnDestroy(): void {
