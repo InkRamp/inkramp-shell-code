@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
-import { AuthService, UserInfo, TokenPayload } from '@opensourcekd/ng-common-libs';
+import { AuthService, EventBus, UserInfo, TokenPayload } from '@opensourcekd/ng-common-libs';
 import { HeaderComponent } from './header.component';
 import { UserRole } from '../../../configs/mfe';
 
@@ -13,7 +13,12 @@ describe('HeaderComponent', () => {
   let component: HeaderComponent;
   let fixture: ComponentFixture<HeaderComponent>;
   let authServiceMock: jasmine.SpyObj<AuthService>;
+  let eventBusMock: jasmine.SpyObj<EventBus>;
   let userSubject: Subject<UserInfo | null>;
+  let loginSuccessSubject: Subject<unknown>;
+  let logoutSubject: Subject<unknown>;
+  let loginFailureSubject: Subject<unknown>;
+  let sessionExpiredSubject: Subject<unknown>;
 
   const stubUser: UserInfo = { sub: 'u1', email: 'test@test.com', name: 'Test', role: 'org-admin' };
 
@@ -24,19 +29,38 @@ describe('HeaderComponent', () => {
 
   beforeEach(async () => {
     userSubject = new Subject<UserInfo | null>();
+    loginSuccessSubject = new Subject<unknown>();
+    logoutSubject = new Subject<unknown>();
+    loginFailureSubject = new Subject<unknown>();
+    sessionExpiredSubject = new Subject<unknown>();
+
     authServiceMock = jasmine.createSpyObj('AuthService', [
-      'login', 'logout', 'isAuthenticatedSync', 'getDecodedToken', 'getId'
+      'login', 'logout', 'isAuthenticatedSync', 'getDecodedToken', 'getId', 'getUser'
     ]);
     authServiceMock.user$ = userSubject.asObservable() as any;
     authServiceMock.login.and.returnValue(Promise.resolve());
     authServiceMock.logout.and.returnValue(Promise.resolve());
     authServiceMock.getDecodedToken.and.returnValue(null);
     authServiceMock.getId.and.returnValue('mock-auth-id');
+    authServiceMock.getUser.and.returnValue(null);
+
+    eventBusMock = jasmine.createSpyObj('EventBus', ['on', 'emit', 'getId']);
+    eventBusMock.on.and.callFake((event: string) => {
+      switch (event) {
+        case 'auth:login_success': return loginSuccessSubject.asObservable() as any;
+        case 'auth:logout': return logoutSubject.asObservable() as any;
+        case 'auth:login_failure': return loginFailureSubject.asObservable() as any;
+        case 'auth:session_expired': return sessionExpiredSubject.asObservable() as any;
+        default: return new Subject().asObservable() as any;
+      }
+    });
+    eventBusMock.getId.and.returnValue('mock-event-bus-id');
 
     await TestBed.configureTestingModule({
       imports: [HeaderComponent],
       providers: [
         { provide: AuthService, useValue: authServiceMock },
+        { provide: EventBus, useValue: eventBusMock },
         { provide: Router, useValue: { navigate: jasmine.createSpy('navigate') } }
       ]
     }).compileComponents();
@@ -105,5 +129,58 @@ describe('HeaderComponent', () => {
     userSubject.next(stubUser);
     const priorities = component.availableMfes.map(m => m.priority);
     expect(priorities.every((p, i) => i === 0 || priorities[i - 1] >= p)).toBeTrue();
+  });
+
+  it('should subscribe to EventBus auth events on init', () => {
+    expect(eventBusMock.on).toHaveBeenCalledWith('auth:login_success');
+    expect(eventBusMock.on).toHaveBeenCalledWith('auth:logout');
+    expect(eventBusMock.on).toHaveBeenCalledWith('auth:login_failure');
+    expect(eventBusMock.on).toHaveBeenCalledWith('auth:session_expired');
+  });
+
+  it('should clear nav state on auth:logout event', () => {
+    component.currentUser = stubUser;
+    component.availableMfes = [{ id: 'x' } as any];
+
+    logoutSubject.next(null);
+
+    expect(component.currentUser).toBeNull();
+    expect(component.availableMfes).toEqual([]);
+  });
+
+  it('should clear nav state on auth:login_failure event', () => {
+    component.currentUser = stubUser;
+    component.availableMfes = [{ id: 'x' } as any];
+
+    loginFailureSubject.next({ error: 'access_denied' });
+
+    expect(component.currentUser).toBeNull();
+    expect(component.availableMfes).toEqual([]);
+  });
+
+  it('should clear nav state on auth:session_expired event', () => {
+    component.currentUser = stubUser;
+    component.availableMfes = [{ id: 'x' } as any];
+
+    sessionExpiredSubject.next(null);
+
+    expect(component.currentUser).toBeNull();
+    expect(component.availableMfes).toEqual([]);
+  });
+
+  it('should refresh nav on auth:login_success event', () => {
+    authServiceMock.getUser.and.returnValue(stubUser);
+    mockToken({ hdfc: [UserRole.SUPER_ADMIN] });
+
+    loginSuccessSubject.next({ appState: { returnTo: '/' } });
+
+    expect(component.currentUser).toBe(stubUser);
+    expect(component.availableMfes.length).toBe(4);
+  });
+
+  it('should unsubscribe all subscriptions on destroy', () => {
+    const spy = spyOn((component as any).subscriptions, 'unsubscribe').and.callThrough();
+    component.ngOnDestroy();
+    expect(spy).toHaveBeenCalled();
   });
 });
