@@ -3,21 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { AuthService, EventBus, UserInfo, TokenPayload } from '@opensourcekd/ng-common-libs';
-import { MFE_CONFIGS, MfeConfig } from '../../../configs/mfe';
-
-/**
- * Stub interfaces for disabled functionality
- */
-interface StubSalesExecutive { id?: string; name?: string; }
-
-/**
- * Extended token payload including the org_and_roles custom claim.
- * Structure: { "hdfc": ["super-admin", "org-admin"], ... }
- */
-interface OrgRolesTokenPayload extends TokenPayload {
-  org_and_roles?: Record<string, string[]>;
-}
+import { AuthService, EventBus, UserInfo } from '@opensourcekd/ng-common-libs';
+import { MfeConfig, OrgRolesTokenPayload, extractUserRoles, filterMfesByRoles } from '../../../configs/mfe';
 
 /**
  * Header component for the application
@@ -35,7 +22,7 @@ interface OrgRolesTokenPayload extends TokenPayload {
 export class HeaderComponent implements OnInit, OnDestroy {
   currentUser: UserInfo | null = null;
   availableMfes: MfeConfig[] = [];
-  salesExecutives: StubSalesExecutive[] = [];
+  salesExecutives: { id?: string; name?: string }[] = [];
   selectedSalesExecutiveId: string = '';
   canViewOthers: boolean = false;
   private subscriptions = new Subscription();
@@ -106,17 +93,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   /**
    * Returns MFE configs accessible to the current user based on their roles.
-   * Roles are extracted from the org_and_roles claim across all orgs.
-   * The role hierarchy (super-admin > org-admin > org-lead > sales-executive)
-   * is encoded in each MfeConfig's allowedRoles array.
+   * Delegates to shared pure functions from mfe.ts (DRY).
    */
   private getAvailableMfes(): MfeConfig[] {
     const token = this.authService.getDecodedToken() as OrgRolesTokenPayload | null;
-    if (!token?.org_and_roles) return [];
-    const userRoles = Object.values(token.org_and_roles).flat();
-    return MFE_CONFIGS
-      .filter(mfe => mfe.allowedRoles.some(role => userRoles.includes(role)))
-      .sort((a, b) => b.priority - a.priority);
+    return filterMfesByRoles(extractUserRoles(token));
   }
 
   ngOnDestroy(): void {

@@ -97,6 +97,44 @@ export const MFE_CONFIGS: MfeConfig[] = [
 ];
 
 /**
+ * Extended token payload including the org_and_roles custom claim.
+ * Structure: { "hdfc": ["super-admin", "org-admin"], ... }
+ * Single shared definition — import this instead of declaring locally (DRY).
+ * The index signature matches TokenPayload for structural compatibility.
+ */
+export interface OrgRolesTokenPayload {
+  org_and_roles?: Record<string, string[]>;
+  [key: string]: unknown;
+}
+
+/**
+ * Pure function: extracts a flat list of all roles a user holds across all orgs.
+ * Takes the decoded token as input; returns an empty array when no roles are present.
+ */
+export function extractUserRoles(token: OrgRolesTokenPayload | null): string[] {
+  return token?.org_and_roles ? Object.values(token.org_and_roles).flat() : [];
+}
+
+/**
+ * Pure function: returns MFE configs accessible to a user given their flat role list,
+ * sorted by priority descending (highest first).
+ */
+export function filterMfesByRoles(userRoles: string[]): MfeConfig[] {
+  return MFE_CONFIGS
+    .filter(mfe => mfe.allowedRoles.some(role => userRoles.includes(role)))
+    .sort((a, b) => b.priority - a.priority);
+}
+
+/**
+ * Pure function: returns the highest-priority route the user can access (prefixed with '/'),
+ * or null when no accessible routes exist.
+ */
+export function getHighestPriorityRoute(userRoles: string[]): string | null {
+  const [top] = filterMfesByRoles(userRoles);
+  return top ? `/${top.route}` : null;
+}
+
+/**
  * MFE array for Module Federation configuration
  * Contains all MFE configurations as InterfaceMfeUrl type
  */

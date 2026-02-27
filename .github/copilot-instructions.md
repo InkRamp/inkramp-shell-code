@@ -44,7 +44,7 @@
 
 | Journey | EventBus event | Required handling |
 |---------|---------------|-------------------|
-| Successful login (OAuth callback) | `auth:login_success` | Use `NgZone.run()` to trigger CD; navigate to `returnTo` only if explicitly set |
+| Successful login (OAuth callback) | `auth:login_success` | Use `NgZone.run()` to trigger CD; navigate to `returnTo` if set, otherwise navigate to the user's first available MFE route (highest-priority route allowed by their roles) |
 | Login failure | `auth:login_failure` | Use `NgZone.run()` to trigger CD; do NOT redirect (preserves non-auth query params) |
 | Logout | `auth:logout` | Navigate home inside `NgZone.run()` |
 | Session expired | `auth:session_expired` | Clear nav state; redirect to login |
@@ -91,10 +91,15 @@ The OAuth redirect lands back at the app root with `?code=`. After calling
 `cleanupCallbackUrl()` which uses `window.history.replaceState` to remove **only** the
 Auth0-specific `code` and `state` parameters, preserving all other query params.
 
-**Change detection without redirects**: Use `NgZone.run()` (injected from `@angular/core`)
-to force Angular change detection in-place. Navigate to `returnTo` only when the login
-flow explicitly recorded a target route via `appState`; never add a default redirect
-that would discard non-auth query params.
+**Change detection and post-login navigation**: Use `NgZone.run()` (injected from `@angular/core`)
+to force Angular change detection in-place. After a successful login:
+- If `returnTo` is set in `appState`, navigate there (preserves the pre-login destination).
+- If `returnTo` is absent, navigate to the user's **first available MFE route** — the
+  highest-priority route allowed by their roles (resolved via `MFE_CONFIGS` filtered on
+  `org_and_roles` from the decoded token). This ensures the first nav link is always active
+  immediately after login.
+- On the **failure / error path**, do NOT redirect — any non-auth query params in the URL
+  must be preserved.
 
 ```typescript
 private ngZone = inject(NgZone);
@@ -104,12 +109,11 @@ this.subscriptions.add(
   this.eventBus.on<{ appState?: { returnTo?: string } }>('auth:login_success').subscribe(payload => {
     this.ngZone.run(() => {
       // handleCallback() already removed code/state via history.replaceState.
-      // Navigate to returnTo only if explicitly set by the login flow.
-      const returnTo = payload?.appState?.returnTo;
-      if (returnTo) {
-        this.router.navigate([returnTo], { replaceUrl: true });
+      // ?? null-coalescing: prefer returnTo, fall back to first accessible route (no nesting).
+      const targetRoute = payload?.appState?.returnTo ?? this.getFirstAvailableRoute();
+      if (targetRoute) {
+        this.router.navigate([targetRoute], { replaceUrl: true });
       }
-      // Without returnTo, stay on current URL — ngZone.run() alone triggers CD.
     });
   })
 );
@@ -150,6 +154,12 @@ if (window.location.search.includes('code=')) {
 5. Implement **loading states** and error states for async operations
 6. Use **sessionStorage** for tokens (NOT localStorage)
 7. Handle **all auth journeys** (login success/failure, logout, session expiry) — see Auth Journey Requirements above
+8. After `auth:login_success` with no `returnTo`, navigate to the user's first available MFE route using `getFirstAvailableRoute()` (see OAuth Callback Handling above)
+9. Write **pure functions** for all data-transformation and filtering logic — functions must take all inputs as parameters and have no side effects, making them independently testable
+10. Follow **SOLID** principles — in particular SRP (one function/class does one thing) and DIP (depend on abstractions, not implementations)
+11. Follow **DRY** — extract shared logic to a single source of truth; never duplicate type definitions or data-transformation functions across files
+12. Follow **YAGNI** — don't add types, methods, or abstractions until they are actually needed; prefer the simplest implementation that satisfies the requirement
+13. Use **declarative syntax** — prefer `??`, optional chaining (`?.`), array operators (`filter`, `sort`, `map`), and early returns/guard clauses over nested `if/else` trees
 
 ### Never Do
 1. Direct cross-MFE imports - use EventBusService
@@ -159,7 +169,35 @@ if (window.location.search.includes('code=')) {
 5. Hardcode styles - use SCSS tokens
 6. Rely solely on `user$` for auth-gated UI — **always pair it with EventBus auth event subscriptions**
 7. Use `Router.navigate()` as the sole mechanism to trigger change detection after auth events — use `NgZone.run()` instead so non-auth query params are not discarded
-8. Add a default redirect in the auth callback error path — this discards non-auth query params; the library emits `auth:login_failure` via EventBus which is sufficient
+8. Add a default redirect in the **auth callback error path** — this discards non-auth query params; the library emits `auth:login_failure` via EventBus which is sufficient. (On the success path, navigate to `returnTo` or the first available route — see OAuth Callback Handling above.)
+9. Nest conditionals — flatten with `??` null coalescing, optional chaining, or guard-clause early returns:
+
+   ```typescript
+   // ❌ nested if
+   if (a) { doA(); } else { if (b) { doB(); } }
+
+   // ✅ flat with ?? and guard clause
+   const target = a ?? b;
+   if (!target) return;
+   doWith(target);
+   ```
+
+10. Duplicate interface or type definitions across files — define once, export once, import everywhere
+11. Write methods that mix I/O (reading from services) with data transformation — separate the impure read from the pure transform:
+
+    ```typescript
+    // ❌ impure method: reads service AND transforms
+    private getRoute(): string | null {
+      const token = this.service.getToken();
+      return token?.roles?.length ? `/${sort(token.roles)[0]}` : null;
+    }
+
+    // ✅ separate pure function + thin adapter
+    export function getHighestPriorityRoute(userRoles: string[]): string | null { ... }  // pure, in mfe.ts
+    private getRoute(): string | null {                                                   // adapter: just reads + delegates
+      return getHighestPriorityRoute(extractUserRoles(this.service.getToken() as OrgRolesTokenPayload | null));
+    }
+    ```
 
 ## File Organization
 

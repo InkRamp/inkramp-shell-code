@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
 import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { EventBus, AuthService } from '@opensourcekd/ng-common-libs';
+import { OrgRolesTokenPayload, extractUserRoles, getHighestPriorityRoute } from '../configs/mfe';
 
 /**
  * Root application component
@@ -46,11 +47,10 @@ export class AppComponent implements OnInit, OnDestroy {
       this.eventBus.on<{ appState?: { returnTo?: string } }>('auth:login_success').subscribe((payload) => {
         console.log('[AppComponent] auth:login_success received');
         this.ngZone.run(() => {
-          const returnTo = payload?.appState?.returnTo;
-          if (returnTo) {
-            this.router.navigate([returnTo], { replaceUrl: true });
+          const targetRoute = payload?.appState?.returnTo ?? this.getFirstAvailableRoute();
+          if (targetRoute) {
+            this.router.navigate([targetRoute], { replaceUrl: true });
           }
-          // When returnTo is absent, stay on current URL — change detection fires from ngZone.run()
         });
       })
     );
@@ -88,6 +88,12 @@ export class AppComponent implements OnInit, OnDestroy {
         console.error('[AppComponent] Auth callback failed:', error);
       }
     }
+  }
+
+  /** Returns the highest-priority route the current user has access to, or null if none. */
+  private getFirstAvailableRoute(): string | null {
+    const token = this.authService.getDecodedToken() as OrgRolesTokenPayload | null;
+    return getHighestPriorityRoute(extractUserRoles(token));
   }
 
   ngOnDestroy(): void {

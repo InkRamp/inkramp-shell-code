@@ -247,9 +247,16 @@ code_review:
     typescript:
       - "No use of 'any' type without justification"
       - "Explicit types for all public APIs"
+      - "Define each interface/type once and export it — never duplicate across files (DRY)"
+      - "Add index signature [key: string]: unknown when a type must be structurally compatible with TokenPayload"
     architecture:
       - "No direct cross-MFE imports - use EventBusService"
       - "Keep functions under 40 lines when possible"
+      - "SOLID: each function/class has a single responsibility (SRP)"
+      - "YAGNI: add code only when a concrete requirement exists; delete YAGNI speculative code"
+      - "DRY: shared data-transformation logic lives in a single file (e.g. src/configs/mfe.ts) and is imported by all consumers"
+      - "Pure functions: data-transformation helpers take all inputs as parameters and have no side effects"
+      - "Declarative syntax: use ??, optional chaining, filter/sort/map, and guard-clause early returns instead of nested if/else trees"
 
 # =============================================================================
 # KNOWN INCONSISTENCIES (MVP: Track and fix incrementally)
