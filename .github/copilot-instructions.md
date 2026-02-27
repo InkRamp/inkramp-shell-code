@@ -44,9 +44,9 @@
 
 | Journey | EventBus event | Required handling |
 |---------|---------------|-------------------|
-| Successful login (OAuth callback) | `auth:login_success` | Navigate to returnTo / home; re-render navigation |
-| Login failure | `auth:login_failure` | Show error feedback; clear nav state |
-| Logout | `auth:logout` | Clear nav state; redirect to home or login |
+| Successful login (OAuth callback) | `auth:login_success` | Use `NgZone.run()` to trigger CD; navigate to `returnTo` only if explicitly set |
+| Login failure | `auth:login_failure` | Use `NgZone.run()` to trigger CD; do NOT redirect (preserves non-auth query params) |
+| Logout | `auth:logout` | Navigate home inside `NgZone.run()` |
 | Session expired | `auth:session_expired` | Clear nav state; redirect to login |
 | Token refreshed | `auth:token_updated` | No UI change required (transparent) |
 
@@ -86,24 +86,56 @@ ngOnDestroy(): void {
 
 The OAuth redirect lands back at the app root with `?code=`. After calling
 `authService.handleCallback()`, the `auth:login_success` EventBus event fires.
-Subscribe to that event and use `Router.navigate()` (which runs inside NgZone) to
-navigate to the target route. This forces Angular change detection so gated UI
-(e.g. navigation links) becomes visible **without** requiring a page refresh.
+
+**URL cleanup is handled automatically**: `AuthService.handleCallback()` internally calls
+`cleanupCallbackUrl()` which uses `window.history.replaceState` to remove **only** the
+Auth0-specific `code` and `state` parameters, preserving all other query params.
+
+**Change detection without redirects**: Use `NgZone.run()` (injected from `@angular/core`)
+to force Angular change detection in-place. Navigate to `returnTo` only when the login
+flow explicitly recorded a target route via `appState`; never add a default redirect
+that would discard non-auth query params.
 
 ```typescript
+private ngZone = inject(NgZone);
+
 // Subscribe BEFORE calling handleCallback so the event is never missed
 this.subscriptions.add(
   this.eventBus.on<{ appState?: { returnTo?: string } }>('auth:login_success').subscribe(payload => {
-    this.router.navigate([payload?.appState?.returnTo || '/'], { replaceUrl: true });
+    this.ngZone.run(() => {
+      // handleCallback() already removed code/state via history.replaceState.
+      // Navigate to returnTo only if explicitly set by the login flow.
+      const returnTo = payload?.appState?.returnTo;
+      if (returnTo) {
+        this.router.navigate([returnTo], { replaceUrl: true });
+      }
+      // Without returnTo, stay on current URL — ngZone.run() alone triggers CD.
+    });
+  })
+);
+
+this.subscriptions.add(
+  this.eventBus.on('auth:logout').subscribe(() => {
+    this.ngZone.run(() => this.router.navigate(['/'], { replaceUrl: true }));
+  })
+);
+
+this.subscriptions.add(
+  this.eventBus.on<{ error: string }>('auth:login_failure').subscribe(() => {
+    // Run in zone to trigger CD — do NOT redirect (preserves non-auth query params).
+    // The empty callback is intentional: entering NgZone is enough to schedule CD.
+    this.ngZone.run(() => { /* triggers Angular change detection; no navigation needed */ });
   })
 );
 
 if (window.location.search.includes('code=')) {
   try {
     await this.authService.handleCallback();
+    // On success: auth:login_success fires above, ngZone.run() triggers CD.
   } catch (error) {
+    // The library emits auth:login_failure via EventBus for internal errors.
+    // Do NOT redirect here — that would discard non-auth query params.
     console.error('Auth callback failed:', error);
-    this.router.navigate(['/'], { replaceUrl: true });
   }
 }
 ```
@@ -126,6 +158,8 @@ if (window.location.search.includes('code=')) {
 4. Bypass AuthService for API calls
 5. Hardcode styles - use SCSS tokens
 6. Rely solely on `user$` for auth-gated UI — **always pair it with EventBus auth event subscriptions**
+7. Use `Router.navigate()` as the sole mechanism to trigger change detection after auth events — use `NgZone.run()` instead so non-auth query params are not discarded
+8. Add a default redirect in the auth callback error path — this discards non-auth query params; the library emits `auth:login_failure` via EventBus which is sufficient
 
 ## File Organization
 
