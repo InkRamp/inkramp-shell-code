@@ -1,9 +1,10 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { routes } from './app/app.routes';
 import { EventBus, AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs';
+import { authInterceptor } from '@org/core-services';
 
 // Create EventBus instance before bootstrap with 'shell' identifier
 const eventBus = new EventBus({ id: 'shell' });
@@ -27,15 +28,15 @@ const authService = new AuthService(
 
 /**
  * Application bootstrap
- * NOTE: Auth interceptor disabled - configure separately if needed
+ * Auth interceptor registered via withInterceptors([authInterceptor])
  */
 export function bootstrap() {
   return bootstrapApplication(AppComponent, {
     providers: [
       provideRouter(routes),
       provideHttpClient(
-        withFetch()
-        // NOTE: Auth interceptor removed - configure via opensourcekd library if needed
+        withFetch(),
+        withInterceptors([authInterceptor])
       ),
       // Provide EventBus instance
       { provide: EventBus, useValue: eventBus },
