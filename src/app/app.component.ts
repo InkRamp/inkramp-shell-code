@@ -5,7 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
-import { EventBus, AuthService } from '@opensourcekd/ng-common-libs';
+import { EventBus, AuthService, TokenPayload } from '@opensourcekd/ng-common-libs';
+import { MFE_CONFIGS } from '../configs/mfe';
+
+interface OrgRolesTokenPayload extends TokenPayload {
+  org_and_roles?: Record<string, string[]>;
+}
 
 /**
  * Root application component
@@ -49,8 +54,12 @@ export class AppComponent implements OnInit, OnDestroy {
           const returnTo = payload?.appState?.returnTo;
           if (returnTo) {
             this.router.navigate([returnTo], { replaceUrl: true });
+          } else {
+            const firstRoute = this.getFirstAvailableRoute();
+            if (firstRoute) {
+              this.router.navigate([firstRoute], { replaceUrl: true });
+            }
           }
-          // When returnTo is absent, stay on current URL — change detection fires from ngZone.run()
         });
       })
     );
@@ -88,6 +97,17 @@ export class AppComponent implements OnInit, OnDestroy {
         console.error('[AppComponent] Auth callback failed:', error);
       }
     }
+  }
+
+  /** Returns the highest-priority route the current user has access to, or null if none. */
+  private getFirstAvailableRoute(): string | null {
+    const token = this.authService.getDecodedToken() as OrgRolesTokenPayload | null;
+    if (!token?.org_and_roles) return null;
+    const userRoles = Object.values(token.org_and_roles).flat();
+    const sorted = MFE_CONFIGS
+      .filter(mfe => mfe.allowedRoles.some(role => userRoles.includes(role)))
+      .sort((a, b) => b.priority - a.priority);
+    return sorted.length > 0 ? `/${sorted[0].route}` : null;
   }
 
   ngOnDestroy(): void {

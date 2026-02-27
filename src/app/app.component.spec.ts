@@ -21,9 +21,10 @@ describe('AppComponent', () => {
       snapshot: { queryParams: {} }
     };
 
-    authServiceMock = jasmine.createSpyObj('AuthService', ['getId', 'handleCallback']);
+    authServiceMock = jasmine.createSpyObj('AuthService', ['getId', 'handleCallback', 'getDecodedToken']);
     authServiceMock.getId.and.returnValue('shell');
     authServiceMock.handleCallback.and.returnValue(Promise.resolve({ success: true }));
+    authServiceMock.getDecodedToken.and.returnValue(null);
 
     loginSuccessSubject = new Subject();
     logoutSubject = new Subject();
@@ -90,12 +91,24 @@ describe('AppComponent', () => {
     expect(routerMock.navigate).toHaveBeenCalledWith(['/rules'], { replaceUrl: true });
   });
 
-  it('should NOT redirect when returnTo is absent on auth:login_success', async () => {
+  it('should NOT redirect when returnTo is absent and user has no accessible routes', async () => {
+    authServiceMock.getDecodedToken.and.returnValue(null);
     await component.ngOnInit();
     loginSuccessSubject.next({});
 
-    // ngZone.run() fires (triggering CD) but router.navigate is NOT called
+    // No token means getFirstAvailableRoute() returns null — no navigation occurs
     expect(routerMock.navigate).not.toHaveBeenCalled();
+  });
+
+  it('should navigate to first available route when returnTo is absent on auth:login_success', async () => {
+    authServiceMock.getDecodedToken.and.returnValue({
+      org_and_roles: { hdfc: ['super-admin'] }
+    });
+    await component.ngOnInit();
+    loginSuccessSubject.next({});
+
+    // highest-priority MFE for super-admin is 'rules' (priority 8)
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/rules'], { replaceUrl: true });
   });
 
   it('should navigate to / inside ngZone on auth:logout', async () => {
