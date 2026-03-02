@@ -7,7 +7,7 @@ import { LoadRemoteModuleScriptOptions } from "@angular-architects/module-federa
 export enum UserRole {
   SUPER_ADMIN = 'super-admin',
   ORG_ADMIN = 'org-admin',
-  TEAM_LEAD = 'team-lead',
+  ORG_LEAD = 'org-lead',
   SALES_EXECUTIVE = 'sales-executive'
 }
 
@@ -46,44 +46,42 @@ export interface InterfaceMfeUrl extends LoadRemoteModuleScriptOptions{
  * - 1-4: Normal (load on demand)
  */
 export const MFE_CONFIGS: MfeConfig[] = [
-    // {
-    //     id: 'mfe-crud-rules',
-    //     name: 'crud-rules',
-    //     displayName: 'Manage Incentive Rules',
-    //     remoteName: 'crudRules',
-    //     exposedModule: './Component',
-    //     url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-CRUD_RULES/remoteEntry.js',
-    //     route: 'rules',
-    //     allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.TEAM_LEAD],
-    //     priority: 8,
-    //     icon: 'settings'
-    // },
-    // {
-    //     id: 'mfe-my-sales',
-    //     name: 'my-sales',
-    //     displayName: 'My Sales History',
-    //     remoteName: 'mySales',
-    //     exposedModule: './Component',
-    //     url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-MY_SALES/remoteEntry.js',
-    //     route: 'sales',
-    //     allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.TEAM_LEAD, UserRole.SALES_EXECUTIVE],
-    //     priority: 7,
-    //     icon: 'list'
-    // },
-    // {
-    //     id: 'mfe-my-report',
-    //     name: 'my-report',
-    //     displayName: 'My Incentive Reports',
-    //     remoteName: 'myReport',
-    //     exposedModule: './Component',
-    //     url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-MY_REPORT/remoteEntry.js',
-    //     route: 'reports',
-    //     allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.TEAM_LEAD, UserRole.SALES_EXECUTIVE],
-    //     priority: 6,
-    //     icon: 'chart'
-    // },
-    // TODO: Re-enable when external MFE is available or when testing with proper MFE infrastructure
-    // Temporarily disabled to allow app to run without external dependencies during development
+    {
+        id: 'mfe-crud-rules',
+        name: 'crud-rules',
+        displayName: 'Manage Incentive Rules',
+        remoteName: 'crudRules',
+        exposedModule: './Component',
+        url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-CRUD_RULES/remoteEntry.js',
+        route: 'rules',
+        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ORG_LEAD],
+        priority: 8,
+        icon: 'settings'
+    },
+    {
+        id: 'mfe-my-sales',
+        name: 'my-sales',
+        displayName: 'My Sales History',
+        remoteName: 'mySales',
+        exposedModule: './Component',
+        url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-MY_SALES/remoteEntry.js',
+        route: 'sales',
+        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ORG_LEAD, UserRole.SALES_EXECUTIVE],
+        priority: 7,
+        icon: 'list'
+    },
+    {
+        id: 'mfe-my-report',
+        name: 'my-report',
+        displayName: 'My Incentive Reports',
+        remoteName: 'myReport',
+        exposedModule: './Component',
+        url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-MY_REPORT/remoteEntry.js',
+        route: 'reports',
+        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ORG_LEAD, UserRole.SALES_EXECUTIVE],
+        priority: 6,
+        icon: 'chart'
+    },
     {
         id: 'mfe-users-crud',
         name: 'users-crud',
@@ -97,6 +95,44 @@ export const MFE_CONFIGS: MfeConfig[] = [
         icon: 'users'
     }
 ];
+
+/**
+ * Extended token payload including the org_and_roles custom claim.
+ * Structure: { "hdfc": ["super-admin", "org-admin"], ... }
+ * Single shared definition — import this instead of declaring locally (DRY).
+ * The index signature matches TokenPayload for structural compatibility.
+ */
+export interface OrgRolesTokenPayload {
+  org_and_roles?: Record<string, string[]>;
+  [key: string]: unknown;
+}
+
+/**
+ * Pure function: extracts a flat list of all roles a user holds across all orgs.
+ * Takes the decoded token as input; returns an empty array when no roles are present.
+ */
+export function extractUserRoles(token: OrgRolesTokenPayload | null): string[] {
+  return token?.org_and_roles ? Object.values(token.org_and_roles).flat() : [];
+}
+
+/**
+ * Pure function: returns MFE configs accessible to a user given their flat role list,
+ * sorted by priority descending (highest first).
+ */
+export function filterMfesByRoles(userRoles: string[]): MfeConfig[] {
+  return MFE_CONFIGS
+    .filter(mfe => mfe.allowedRoles.some(role => userRoles.includes(role)))
+    .sort((a, b) => b.priority - a.priority);
+}
+
+/**
+ * Pure function: returns the highest-priority route the user can access (prefixed with '/'),
+ * or null when no accessible routes exist.
+ */
+export function getHighestPriorityRoute(userRoles: string[]): string | null {
+  const [top] = filterMfesByRoles(userRoles);
+  return top ? `/${top.route}` : null;
+}
 
 /**
  * MFE array for Module Federation configuration
