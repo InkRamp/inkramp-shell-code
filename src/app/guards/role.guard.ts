@@ -1,14 +1,31 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
-import { AuthService } from '@opensourcekd/ng-common-libs';
+import { ActivatedRouteSnapshot, CanActivateFn, Router, RouterStateSnapshot } from '@angular/router';
+import { AuthService, TokenPayload } from '@opensourcekd/ng-common-libs';
 
 /**
- * Route guard to check if user has required role
- * @param allowedRoles Reserved for future role-based access control; currently only authentication is checked
- * TODO: Implement role-based access control using UserData from AuthService.getUserData()
+ * Extended token payload including the org_and_roles custom claim.
+ * Structure: { "hdfc": ["super-admin", "org-admin"], ... }
+ */
+interface OrgRolesTokenPayload extends TokenPayload {
+  org_and_roles?: Record<string, string[]>;
+}
+
+/**
+ * Extracts all roles from the org_and_roles token claim across all orgs.
+ * org_and_roles structure: { "hdfc": ["super-admin", "org-admin"], ... }
+ */
+function getAllOrgRoles(authService: AuthService): string[] {
+  const token = authService.getDecodedToken() as OrgRolesTokenPayload | null;
+  if (!token?.org_and_roles) return [];
+  return Object.values(token.org_and_roles).flat();
+}
+
+/**
+ * Route guard to check if the authenticated user has any of the required roles
+ * from the org_and_roles claim in the token.
  */
 export function roleGuard(allowedRoles: string[]): CanActivateFn {
-  return () => {
+  return (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
     const authService = inject(AuthService);
     const router = inject(Router);
     if (!authService.isAuthenticatedSync()) {
@@ -17,51 +34,32 @@ export function roleGuard(allowedRoles: string[]): CanActivateFn {
       });
       return router.parseUrl('/');
     }
+    const userRoles = getAllOrgRoles(authService);
+    if (!allowedRoles.some(role => userRoles.includes(role))) {
+      console.warn('[RoleGuard] Access denied: insufficient roles', { allowedRoles, userRoles });
+      return router.parseUrl('/');
+    }
     return true;
   };
 }
 
 /**
- * Guard to check if user is authenticated (admin or team lead routes)
+ * Guard for admin routes (super-admin and org-admin only)
  */
-export const adminGuard: CanActivateFn = () => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
-  if (!authService.isAuthenticatedSync()) {
-    authService.login().catch(error => {
-      console.error('[adminGuard] Login redirect failed:', error);
-    });
-    return router.parseUrl('/');
-  }
-  return true;
+export const adminGuard: CanActivateFn = (route, state) => {
+  return roleGuard(['super-admin', 'org-admin'])(route, state);
 };
 
 /**
- * Guard to check if user is authenticated (super-admin routes)
+ * Guard for super-admin only routes
  */
-export const superAdminGuard: CanActivateFn = () => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
-  if (!authService.isAuthenticatedSync()) {
-    authService.login().catch(error => {
-      console.error('[superAdminGuard] Login redirect failed:', error);
-    });
-    return router.parseUrl('/');
-  }
-  return true;
+export const superAdminGuard: CanActivateFn = (route, state) => {
+  return roleGuard(['super-admin'])(route, state);
 };
 
 /**
- * Guard to check if user is authenticated (all authenticated roles)
+ * Guard for all authenticated users with any valid role
  */
-export const allRolesGuard: CanActivateFn = () => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
-  if (!authService.isAuthenticatedSync()) {
-    authService.login().catch(error => {
-      console.error('[allRolesGuard] Login redirect failed:', error);
-    });
-    return router.parseUrl('/');
-  }
-  return true;
+export const allRolesGuard: CanActivateFn = (route, state) => {
+  return roleGuard(['super-admin', 'org-admin', 'org-lead', 'sales-executive'])(route, state);
 };

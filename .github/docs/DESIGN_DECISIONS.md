@@ -304,7 +304,42 @@ roleService.hasCapability('rule.create');
 
 ---
 
-## Decision Template
+## ADR-013: Navigate to First Available Route on Login (No returnTo)
+
+**Date**: 2026-02-27
+
+**Status**: Accepted
+
+**Context**: After a successful OAuth callback with no explicit `returnTo` in `appState`,
+the user landed on the home page (`/`). Navigation links were rendered by `HeaderComponent`
+but none were marked active because `routerLinkActive` only matches on the current URL.
+The first nav link was therefore never highlighted on initial login.
+
+**Decision**: In `AppComponent`'s `auth:login_success` handler, when `returnTo` is absent,
+resolve and navigate to the **highest-priority MFE route** the authenticated user can
+access (filtered from `MFE_CONFIGS` via `org_and_roles` in the decoded token, sorted
+descending by `priority`). This is done inside `NgZone.run()` to trigger Angular change
+detection correctly.
+
+**Rationale**:
+- Ensures the first navigation link is always visually active immediately after login
+- Role-based: each user lands on the most relevant feature for their role
+- Consistent with how `HeaderComponent` already filters and sorts available MFEs
+- Does not affect the error path — `auth:login_failure` still preserves all query params
+
+**Consequences**:
+- `AppComponent` imports `MFE_CONFIGS` and the `OrgRolesTokenPayload` interface pattern
+  (same shape as used in `HeaderComponent`)
+- Any non-auth query params that survive `cleanupCallbackUrl()` will be lost on redirect;
+  this is acceptable because the auth callback URL does not carry application query params
+
+**Alternatives Considered**:
+- Stay on `/` and rely on `ngZone.run()` alone: rejected because the first nav link is
+  never active, degrading the UX after login
+- Route guard on `/` that redirects authenticated users: rejected because it would also
+  trigger on manual `/` navigation and would not be scoped to the post-login flow
+
+---
 
 ```markdown
 ## ADR-XXX: [Title]
