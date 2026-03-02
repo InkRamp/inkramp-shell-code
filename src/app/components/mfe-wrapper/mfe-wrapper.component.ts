@@ -1,7 +1,5 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import MFE, {InterfaceMfeUrl} from '../../../configs/mfe';
-import { MFE_CONFIGS } from '../../../configs/mfe';
+import { AfterViewInit, ChangeDetectionStrategy, Component, EnvironmentInjector, inject, Input, ViewChild, ViewContainerRef } from '@angular/core';
+import MFE from '../../../configs/mfe';
 import { loadRemoteModule, LoadRemoteModuleScriptOptions } from '@angular-architects/module-federation';
 import { CommonModule } from '@angular/common';
 
@@ -22,6 +20,8 @@ export class MfeWrapperComponent implements AfterViewInit{
   @ViewChild('container', {read:ViewContainerRef, static:true})
   remoteContainer!:ViewContainerRef
 
+  private readonly environmentInjector = inject(EnvironmentInjector);
+
   async ngAfterViewInit(){
     const options:LoadRemoteModuleScriptOptions | undefined = MFE.find(({remoteName})=>remoteName===this.name)
     if(!options) {
@@ -39,7 +39,9 @@ export class MfeWrapperComponent implements AfterViewInit{
       }
       
       console.log(`[MfeWrapperComponent] Creating component for MFE: ${this.name}`);
-      this.remoteContainer.createComponent(remote.AppComponent);
+      this.remoteContainer.createComponent(remote.AppComponent, {
+        environmentInjector: this.environmentInjector
+      });
       console.log(`[MfeWrapperComponent] MFE loaded successfully: ${this.name}`);
     } catch (error) {
       console.error(`[MfeWrapperComponent] Error loading MFE ${this.name}:`, error);

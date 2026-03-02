@@ -35,7 +35,7 @@ export interface MfeConfig {
 export interface InterfaceMfeUrl extends LoadRemoteModuleScriptOptions{
     remoteName: string;
     exposedModule: string;
-    url: string;
+    remoteEntry: string;
 }
 
 /**
@@ -141,7 +141,7 @@ export function getHighestPriorityRoute(userRoles: string[]): string | null {
 const MFE: Array<InterfaceMfeUrl> = MFE_CONFIGS.map(config => ({
     remoteName: config.remoteName,
     exposedModule: config.exposedModule,
-    url: config.url
+    remoteEntry: config.url
 }));
 
 export default MFE
