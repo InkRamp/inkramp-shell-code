@@ -8,3 +8,6 @@
 export * from './core-services.service';
 export * from './models/data.model';
 
+// Shared HTTP interceptor
+export * from './interceptors/auth.interceptor';
+
