@@ -1,7 +1,5 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import MFE, {InterfaceMfeUrl} from '../../../configs/mfe';
-import { MFE_CONFIGS } from '../../../configs/mfe';
+import { AfterViewInit, ChangeDetectionStrategy, Component, Input, ViewChild, ViewContainerRef } from '@angular/core';
+import MFE from '../../../configs/mfe';
 import { loadRemoteModule, LoadRemoteModuleScriptOptions } from '@angular-architects/module-federation';
 import { CommonModule } from '@angular/common';
 
@@ -33,13 +31,18 @@ export class MfeWrapperComponent implements AfterViewInit{
       console.log(`[MfeWrapperComponent] Loading MFE: ${this.name}`, options);
       const remote = await loadRemoteModule(options);
       
-      if (!remote || !remote.AppComponent) {
-        console.error(`[MfeWrapperComponent] MFE module or AppComponent not found for: ${this.name}`);
+      // Support both named export (AppComponent) and default export
+      const componentClass = remote?.AppComponent ?? remote?.default;
+      if (!componentClass) {
+        console.error(`[MfeWrapperComponent] No component found in MFE module for: ${this.name}`);
         return;
       }
       
       console.log(`[MfeWrapperComponent] Creating component for MFE: ${this.name}`);
-      this.remoteContainer.createComponent(remote.AppComponent);
+      const componentRef = this.remoteContainer.createComponent(componentClass);
+      // Trigger change detection so the dynamically created component's
+      // lifecycle hooks (e.g. ngOnInit) run and its view is rendered.
+      componentRef.changeDetectorRef.detectChanges();
       console.log(`[MfeWrapperComponent] MFE loaded successfully: ${this.name}`);
     } catch (error) {
       console.error(`[MfeWrapperComponent] Error loading MFE ${this.name}:`, error);
