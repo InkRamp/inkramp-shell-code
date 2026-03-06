@@ -4,6 +4,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   ComponentRef,
+  createComponent,
+  EmbeddedViewRef,
   EnvironmentInjector,
   inject,
   Input,
@@ -28,6 +30,12 @@ interface RemoteModule {
  * ApplicationRef._views on each tick, independently of the parent wrapper's
  * CD strategy. So all async MFE operations (HTTP, timers, observables) trigger
  * CD correctly without the wrapper ever needing to be marked dirty.
+ *
+ * IMPORTANT: We use standalone createComponent() (not ViewContainerRef.createComponent())
+ * because ViewContainerRef.createComponent() auto-attaches the host view to the
+ * container's internal ViewContainerRef, causing appRef.attachView() to throw NG0902
+ * ("view already attached"). With standalone createComponent(), the view starts
+ * unattached, so appRef.attachView() succeeds and owns the CD lifecycle.
  */
 @Component({
   selector: 'app-mfe-wrapper',
@@ -78,15 +86,19 @@ export class MfeWrapperComponent implements AfterViewInit, OnDestroy {
       }
 
       console.log(`[MfeWrapperComponent] Creating component for MFE: ${this.name}`);
-      this.componentRef = this.remoteContainer.createComponent(remote.AppComponent, {
-        environmentInjector: this.environmentInjector,
-      });
+      this.componentRef = this.createRemoteComponent(remote.AppComponent);
 
-      // Register the MFE's host view directly in Angular's ApplicationRef CD graph.
-      // Without this, the wrapper's OnPush strategy would cause Angular to skip the
-      // entire embedded MFE subtree on every tick after the initial render, blocking
-      // all async UI updates (HTTP responses, timers, observables) inside the MFE.
+      // Register the MFE's host view in Angular's ApplicationRef CD graph so it is
+      // dirty-checked on every tick regardless of the wrapper's OnPush strategy.
+      // Standalone createComponent() leaves the view unattached, so this call succeeds
+      // without NG0902 ("view already attached").
       this.appRef.attachView(this.componentRef.hostView);
+
+      // Insert the MFE's rendered DOM nodes into the container div in the template.
+      const hostEl = this.remoteContainer.element.nativeElement as HTMLElement;
+      (this.componentRef.hostView as EmbeddedViewRef<unknown>).rootNodes.forEach(
+        (node: Node) => hostEl.appendChild(node)
+      );
 
       // Trigger an immediate CD cycle to render the MFE's initial template.
       // ngAfterViewInit is async — Angular's synchronous CD pass has already
@@ -111,5 +123,14 @@ export class MfeWrapperComponent implements AfterViewInit, OnDestroy {
   /** Protected so tests can spy on it without touching the non-configurable ES module export. */
   protected loadRemote(options: LoadRemoteModuleScriptOptions): Promise<RemoteModule> {
     return loadRemoteModule(options) as Promise<RemoteModule>;
+  }
+
+  /**
+   * Protected so tests can spy on it. Uses standalone createComponent() (not
+   * ViewContainerRef.createComponent()) so the host view starts unattached,
+   * allowing appRef.attachView() to succeed without throwing NG0902.
+   */
+  protected createRemoteComponent(component: Type<unknown>): ComponentRef<unknown> {
+    return createComponent(component, { environmentInjector: this.environmentInjector });
   }
 }

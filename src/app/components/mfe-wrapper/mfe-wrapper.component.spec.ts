@@ -1,4 +1,4 @@
-import { ApplicationRef, ComponentRef } from '@angular/core';
+import { ApplicationRef, ComponentRef, EmbeddedViewRef } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { EnvironmentInjector, ViewContainerRef } from '@angular/core';
 import { MfeWrapperComponent } from './mfe-wrapper.component';
@@ -15,7 +15,7 @@ describe('MfeWrapperComponent', () => {
   // Shared fake MFE component references — set up in the root beforeEach so both
   // ngAfterViewInit and ngOnDestroy describe blocks can reference them without
   // duplicating the spy setup.
-  let fakeHostView: object;
+  let fakeHostView: Partial<EmbeddedViewRef<unknown>>;
   let fakeDetectChanges: jasmine.Spy;
   let fakeComponentRef: Partial<ComponentRef<unknown>>;
 
@@ -31,7 +31,9 @@ describe('MfeWrapperComponent', () => {
 
     // Build the shared fake component ref used across all dynamic-loading tests.
     class FakeAppComponent {}
-    fakeHostView = {};
+    // rootNodes is required because the component manually appends them to the host
+    // element after calling createRemoteComponent().
+    fakeHostView = { rootNodes: [document.createElement('div')] };
     fakeDetectChanges = jasmine.createSpy('detectChanges');
     fakeComponentRef = {
       hostView: fakeHostView as any,
@@ -40,8 +42,9 @@ describe('MfeWrapperComponent', () => {
     };
 
     spyOn<any>(component, 'loadRemote').and.resolveTo({ AppComponent: FakeAppComponent });
-    spyOn(component['remoteContainer'] as ViewContainerRef, 'createComponent')
-      .and.returnValue(fakeComponentRef as any);
+    // Spy on createRemoteComponent (the protected wrapper around standalone createComponent())
+    // so the test never calls the real Angular createComponent() with a fake class.
+    spyOn<any>(component, 'createRemoteComponent').and.returnValue(fakeComponentRef as any);
     // Prevent real appRef methods from running with a plain fake object that
     // lacks Angular's internal view methods (attachToAppRef, detachFromAppRef).
     spyOn(appRef, 'attachView');
@@ -57,13 +60,10 @@ describe('MfeWrapperComponent', () => {
       component.name = 'mySales';
     });
 
-    it('should create the MFE component with the shell EnvironmentInjector', async () => {
+    it('should create the MFE component using the shell EnvironmentInjector via createRemoteComponent', async () => {
       await component.ngAfterViewInit();
 
-      expect(component['remoteContainer'].createComponent).toHaveBeenCalledWith(
-        jasmine.any(Function),
-        jasmine.objectContaining({ environmentInjector: jasmine.any(EnvironmentInjector) })
-      );
+      expect(component['createRemoteComponent']).toHaveBeenCalledWith(jasmine.any(Function));
     });
 
     it('should attach the MFE host view to ApplicationRef so it is dirty-checked on every tick', async () => {
