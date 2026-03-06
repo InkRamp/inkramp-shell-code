@@ -4,7 +4,7 @@ import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/
 import { provideRouter } from '@angular/router';
 import { routes } from './app/app.routes';
 import { EventBus, AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs';
-import { authInterceptor } from '@org/core-services';
+import { bearerTokenInterceptor } from '@org/core-services';
 
 // Create EventBus instance before bootstrap with 'shell' identifier
 const eventBus = new EventBus({ id: 'shell' });
@@ -28,7 +28,10 @@ const authService = new AuthService(
 
 /**
  * Application bootstrap
- * Auth interceptor registered via withInterceptors([authInterceptor])
+ * Bearer token attachment is handled by bearerTokenInterceptor registered via
+ * withInterceptors(). The interceptor reads the token synchronously from AuthService
+ * and adds an Authorization: Bearer header to every request whose URL begins with
+ * APP_CONFIG.apiUrl.
  */
 export function bootstrap() {
   return bootstrapApplication(AppComponent, {
@@ -36,7 +39,7 @@ export function bootstrap() {
       provideRouter(routes),
       provideHttpClient(
         withFetch(),
-        withInterceptors([authInterceptor])
+        withInterceptors([bearerTokenInterceptor])
       ),
       // Provide EventBus instance
       { provide: EventBus, useValue: eventBus },
