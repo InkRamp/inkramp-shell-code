@@ -11,11 +11,6 @@ module.exports = withModuleFederationPlugin({
 
   shared: {
     ...shareAll({ singleton: true, strictVersion: false, requiredVersion: 'auto', eager: false }),
-    // zone.js must be eager so it is published to the shared scope before any MFE
-    // is resolved, guaranteeing a single zone.js instance across shell and all MFEs.
-    // A second zone.js instance would cause async operations in MFEs to run outside
-    // Angular's zone, silently breaking change detection.
-    'zone.js': { singleton: true, strictVersion: false, requiredVersion: 'auto', eager: true },
     '@org/core-services': { singleton: true, strictVersion: false, requiredVersion: 'auto' },
     '@opensourcekd/ng-common-libs': { singleton: true, strictVersion: false, requiredVersion: 'auto' },
   },
