@@ -1,3 +1,4 @@
+import { ApplicationRef, ComponentRef } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { EnvironmentInjector, ViewContainerRef } from '@angular/core';
 import { MfeWrapperComponent } from './mfe-wrapper.component';
@@ -9,6 +10,14 @@ import { MfeWrapperComponent } from './mfe-wrapper.component';
 describe('MfeWrapperComponent', () => {
   let component: MfeWrapperComponent;
   let fixture: ComponentFixture<MfeWrapperComponent>;
+  let appRef: ApplicationRef;
+
+  // Shared fake MFE component references — set up in the root beforeEach so both
+  // ngAfterViewInit and ngOnDestroy describe blocks can reference them without
+  // duplicating the spy setup.
+  let fakeHostView: object;
+  let fakeDetectChanges: jasmine.Spy;
+  let fakeComponentRef: Partial<ComponentRef<unknown>>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -17,7 +26,26 @@ describe('MfeWrapperComponent', () => {
 
     fixture = TestBed.createComponent(MfeWrapperComponent);
     component = fixture.componentInstance;
+    appRef = TestBed.inject(ApplicationRef);
     fixture.detectChanges();
+
+    // Build the shared fake component ref used across all dynamic-loading tests.
+    class FakeAppComponent {}
+    fakeHostView = {};
+    fakeDetectChanges = jasmine.createSpy('detectChanges');
+    fakeComponentRef = {
+      hostView: fakeHostView as any,
+      changeDetectorRef: { detectChanges: fakeDetectChanges } as any,
+      destroy: jasmine.createSpy('destroy'),
+    };
+
+    spyOn<any>(component, 'loadRemote').and.resolveTo({ AppComponent: FakeAppComponent });
+    spyOn(component['remoteContainer'] as ViewContainerRef, 'createComponent')
+      .and.returnValue(fakeComponentRef as any);
+    // Prevent real appRef methods from running with a plain fake object that
+    // lacks Angular's internal view methods (attachToAppRef, detachFromAppRef).
+    spyOn(appRef, 'attachView');
+    spyOn(appRef, 'detachView');
   });
 
   it('should create', () => {
@@ -25,28 +53,28 @@ describe('MfeWrapperComponent', () => {
   });
 
   describe('ngAfterViewInit', () => {
-    it('should create the MFE component with environmentInjector and call detectChanges() to render the initial view', async () => {
-      // Arrange
-      class FakeAppComponent {}
-      const fakeDetectChanges = jasmine.createSpy('detectChanges');
-      const fakeComponentRef = { changeDetectorRef: { detectChanges: fakeDetectChanges } };
-
-      // Spy on the protected loadRemote wrapper so we never touch the non-configurable ES module export
-      spyOn<any>(component, 'loadRemote').and.resolveTo({ AppComponent: FakeAppComponent });
-
-      const createComponentSpy = spyOn(component['remoteContainer'] as ViewContainerRef, 'createComponent')
-        .and.returnValue(fakeComponentRef as any);
-
+    beforeEach(() => {
       component.name = 'mySales';
+    });
 
-      // Act
+    it('should create the MFE component with the shell EnvironmentInjector', async () => {
       await component.ngAfterViewInit();
 
-      // Assert: createComponent was called with environmentInjector and detectChanges() was called
-      expect(createComponentSpy).toHaveBeenCalledWith(
+      expect(component['remoteContainer'].createComponent).toHaveBeenCalledWith(
         jasmine.any(Function),
         jasmine.objectContaining({ environmentInjector: jasmine.any(EnvironmentInjector) })
       );
+    });
+
+    it('should attach the MFE host view to ApplicationRef so it is dirty-checked on every tick', async () => {
+      await component.ngAfterViewInit();
+
+      expect(appRef.attachView).toHaveBeenCalledWith(fakeHostView as any);
+    });
+
+    it('should call detectChanges() to render the MFE initial template after async load', async () => {
+      await component.ngAfterViewInit();
+
       expect(fakeDetectChanges).toHaveBeenCalled();
     });
 
@@ -57,10 +85,18 @@ describe('MfeWrapperComponent', () => {
   });
 
   describe('ngOnDestroy', () => {
-    it('should clear the remote container to release MFE resources', () => {
-      const clearSpy = spyOn(component['remoteContainer'] as ViewContainerRef, 'clear');
+    it('should detach the MFE view from ApplicationRef and destroy the component to release resources', async () => {
+      component.name = 'mySales';
+      await component.ngAfterViewInit();
+
       component.ngOnDestroy();
-      expect(clearSpy).toHaveBeenCalled();
+
+      expect(appRef.detachView).toHaveBeenCalledWith(fakeHostView as any);
+      expect(fakeComponentRef.destroy).toHaveBeenCalled();
+    });
+
+    it('should not throw if ngOnDestroy is called before any MFE was loaded', () => {
+      expect(() => component.ngOnDestroy()).not.toThrow();
     });
   });
 });
