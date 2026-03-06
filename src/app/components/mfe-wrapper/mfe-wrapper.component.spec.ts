@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ViewContainerRef } from '@angular/core';
+import { EnvironmentInjector, ViewContainerRef } from '@angular/core';
 import { MfeWrapperComponent } from './mfe-wrapper.component';
 
 /**
@@ -25,7 +25,7 @@ describe('MfeWrapperComponent', () => {
   });
 
   describe('ngAfterViewInit', () => {
-    it('should call detectChanges() on the created componentRef so the MFE view is attached to the active CD tree', async () => {
+    it('should create the MFE component with environmentInjector and call detectChanges() to render the initial view', async () => {
       // Arrange
       class FakeAppComponent {}
       const fakeDetectChanges = jasmine.createSpy('detectChanges');
@@ -42,14 +42,25 @@ describe('MfeWrapperComponent', () => {
       // Act
       await component.ngAfterViewInit();
 
-      // Assert: component was created and detectChanges() was called to attach the embedded view
-      expect(createComponentSpy).toHaveBeenCalledWith(jasmine.any(Function));
+      // Assert: createComponent was called with environmentInjector and detectChanges() was called
+      expect(createComponentSpy).toHaveBeenCalledWith(
+        jasmine.any(Function),
+        jasmine.objectContaining({ environmentInjector: jasmine.any(EnvironmentInjector) })
+      );
       expect(fakeDetectChanges).toHaveBeenCalled();
     });
 
     it('should not throw when MFE config is not found for the given name', async () => {
       component.name = 'nonExistentMfe';
       await expectAsync(component.ngAfterViewInit()).toBeResolved();
+    });
+  });
+
+  describe('ngOnDestroy', () => {
+    it('should clear the remote container to release MFE resources', () => {
+      const clearSpy = spyOn(component['remoteContainer'] as ViewContainerRef, 'clear');
+      component.ngOnDestroy();
+      expect(clearSpy).toHaveBeenCalled();
     });
   });
 });
