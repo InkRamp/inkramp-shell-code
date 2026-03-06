@@ -1,3 +1,4 @@
+import { loadRemoteModule } from '@angular-architects/module-federation';
 import { Routes } from '@angular/router';
 import { roleGuard, adminGuard, allRolesGuard } from './guards/role.guard';
 import { HomePageComponent } from './pages/home-page/home-page.component';
