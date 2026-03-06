@@ -8,7 +8,8 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
-import { AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs';
+import { AuthService } from '@opensourcekd/ng-common-libs';
+import { APP_CONFIG } from '../../configs/app.config';
 import { bearerTokenInterceptor } from './bearer-token.interceptor';
 
 const API_URL = APP_CONFIG.apiUrl;

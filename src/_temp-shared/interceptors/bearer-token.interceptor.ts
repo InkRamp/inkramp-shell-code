@@ -1,6 +1,7 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs';
+import { AuthService } from '@opensourcekd/ng-common-libs';
+import { APP_CONFIG } from '../../configs/app.config';
 
 /**
  * Angular HTTP interceptor that attaches a Bearer token to every request
