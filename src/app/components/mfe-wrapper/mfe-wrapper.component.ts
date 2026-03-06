@@ -1,7 +1,5 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import MFE, {InterfaceMfeUrl} from '../../../configs/mfe';
-import { MFE_CONFIGS } from '../../../configs/mfe';
+import { AfterViewInit, ChangeDetectionStrategy, Component, Input, ViewChild, ViewContainerRef } from '@angular/core';
+import MFE from '../../../configs/mfe';
 import { loadRemoteModule, LoadRemoteModuleScriptOptions } from '@angular-architects/module-federation';
 import { CommonModule } from '@angular/common';
 
@@ -39,7 +37,14 @@ export class MfeWrapperComponent implements AfterViewInit{
       }
       
       console.log(`[MfeWrapperComponent] Creating component for MFE: ${this.name}`);
-      this.remoteContainer.createComponent(remote.AppComponent);
+      const componentRef = this.remoteContainer.createComponent(remote.AppComponent);
+      // detectChanges() is required when the parent uses OnPush and createComponent() is
+      // called asynchronously (after ngAfterViewInit resolves). Without it, the embedded
+      // view is never attached to Angular's active CD tree, so ngOnInit lifecycle hooks
+      // run in a detached context. Any HTTP subscription teardown (AbortController.abort)
+      // fires immediately on the next CD cycle, aborting the request before it reaches
+      // the network — resulting in status: 0 / "Unknown Error" with no network tab entry.
+      componentRef.changeDetectorRef.detectChanges();
       console.log(`[MfeWrapperComponent] MFE loaded successfully: ${this.name}`);
     } catch (error) {
       console.error(`[MfeWrapperComponent] Error loading MFE ${this.name}:`, error);
