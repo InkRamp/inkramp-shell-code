@@ -1,4 +1,3 @@
-import 'zone.js';
 import { initFederation } from "@angular-architects/module-federation";
 import MFE from "./configs/mfe";
 
