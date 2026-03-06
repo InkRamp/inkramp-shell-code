@@ -4,7 +4,7 @@ import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/
 import { provideRouter } from '@angular/router';
 import { routes } from './app/app.routes';
 import { EventBus, AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs';
-import { bearerTokenInterceptor } from '@core/interceptors/bearer-token.interceptor';
+import { bearerTokenInterceptor } from '@org/core-services';
 
 // Create EventBus instance before bootstrap with 'shell' identifier
 const eventBus = new EventBus({ id: 'shell' });

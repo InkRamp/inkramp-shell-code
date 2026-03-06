@@ -8,3 +8,5 @@
 export * from './core-services.service';
 export * from './models/data.model';
 
+export { bearerTokenInterceptor } from './interceptors/bearer-token.interceptor';
+
