@@ -6,10 +6,12 @@
         <button class="ai-panel__close" (click)="toggle()" aria-label="Close AI Assistant">✕</button>
       </div>
       <iframe
+        #aiIframe
         class="ai-panel__iframe"
         [src]="aiUrl"
         title="AI Assistant"
         allow="microphone; camera"
+        (load)="onIframeLoad(aiIframe)"
       ></iframe>
     </div>
 

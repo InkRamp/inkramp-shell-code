@@ -1,3 +1,11 @@
+// Panel dimensions (desktop default)
+$ai-panel-width: 380px;
+$ai-panel-height: 560px;
+
+// Breakpoints (from design tokens)
+$bp-sm: 480px;
+$bp-md: 768px;
+
 .ai-assistant {
   position: fixed;
   bottom: 1.5rem;
@@ -7,6 +15,12 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 0.75rem;
+
+  // Mobile: hug the edges
+  @media (max-width: #{$bp-sm}) {
+    bottom: 1rem;
+    right: 1rem;
+  }
 }
 
 .ai-toggle-btn {
@@ -14,8 +28,8 @@
   height: 3.5rem;
   border-radius: 50%;
   border: none;
-  background: #1a73e8;
-  color: #fff;
+  background: var(--bright-blue);
+  color: white;
   font-size: 1.5rem;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
@@ -25,6 +39,7 @@
   transition: transform 0.2s, box-shadow 0.2s;
 
   &:hover {
+    background: var(--electric-violet);
     transform: scale(1.08);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
   }
@@ -33,12 +48,25 @@
 .ai-panel {
   display: none;
   flex-direction: column;
-  width: 380px;
-  height: 560px;
+  width: $ai-panel-width;
+  height: $ai-panel-height;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  background: #fff;
+  background: white;
+
+  // Tablet: narrower panel
+  @media (max-width: #{$bp-md}) {
+    width: 320px;
+    height: 480px;
+  }
+
+  // Mobile: full-width panel, fixed height
+  @media (max-width: #{$bp-sm}) {
+    width: calc(100vw - 2rem);
+    height: 420px;
+    border-radius: 8px;
+  }
 
   &--open {
     display: flex;
@@ -50,8 +78,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1rem;
-  background: #1a73e8;
-  color: #fff;
+  background: var(--bright-blue);
+  color: white;
 }
 
 .ai-panel__title {
@@ -62,7 +90,7 @@
 .ai-panel__close {
   background: transparent;
   border: none;
-  color: #fff;
+  color: white;
   font-size: 1rem;
   cursor: pointer;
   line-height: 1;

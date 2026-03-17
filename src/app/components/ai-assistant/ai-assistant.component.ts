@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Subscription } from 'rxjs';
 import { AuthService, EventBus, UserInfo } from '@opensourcekd/ng-common-libs';
+import { AIBridgeService } from '../../services/ai-bridge.service';
 
 const AI_ASSISTANT_URL = 'https://opensourcekd.github.io/all-mfe-builds/mfe-AI/';
 
@@ -10,6 +11,10 @@ const AI_ASSISTANT_URL = 'https://opensourcekd.github.io/all-mfe-builds/mfe-AI/'
  * Floating AI assistant widget.
  * Renders a toggle button and an iframe pointing to the AI MFE.
  * Visible only when the user is authenticated.
+ *
+ * Communication between the iframe and the rest of the app is handled by
+ * AIBridgeService — MFEs subscribe to EventBus events and are unaware of
+ * the bridge or the iframe.
  */
 @Component({
   selector: 'app-ai-assistant',
@@ -28,6 +33,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   private eventBus = inject(EventBus);
   private sanitizer = inject(DomSanitizer);
   private ngZone = inject(NgZone);
+  private aiBridge = inject(AIBridgeService);
 
   constructor() {
     this.aiUrl = this.sanitizer.bypassSecurityTrustResourceUrl(AI_ASSISTANT_URL);
@@ -39,6 +45,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
         this.isLoggedIn = !!user;
         if (!user) {
           this.isOpen = false;
+          this.aiBridge.disconnect();
         }
       })
     );
@@ -55,6 +62,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
       this.eventBus.on('auth:logout').subscribe(() => {
         this.isLoggedIn = false;
         this.isOpen = false;
+        this.aiBridge.disconnect();
       })
     );
 
@@ -62,6 +70,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
       this.eventBus.on('auth:login_failure').subscribe(() => {
         this.isLoggedIn = false;
         this.isOpen = false;
+        this.aiBridge.disconnect();
       })
     );
 
@@ -69,6 +78,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
       this.eventBus.on('auth:session_expired').subscribe(() => {
         this.isLoggedIn = false;
         this.isOpen = false;
+        this.aiBridge.disconnect();
       })
     );
   }
@@ -77,7 +87,14 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
     this.isOpen = !this.isOpen;
   }
 
+  /** Called when the iframe finishes loading — connects the AIBridge. */
+  onIframeLoad(iframe: HTMLIFrameElement): void {
+    this.aiBridge.connect(iframe);
+  }
+
   ngOnDestroy(): void {
+    this.aiBridge.disconnect();
     this.subscriptions.unsubscribe();
   }
 }
+

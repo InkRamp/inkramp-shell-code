@@ -160,13 +160,16 @@ if (window.location.search.includes('code=')) {
 11. Follow **DRY** — extract shared logic to a single source of truth; never duplicate type definitions or data-transformation functions across files
 12. Follow **YAGNI** — don't add types, methods, or abstractions until they are actually needed; prefer the simplest implementation that satisfies the requirement
 13. Use **declarative syntax** — prefer `??`, optional chaining (`?.`), array operators (`filter`, `sort`, `map`), and early returns/guard clauses over nested `if/else` trees
+14. Use **CSS custom property design tokens** from `@opensourcekd/ng-common-libs` (e.g. `var(--bright-blue)`, `var(--gray-900)`, `var(--electric-violet)`) — never hardcode colour or spacing values. Breakpoints are `sm: 480px`, `md: 768px`, `lg: 1024px`; spacing tokens are `space-1` (4px) through `space-5` (32px).
+15. Ensure **adaptive / responsive layouts** using the defined breakpoints. Shell components own only the *container* sizing and positioning at each breakpoint — positioning of inner elements is the MFE's own responsibility.
+16. Route **AI-iframe ↔ application communication** through `AIBridgeService` — the bridge listens to `window.postMessage` from the AI iframe and re-emits messages as EventBus events (e.g. `ai:message`, `ai:action`). MFEs subscribe to those EventBus events and are completely unaware of the bridge or the iframe.
 
 ### Never Do
 1. Direct cross-MFE imports - use EventBusService
 2. Store tokens in localStorage
 3. Log sensitive data (passwords, tokens, account numbers)
 4. Bypass AuthService for API calls
-5. Hardcode styles - use SCSS tokens
+5. Hardcode colours or spacing — always use CSS custom property design tokens (`var(--bright-blue)`, etc.)
 6. Rely solely on `user$` for auth-gated UI — **always pair it with EventBus auth event subscriptions**
 7. Use `Router.navigate()` as the sole mechanism to trigger change detection after auth events — use `NgZone.run()` instead so non-auth query params are not discarded
 8. Add a default redirect in the **auth callback error path** — this discards non-auth query params; the library emits `auth:login_failure` via EventBus which is sufficient. (On the success path, navigate to `returnTo` or the first available route — see OAuth Callback Handling above.)
@@ -204,6 +207,8 @@ if (window.location.search.includes('code=')) {
 ```
 src/
   ├── app/                      # Shell application
+  │   ├── services/
+  │   │   └── ai-bridge.service.ts  # AIBridgeService — postMessage ↔ EventBus bridge
   ├── _temp-shared/             # ⚠️ TEMPORARY: Shared services (to be migrated)
   │   ├── auth.service.ts
   │   ├── role.service.ts

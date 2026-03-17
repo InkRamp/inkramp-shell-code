@@ -3,12 +3,14 @@ import { Subject } from 'rxjs';
 import { DomSanitizer } from '@angular/platform-browser';
 import { AuthService, EventBus, UserInfo } from '@opensourcekd/ng-common-libs';
 import { AiAssistantComponent } from './ai-assistant.component';
+import { AIBridgeService } from '../../services/ai-bridge.service';
 
 describe('AiAssistantComponent', () => {
   let component: AiAssistantComponent;
   let fixture: ComponentFixture<AiAssistantComponent>;
   let authServiceMock: jasmine.SpyObj<AuthService>;
   let eventBusMock: jasmine.SpyObj<EventBus>;
+  let aiBridgeMock: jasmine.SpyObj<AIBridgeService>;
   let userSubject: Subject<UserInfo | null>;
   let loginSuccessSubject: Subject<unknown>;
   let logoutSubject: Subject<unknown>;
@@ -38,11 +40,14 @@ describe('AiAssistantComponent', () => {
       }
     });
 
+    aiBridgeMock = jasmine.createSpyObj('AIBridgeService', ['connect', 'disconnect', 'sendToAi']);
+
     await TestBed.configureTestingModule({
       imports: [AiAssistantComponent],
       providers: [
         { provide: AuthService, useValue: authServiceMock },
-        { provide: EventBus, useValue: eventBusMock }
+        { provide: EventBus, useValue: eventBusMock },
+        { provide: AIBridgeService, useValue: aiBridgeMock }
       ]
     }).compileComponents();
 
@@ -150,5 +155,41 @@ describe('AiAssistantComponent', () => {
     // Both values should be SafeResourceUrl objects (not raw strings)
     expect(typeof component.aiUrl).not.toBe('string');
     expect(component.aiUrl).toBeTruthy();
+  });
+
+  describe('AIBridge wiring', () => {
+    it('should connect the bridge when the iframe loads', () => {
+      const iframe = document.createElement('iframe');
+      component.onIframeLoad(iframe);
+      expect(aiBridgeMock.connect).toHaveBeenCalledWith(iframe);
+    });
+
+    it('should disconnect the bridge on auth:logout', () => {
+      component.isLoggedIn = true;
+      logoutSubject.next(null);
+      expect(aiBridgeMock.disconnect).toHaveBeenCalled();
+    });
+
+    it('should disconnect the bridge on auth:login_failure', () => {
+      component.isLoggedIn = true;
+      loginFailureSubject.next(null);
+      expect(aiBridgeMock.disconnect).toHaveBeenCalled();
+    });
+
+    it('should disconnect the bridge on auth:session_expired', () => {
+      component.isLoggedIn = true;
+      sessionExpiredSubject.next(null);
+      expect(aiBridgeMock.disconnect).toHaveBeenCalled();
+    });
+
+    it('should disconnect the bridge when user$ emits null', () => {
+      userSubject.next(null);
+      expect(aiBridgeMock.disconnect).toHaveBeenCalled();
+    });
+
+    it('should disconnect the bridge on ngOnDestroy', () => {
+      component.ngOnDestroy();
+      expect(aiBridgeMock.disconnect).toHaveBeenCalled();
+    });
   });
 });
