@@ -1,12 +1,13 @@
+@use 'breakpoints' as *;
+
 // Panel dimensions (desktop default) — component-specific, no token equivalent
 $ai-panel-width: 380px;
 $ai-panel-height: 560px;
 
-// Breakpoints — mirror the design-token values from @opensourcekd/ng-common-libs.
-// CSS custom properties cannot be used in @media conditions (CSS spec limitation),
-// so we capture the token values here as Sass variables.
-$bp-sm: 640px;  // --breakpoint-sm
-$bp-md: 768px;  // --breakpoint-md
+// Breakpoints ($bp-sm, $bp-md, $bp-lg) are imported from src/styles/_breakpoints.scss
+// via stylePreprocessorOptions.includePaths in angular.json.
+
+// ── Desktop / tablet: fixed floating widget (bottom-right) ───────────────────
 
 .ai-assistant {
   position: fixed;
@@ -17,12 +18,6 @@ $bp-md: 768px;  // --breakpoint-md
   flex-direction: column;
   align-items: flex-end;
   gap: var(--space-3);
-
-  // Mobile: hug the edges
-  @media (max-width: #{$bp-sm}) {
-    bottom: var(--space-4);
-    right: var(--space-4);
-  }
 }
 
 .ai-toggle-btn {
@@ -48,6 +43,11 @@ $bp-md: 768px;  // --breakpoint-md
   }
 }
 
+// Label is hidden on desktop — the circular button shows only the icon
+.ai-toggle-label {
+  display: none;
+}
+
 .ai-panel {
   display: none;
   flex-direction: column;
@@ -62,13 +62,6 @@ $bp-md: 768px;  // --breakpoint-md
   @media (max-width: #{$bp-md}) {
     width: 320px;
     height: 480px;
-  }
-
-  // Mobile: full-width panel, fixed height
-  @media (max-width: #{$bp-sm}) {
-    width: calc(100vw - var(--space-8));
-    height: 420px;
-    border-radius: var(--radius-lg);
   }
 
   &--open {
@@ -109,5 +102,52 @@ $bp-md: 768px;  // --breakpoint-md
   flex: 1;
   border: none;
   width: 100%;
+}
+
+// ── Mobile (≤640px): accordion bar at bottom of screen ───────────────────────
+// Instead of a floating overlay that covers the page content, the AI widget
+// becomes a full-width toggle bar pinned to the bottom edge. The panel
+// expands upward (60 vh) so the background remains visible.
+
+@media (max-width: #{$bp-sm}) {
+  .ai-assistant {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    z-index: var(--z-index-sticky);
+  }
+
+  // The panel slots in above the toggle bar when open
+  .ai-panel {
+    width: 100%;
+    height: 60vh;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  }
+
+  // Toggle bar replaces the circular button on mobile
+  .ai-toggle-btn {
+    width: 100%;
+    height: var(--space-12);
+    border-radius: 0;
+    font-size: var(--font-size-sm);
+    gap: var(--space-2);
+    box-shadow: var(--shadow-lg);
+
+    // Disable the scale transform — it looks odd on a full-width bar
+    &:hover {
+      transform: none;
+      box-shadow: var(--shadow-lg);
+    }
+  }
+
+  // Show the label inside the bar so the user knows what to tap
+  .ai-toggle-label {
+    display: inline;
+    font-weight: var(--font-weight-medium);
+  }
 }
 

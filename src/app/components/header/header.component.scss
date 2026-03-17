@@ -1,8 +1,7 @@
-// Breakpoints — mirror the design-token values from @opensourcekd/ng-common-libs.
-// CSS custom properties cannot be used in @media conditions (CSS spec limitation),
-// so we capture the token values here as Sass variables.
-$bp-sm: 640px;  // --breakpoint-sm
-$bp-md: 768px;  // --breakpoint-md
+@use 'breakpoints' as *;
+
+// Breakpoints ($bp-sm, $bp-md, $bp-lg) are imported from src/styles/_breakpoints.scss
+// via stylePreprocessorOptions.includePaths in angular.json.
 
 .app-header {
   background: var(--color-bg-surface);
@@ -12,6 +11,7 @@ $bp-md: 768px;  // --breakpoint-md
   align-items: center;
   box-shadow: var(--shadow-md);
   gap: var(--space-4);
+  overflow: hidden; // clip any child that would create a horizontal scrollbar
 
   @media (max-width: #{$bp-md}) {
     padding: var(--space-3) var(--space-5);
@@ -58,6 +58,7 @@ $bp-md: 768px;  // --breakpoint-md
 
 .header-center {
   flex: 2;
+  min-width: 0; // allow the flex item to shrink below its content size
   display: flex;
   justify-content: center;
 
@@ -202,6 +203,7 @@ $bp-md: 768px;  // --breakpoint-md
   display: flex;
   flex-wrap: wrap; // allow wrapping on narrow tablet before hamburger kicks in
   gap: 0;
+  overflow-x: hidden; // prevent any individual link from creating a horizontal scrollbar
 
   // On mobile: hidden by default, revealed via .app-nav--open
   @media (max-width: #{$bp-sm}) {
