@@ -1,0 +1,26 @@
+@if (isLoggedIn) {
+  <div class="ai-assistant">
+    <div class="ai-panel" [class.ai-panel--open]="isOpen" role="dialog" aria-label="AI Assistant">
+      <div class="ai-panel__header">
+        <span class="ai-panel__title">AI Assistant</span>
+        <button class="ai-panel__close" (click)="toggle()" aria-label="Close AI Assistant">✕</button>
+      </div>
+      <iframe
+        class="ai-panel__iframe"
+        [src]="aiUrl"
+        title="AI Assistant"
+        allow="microphone; camera"
+      ></iframe>
+    </div>
+
+    <button
+      class="ai-toggle-btn"
+      (click)="toggle()"
+      [attr.aria-expanded]="isOpen"
+      aria-label="Toggle AI Assistant"
+      title="AI Assistant"
+    >
+      🤖
+    </button>
+  </div>
+}
