@@ -135,6 +135,25 @@ export function getHighestPriorityRoute(userRoles: string[]): string | null {
 }
 
 /**
+ * Roles that grant access to the AI assistant (org-lead and above).
+ * Sales executives do not have access to the AI assistant panel.
+ */
+export const AI_ASSISTANT_ROLES: UserRole[] = [
+  UserRole.SUPER_ADMIN,
+  UserRole.ORG_ADMIN,
+  UserRole.ORG_LEAD,
+];
+
+/**
+ * Pure function: returns true when the user holds at least one role that
+ * grants access to the AI assistant (org-lead and above).
+ */
+export function hasAiAssistantAccess(userRoles: string[]): boolean {
+  const roleSet = new Set(userRoles);
+  return AI_ASSISTANT_ROLES.some(role => roleSet.has(role));
+}
+
+/**
  * MFE array for Module Federation configuration
  * Contains all MFE configurations as InterfaceMfeUrl type
  */
