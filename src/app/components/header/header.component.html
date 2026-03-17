@@ -5,38 +5,50 @@
       {{ getOrganizationName() }}
     </span>
   </div>
-  
+
   <div class="header-center" *ngIf="currentUser && canViewOthers">
     <div class="user-selector">
       <label for="salesExecSelect">View data for:</label>
       <span id="salesExecSelectDesc" class="visually-hidden">
         Selecting a user will display their incentive data.
       </span>
-      <select 
-        id="salesExecSelect" 
-        [(ngModel)]="selectedSalesExecutiveId" 
-        (change)="onSalesExecutiveChange()" 
+      <select
+        id="salesExecSelect"
+        [(ngModel)]="selectedSalesExecutiveId"
+        (change)="onSalesExecutiveChange()"
         aria-describedby="salesExecSelectDesc">
         <option [value]="currentUser.sub">My Data</option>
         <option *ngFor="let exec of salesExecutives" [value]="exec.id">{{ exec.name }}</option>
       </select>
     </div>
   </div>
-  
+
   <div class="header-right">
     <span *ngIf="currentUser" class="user-info">
       {{ currentUser.name }} ({{ currentUser.role }})
     </span>
     <button *ngIf="currentUser" class="btn-logout" (click)="logout()">Logout</button>
     <button *ngIf="!currentUser" class="btn-login" (click)="login()">Login</button>
+    <button
+      *ngIf="currentUser"
+      class="btn-hamburger"
+      (click)="toggleMenu()"
+      [attr.aria-expanded]="menuOpen"
+      aria-controls="main-nav"
+      aria-label="Toggle navigation menu">
+      <span class="burger-bar"></span>
+      <span class="burger-bar"></span>
+      <span class="burger-bar"></span>
+    </button>
   </div>
 </header>
 
-<nav class="app-nav" *ngIf="currentUser">
-  <a *ngFor="let mfe of availableMfes" 
-     [routerLink]="'/' + mfe.route" 
+<nav class="app-nav" [class.app-nav--open]="menuOpen" *ngIf="currentUser" id="main-nav">
+  <a *ngFor="let mfe of availableMfes"
+     [routerLink]="'/' + mfe.route"
      routerLinkActive="active"
-     class="nav-link">
+     class="nav-link"
+     (click)="closeMenu()">
     {{ mfe.displayName }}
   </a>
 </nav>
