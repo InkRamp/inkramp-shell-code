@@ -45,13 +45,19 @@
 .app-content {
   flex: 1;
   padding: var(--space-8);
+  // Extra bottom clearance keeps content above the fixed AI-Assistant button
+  padding-bottom: calc(var(--space-14) + var(--space-8));
   background: var(--color-bg-page);
 
   @media (max-width: #{$bp-md}) {
-    padding: var(--space-6) var(--space-5);
+    padding: 0;
+    // Floating button still appears at bottom-right on tablet
+    padding-bottom: calc(var(--space-14) + var(--space-8));
   }
 
   @media (max-width: #{$bp-sm}) {
-    padding: var(--space-4);
+    padding: 0;
+    // Full-width bar at bottom on mobile — clear its height
+    padding-bottom: var(--space-12);
   }
 }

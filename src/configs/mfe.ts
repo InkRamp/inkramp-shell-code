@@ -26,6 +26,7 @@ export interface MfeConfig {
   allowedRoles: UserRole[];
   priority: number; // Higher number = higher priority (load first)
   icon?: string;
+  showAiAssistant?: boolean; // When false, hides the AI assistant widget on this route (default: true)
 }
 
 /**
@@ -93,6 +94,18 @@ export const MFE_CONFIGS: MfeConfig[] = [
         allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN],
         priority: 7,
         icon: 'users'
+    },
+    {
+        id: 'mfe-ai-analytics',
+        name: 'ai-analytics',
+        displayName: 'AI Analytics',
+        remoteName: 'mfeAi',
+        exposedModule: './Component',
+        url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-AI/remoteEntry.js',
+        route: 'ai-analytics',
+        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ORG_LEAD, UserRole.SALES_EXECUTIVE],
+        priority: 1,
+        icon: 'analytics'
     }
 ];
 
