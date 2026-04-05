@@ -1,0 +1,7 @@
+// Breakpoints — single source of truth matching the @opensourcekd/ng-common-libs tokens.
+// CSS custom properties cannot be used in @media conditions (CSS spec limitation),
+// so the token values are captured here as Sass variables and shared across all
+// component stylesheets via stylePreprocessorOptions.includePaths in angular.json.
+$bp-sm: 640px;   // matches --breakpoint-sm
+$bp-md: 768px;   // matches --breakpoint-md
+$bp-lg: 1024px;  // matches --breakpoint-lg

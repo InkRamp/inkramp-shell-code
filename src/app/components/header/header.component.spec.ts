@@ -179,4 +179,24 @@ describe('HeaderComponent', () => {
     component.ngOnDestroy();
     expect(spy).toHaveBeenCalled();
   });
+
+  it('toggleMenu should flip menuOpen', () => {
+    expect(component.menuOpen).toBeFalse();
+    component.toggleMenu();
+    expect(component.menuOpen).toBeTrue();
+    component.toggleMenu();
+    expect(component.menuOpen).toBeFalse();
+  });
+
+  it('closeMenu should set menuOpen to false', () => {
+    component.menuOpen = true;
+    component.closeMenu();
+    expect(component.menuOpen).toBeFalse();
+  });
+
+  it('should reset menuOpen on auth:logout', () => {
+    component.menuOpen = true;
+    logoutSubject.next(null);
+    expect(component.menuOpen).toBeFalse();
+  });
 });

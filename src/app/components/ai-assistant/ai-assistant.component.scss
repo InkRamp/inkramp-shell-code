@@ -1,0 +1,153 @@
+@use 'breakpoints' as *;
+
+// Panel dimensions (desktop default) — component-specific, no token equivalent
+$ai-panel-width: 380px;
+$ai-panel-height: 560px;
+
+// Breakpoints ($bp-sm, $bp-md, $bp-lg) are imported from src/styles/_breakpoints.scss
+// via stylePreprocessorOptions.includePaths in angular.json.
+
+// ── Desktop / tablet: fixed floating widget (bottom-right) ───────────────────
+
+.ai-assistant {
+  position: fixed;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  z-index: var(--z-index-dropdown);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.ai-toggle-btn {
+  width: var(--space-14);
+  height: var(--space-14);
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--bright-blue);
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-2xl);
+  cursor: pointer;
+  box-shadow: var(--shadow-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--duration-normal) var(--easing-ease-in-out),
+              box-shadow var(--duration-normal) var(--easing-ease-in-out);
+
+  &:hover {
+    background: var(--electric-violet);
+    transform: scale(1.08);
+    box-shadow: var(--shadow-2xl);
+  }
+}
+
+// Label is hidden on desktop — the circular button shows only the icon
+.ai-toggle-label {
+  display: none;
+}
+
+.ai-panel {
+  display: none;
+  flex-direction: column;
+  width: $ai-panel-width;
+  height: $ai-panel-height;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-2xl);
+  background: var(--color-bg-surface);
+
+  // Tablet: narrower panel
+  @media (max-width: #{$bp-md}) {
+    width: 320px;
+    height: 480px;
+  }
+
+  &--open {
+    display: flex;
+  }
+}
+
+.ai-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bright-blue);
+  color: var(--color-text-inverse);
+}
+
+.ai-panel__title {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-md);
+}
+
+.ai-panel__close {
+  background: transparent;
+  border: none;
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-md);
+  cursor: pointer;
+  line-height: var(--line-height-none);
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+
+  &:hover {
+    background: rgba(255, 255, 255, var(--opacity-20));
+  }
+}
+
+.ai-panel__iframe {
+  flex: 1;
+  border: none;
+  width: 100%;
+}
+
+// ── Mobile (≤640px): accordion bar at bottom of screen ───────────────────────
+// Instead of a floating overlay that covers the page content, the AI widget
+// becomes a full-width toggle bar pinned to the bottom edge. The panel
+// expands upward (60 vh) so the background remains visible.
+
+@media (max-width: #{$bp-sm}) {
+  .ai-assistant {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    z-index: var(--z-index-sticky);
+  }
+
+  // The panel slots in above the toggle bar when open
+  .ai-panel {
+    width: 100%;
+    height: 60vh;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  }
+
+  // Toggle bar replaces the circular button on mobile
+  .ai-toggle-btn {
+    width: 100%;
+    height: var(--space-12);
+    border-radius: 0;
+    font-size: var(--font-size-sm);
+    gap: var(--space-2);
+    box-shadow: var(--shadow-lg);
+
+    // Disable the scale transform — it looks odd on a full-width bar
+    &:hover {
+      transform: none;
+      box-shadow: var(--shadow-lg);
+    }
+  }
+
+  // Show the label inside the bar so the user knows what to tap
+  .ai-toggle-label {
+    display: inline;
+    font-weight: var(--font-weight-medium);
+  }
+}
+

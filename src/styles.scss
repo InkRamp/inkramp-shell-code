@@ -1,1 +1,19 @@
+@use 'breakpoints' as *;
+
 /* You can add global styles to this file, and also import other style files */
+@import '@opensourcekd/ng-common-libs/styles/tokens.css';
+
+/* Prevent stray horizontal scrollbars from any overflowing child element */
+body {
+  overflow-x: hidden;
+}
+
+/* Shared page layout — desktop padding removed on tablet/mobile */
+.page-container {
+  padding: 2rem;
+
+  @media (max-width: #{$bp-md}) {
+    padding: 0;
+  }
+}
+

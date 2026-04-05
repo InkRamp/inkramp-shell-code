@@ -1,0 +1,31 @@
+@if (isLoggedIn && hasAiAccess && routeAllowsAi) {
+  <div class="ai-assistant">
+    <div class="ai-panel" [class.ai-panel--open]="isOpen" role="dialog" aria-label="AI Assistant">
+      <div class="ai-panel__header">
+        <span class="ai-panel__title">AI Assistant</span>
+        <button class="ai-panel__close" (click)="toggle()" aria-label="Close AI Assistant">✕</button>
+      </div>
+      <iframe
+        #aiIframe
+        class="ai-panel__iframe"
+        [src]="aiUrl"
+        title="AI Assistant"
+        allow="microphone"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+        referrerpolicy="no-referrer"
+        (load)="onIframeLoad(aiIframe)"
+      ></iframe>
+    </div>
+
+    <button
+      class="ai-toggle-btn"
+      (click)="toggle()"
+      [attr.aria-expanded]="isOpen"
+      aria-label="Toggle AI Assistant"
+      title="AI Assistant"
+    >
+      <span class="ai-toggle-icon">🤖</span>
+      <span class="ai-toggle-label">AI Assistant</span>
+    </button>
+  </div>
+}

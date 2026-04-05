@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
+import { AiAssistantComponent } from './components/ai-assistant/ai-assistant.component';
 import { EventBus, AuthService } from '@opensourcekd/ng-common-libs';
 import { OrgRolesTokenPayload, extractUserRoles, getHighestPriorityRoute } from '../configs/mfe';
 
@@ -15,7 +16,7 @@ import { OrgRolesTokenPayload, extractUserRoles, getHighestPriorityRoute } from 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  imports: [RouterOutlet, CommonModule, FormsModule, HeaderComponent, FooterComponent],
+  imports: [RouterOutlet, CommonModule, FormsModule, HeaderComponent, FooterComponent, AiAssistantComponent],
   standalone: true,
   styleUrls: ['./app.component.scss']
 })

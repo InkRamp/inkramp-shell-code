@@ -5,6 +5,8 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app/app.routes';
 import { EventBus, AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs';
 import { bearerTokenInterceptor } from '@org/core-services';
+import { MessageBridgeService } from './app/services/message-bridge.service';
+import { AIBridgeService, AI_BRIDGE_CONFIG } from './app/services/ai-bridge.service';
 
 // Create EventBus instance before bootstrap with 'shell' identifier
 const eventBus = new EventBus({ id: 'shell' });
@@ -46,7 +48,15 @@ export function bootstrap() {
       // Provide AuthService instance
       { provide: AuthService, useValue: authService },
       // Provide APP_CONFIG from opensourcekd library
-      { provide: 'APP_CONFIG', useValue: APP_CONFIG }
+      { provide: 'APP_CONFIG', useValue: APP_CONFIG },
+      // AI Bridge configuration — swap trustedOrigin per environment without touching service code
+      {
+        provide: AI_BRIDGE_CONFIG,
+        useValue: { trustedOrigin: 'https://opensourcekd.github.io', maxPayloadSize: 64_000 }
+      },
+      // Register the concrete bridge implementation against the abstract token.
+      // Components inject MessageBridgeService — they are decoupled from AIBridgeService.
+      { provide: MessageBridgeService, useClass: AIBridgeService }
     ],
   });
 }
