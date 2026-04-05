@@ -1,9 +1,1 @@
-@use 'breakpoints' as *;
 
-.page-container {
-  padding: 2rem;
-
-  @media (max-width: #{$bp-md}) {
-    padding: 0;
-  }
-}
