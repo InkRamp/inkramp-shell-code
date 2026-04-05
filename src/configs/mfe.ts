@@ -99,9 +99,9 @@ export const MFE_CONFIGS: MfeConfig[] = [
         id: 'mfe-ai-analytics',
         name: 'ai-analytics',
         displayName: 'AI Analytics',
-        remoteName: 'aiAnalytics',
+        remoteName: 'mfeAi',
         exposedModule: './Component',
-        url: '', // No remote MFE yet — page renders a built-in placeholder component
+        url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-AI/remoteEntry.js',
         route: 'ai-analytics',
         allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ORG_LEAD, UserRole.SALES_EXECUTIVE],
         priority: 1,
