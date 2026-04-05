@@ -1,4 +1,4 @@
-@if (isLoggedIn && hasAiAccess) {
+@if (isLoggedIn && hasAiAccess && routeAllowsAi) {
   <div class="ai-assistant">
     <div class="ai-panel" [class.ai-panel--open]="isOpen" role="dialog" aria-label="AI Assistant">
       <div class="ai-panel__header">

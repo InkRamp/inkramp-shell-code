@@ -7,6 +7,7 @@ import { SalesPageComponent } from './pages/sales-page/sales-page.component';
 import { ReportsPageComponent } from './pages/reports-page/reports-page.component';
 import { UsersPageComponent } from './pages/users-page/users-page.component';
 import { AuthCallbackComponent } from './auth-callback/auth-callback.component';
+import { AiAnalyticsPageComponent } from './pages/ai-analytics-page/ai-analytics-page.component';
 
 /**
  * Application routes with role-based access control
@@ -40,6 +41,11 @@ export const routes: Routes = [
         path: 'users',
         component: UsersPageComponent,
         canActivate: [adminGuard]
+    },
+    {
+        path: 'ai-analytics',
+        component: AiAnalyticsPageComponent,
+        canActivate: [allRolesGuard]
     },
     { path: '**', redirectTo: '' }
 ];

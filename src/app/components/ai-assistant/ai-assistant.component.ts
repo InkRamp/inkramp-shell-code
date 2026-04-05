@@ -1,10 +1,12 @@
 import { Component, OnInit, OnDestroy, NgZone, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router, NavigationEnd } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 import { AuthService, EventBus, UserInfo } from '@opensourcekd/ng-common-libs';
 import { MessageBridgeService } from '../../services/message-bridge.service';
-import { OrgRolesTokenPayload, extractUserRoles, hasAiAssistantAccess } from '../../../configs/mfe';
+import { MFE_CONFIGS, OrgRolesTokenPayload, extractUserRoles, hasAiAssistantAccess } from '../../../configs/mfe';
 
 const AI_ASSISTANT_URL = 'https://opensourcekd.github.io/all-mfe-builds/mfe-AI/';
 
@@ -28,6 +30,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   isLoggedIn = false;
   hasAiAccess = false;
   isOpen = false;
+  routeAllowsAi = true;
   readonly aiUrl: SafeResourceUrl;
 
   private subscriptions = new Subscription();
@@ -36,12 +39,24 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   private sanitizer = inject(DomSanitizer);
   private ngZone = inject(NgZone);
   private bridge = inject(MessageBridgeService);
+  private router = inject(Router);
 
   constructor() {
     this.aiUrl = this.sanitizer.bypassSecurityTrustResourceUrl(AI_ASSISTANT_URL);
   }
 
   ngOnInit(): void {
+    // Track route changes to honour per-route showAiAssistant config.
+    this.routeAllowsAi = this.checkRouteAllowsAi(this.router.url);
+    this.subscriptions.add(
+      this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe((e) => {
+        this.routeAllowsAi = this.checkRouteAllowsAi((e as NavigationEnd).urlAfterRedirects);
+        if (!this.routeAllowsAi) {
+          this.isOpen = false;
+        }
+      })
+    );
+
     // user$ covers the synchronous initial state (e.g. token already in sessionStorage).
     this.subscriptions.add(
       this.authService.user$.subscribe((user: UserInfo | null) => {
@@ -110,6 +125,13 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   private checkAiAccess(): boolean {
     const token = this.authService.getDecodedToken() as OrgRolesTokenPayload | null;
     return hasAiAssistantAccess(extractUserRoles(token));
+  }
+
+  /** Returns false only when the current route's MFE config explicitly disables the AI assistant. */
+  private checkRouteAllowsAi(url: string): boolean {
+    const segment = url.split('?')[0].replace(/^\//, '');
+    const config = MFE_CONFIGS.find(mfe => mfe.route === segment);
+    return config ? (config.showAiAssistant ?? true) : true;
   }
 }
 

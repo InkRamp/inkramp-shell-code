@@ -1,0 +1,25 @@
+@use 'breakpoints' as *;
+
+.ai-analytics-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-8);
+
+  @media (max-width: #{$bp-md}) {
+    padding: var(--space-5);
+  }
+
+  @media (max-width: #{$bp-sm}) {
+    padding: var(--space-4);
+  }
+
+  h1 {
+    color: var(--gray-900);
+    margin-bottom: var(--space-3);
+  }
+
+  .coming-soon {
+    color: var(--gray-700);
+    font-size: 1.1rem;
+  }
+}
