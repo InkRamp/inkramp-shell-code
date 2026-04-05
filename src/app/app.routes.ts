@@ -1,10 +1,7 @@
 import { Routes } from '@angular/router';
 import { roleGuard, adminGuard, allRolesGuard } from './guards/role.guard';
 import { HomePageComponent } from './pages/home-page/home-page.component';
-import { RulesPageComponent } from './pages/rules-page/rules-page.component';
-import { SalesPageComponent } from './pages/sales-page/sales-page.component';
-import { ReportsPageComponent } from './pages/reports-page/reports-page.component';
-import { UsersPageComponent } from './pages/users-page/users-page.component';
+import { MfePageComponent } from './pages/mfe-page/mfe-page.component';
 import { AuthCallbackComponent } from './auth-callback/auth-callback.component';
 
 /**
@@ -22,23 +19,33 @@ export const routes: Routes = [
     },
     {
         path: 'rules',
-        component: RulesPageComponent,
+        component: MfePageComponent,
+        data: { mfeName: 'crudRules' },
         canActivate: [roleGuard(['super-admin', 'org-admin', 'org-lead'])]
     },
     {
         path: 'sales',
-        component: SalesPageComponent,
+        component: MfePageComponent,
+        data: { mfeName: 'mySales' },
         canActivate: [allRolesGuard]
     },
     {
         path: 'reports',
-        component: ReportsPageComponent,
+        component: MfePageComponent,
+        data: { mfeName: 'myReport' },
         canActivate: [allRolesGuard]
     },
     {
         path: 'users',
-        component: UsersPageComponent,
+        component: MfePageComponent,
+        data: { mfeName: 'usersCrud' },
         canActivate: [adminGuard]
+    },
+    {
+        path: 'ai-analytics',
+        component: MfePageComponent,
+        data: { mfeName: 'mfeAi' },
+        canActivate: [allRolesGuard]
     },
     { path: '**', redirectTo: '' }
 ];
