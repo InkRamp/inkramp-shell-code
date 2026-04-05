@@ -25,6 +25,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   salesExecutives: { id?: string; name?: string }[] = [];
   selectedSalesExecutiveId: string = '';
   canViewOthers: boolean = false;
+  menuOpen = false;
   private subscriptions = new Subscription();
   private authService = inject(AuthService);
   private eventBus = inject(EventBus);
@@ -89,6 +90,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private clearNavState(): void {
     this.currentUser = null;
     this.availableMfes = [];
+    this.menuOpen = false;
   }
 
   /**
@@ -120,6 +122,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   onSalesExecutiveChange(): void {
     console.warn('[HeaderComponent] User selection disabled');
+  }
+
+  toggleMenu(): void {
+    this.menuOpen = !this.menuOpen;
+  }
+
+  closeMenu(): void {
+    this.menuOpen = false;
   }
 
   getOrganizationName(): string {

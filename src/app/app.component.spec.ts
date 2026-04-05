@@ -4,6 +4,7 @@ import { NgZone } from '@angular/core';
 import { Subject } from 'rxjs';
 import { AppComponent } from './app.component';
 import { EventBus, AuthService } from '@opensourcekd/ng-common-libs';
+import { MessageBridgeService } from './services/message-bridge.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -50,7 +51,11 @@ describe('AppComponent', () => {
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
         { provide: AuthService, useValue: authServiceMock },
         { provide: EventBus, useValue: eventBusMock },
-        { provide: Router, useValue: routerMock }
+        { provide: Router, useValue: routerMock },
+        {
+          provide: MessageBridgeService,
+          useValue: jasmine.createSpyObj('MessageBridgeService', ['connect', 'disconnect', 'sendToAi'])
+        }
       ]
     }).compileComponents();
 

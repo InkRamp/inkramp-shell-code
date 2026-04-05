@@ -1,6 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { EventBus } from '@opensourcekd/ng-common-libs';
-import { AIBridgeService, AiMessage } from './ai-bridge.service';
+import { AIBridgeService, AiBridgeConfig, AiMessage, AI_BRIDGE_CONFIG, DEFAULT_AI_BRIDGE_CONFIG } from './ai-bridge.service';
+import { MessageBridgeService } from './message-bridge.service';
+
+const TRUSTED_ORIGIN = 'https://opensourcekd.github.io';
 
 describe('AIBridgeService', () => {
   let service: AIBridgeService;
@@ -16,7 +19,7 @@ describe('AIBridgeService', () => {
     return iframe;
   };
 
-  const dispatchMessage = (data: AiMessage, origin = 'https://opensourcekd.github.io'): void => {
+  const dispatchMessage = (data: AiMessage, origin = TRUSTED_ORIGIN): void => {
     const event = new MessageEvent('message', { data, origin });
     window.dispatchEvent(event);
   };
@@ -27,7 +30,8 @@ describe('AIBridgeService', () => {
     TestBed.configureTestingModule({
       providers: [
         AIBridgeService,
-        { provide: EventBus, useValue: eventBusMock }
+        { provide: EventBus, useValue: eventBusMock },
+        { provide: AI_BRIDGE_CONFIG, useValue: { trustedOrigin: TRUSTED_ORIGIN, maxPayloadSize: 64_000 } as AiBridgeConfig }
       ]
     });
 
@@ -41,6 +45,10 @@ describe('AIBridgeService', () => {
 
   it('should be created', () => {
     expect(service).toBeTruthy();
+  });
+
+  it('should extend MessageBridgeService', () => {
+    expect(service instanceof MessageBridgeService).toBeTrue();
   });
 
   describe('connect / disconnect', () => {
@@ -88,7 +96,7 @@ describe('AIBridgeService', () => {
     it('should ignore messages with a non-string type', () => {
       window.dispatchEvent(new MessageEvent('message', {
         data: { type: 42 },
-        origin: 'https://opensourcekd.github.io'
+        origin: TRUSTED_ORIGIN
       }));
       expect(eventBusMock.emit).not.toHaveBeenCalled();
     });
@@ -103,6 +111,21 @@ describe('AIBridgeService', () => {
       dispatchMessage({ type: 'ai:message', payload: {} });
       expect(eventBusMock.emit).not.toHaveBeenCalled();
     });
+
+    it('should discard messages whose payload exceeds maxPayloadSize', () => {
+      const warnSpy = spyOn(console, 'warn');
+      // Create a payload string that exceeds the 64 000 char limit
+      const oversizedPayload = { data: 'x'.repeat(65_000) };
+      dispatchMessage({ type: 'ai:message', payload: oversizedPayload });
+      expect(eventBusMock.emit).not.toHaveBeenCalled();
+      expect(warnSpy).toHaveBeenCalledWith(jasmine.stringContaining('Discarding'));
+    });
+
+    it('should forward messages whose payload is within the size limit', () => {
+      const okPayload = { data: 'x'.repeat(100) };
+      dispatchMessage({ type: 'ai:message', payload: okPayload });
+      expect(eventBusMock.emit).toHaveBeenCalledWith('ai:message', okPayload);
+    });
   });
 
   describe('sendToAi (EventBus → iframe)', () => {
@@ -111,13 +134,51 @@ describe('AIBridgeService', () => {
       const msg: AiMessage = { type: 'ai:context', payload: { route: '/rules' } };
       service.sendToAi(msg);
       const spy = mockIframe.contentWindow!.postMessage as jasmine.Spy;
-      expect(spy).toHaveBeenCalledWith(msg, 'https://opensourcekd.github.io');
+      expect(spy).toHaveBeenCalledWith(msg, TRUSTED_ORIGIN);
     });
 
     it('should warn and not throw when iframe is not connected', () => {
       const warnSpy = spyOn(console, 'warn');
       service.sendToAi({ type: 'ai:context' });
       expect(warnSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('AI_BRIDGE_CONFIG injection token', () => {
+    it('should use the injected trustedOrigin when validating messages', () => {
+      // service is already configured with TRUSTED_ORIGIN — messages from another origin are rejected
+      service.connect(mockIframe);
+      window.dispatchEvent(new MessageEvent('message', {
+        data: { type: 'ai:message', payload: {} },
+        origin: 'https://different-origin.com'
+      }));
+      expect(eventBusMock.emit).not.toHaveBeenCalled();
+    });
+
+    it('should use DEFAULT_AI_BRIDGE_CONFIG when no token is provided', () => {
+      // Build a standalone service instance without providing AI_BRIDGE_CONFIG
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          AIBridgeService,
+          { provide: EventBus, useValue: eventBusMock }
+        ]
+      });
+      const fallbackService = TestBed.inject(AIBridgeService);
+      expect(fallbackService).toBeTruthy();
+      // Sanity-check: verify the default trusted origin rejects an untrusted sender
+      fallbackService.connect(mockIframe);
+      window.dispatchEvent(new MessageEvent('message', {
+        data: { type: 'ai:message', payload: {} },
+        origin: 'https://evil.com'
+      }));
+      expect(eventBusMock.emit).not.toHaveBeenCalled();
+      fallbackService.disconnect();
+    });
+
+    it('should expose DEFAULT_AI_BRIDGE_CONFIG with expected shape', () => {
+      expect(DEFAULT_AI_BRIDGE_CONFIG.trustedOrigin).toBe('https://opensourcekd.github.io');
+      expect(DEFAULT_AI_BRIDGE_CONFIG.maxPayloadSize).toBe(64_000);
     });
   });
 

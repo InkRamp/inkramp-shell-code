@@ -1,59 +1,105 @@
+@use 'breakpoints' as *;
+
+// Breakpoints ($bp-sm, $bp-md, $bp-lg) are imported from src/styles/_breakpoints.scss
+// via stylePreprocessorOptions.includePaths in angular.json.
+
 .app-header {
-  background: white;
-  padding: 1rem 2rem;
+  background: var(--color-bg-surface);
+  padding: var(--space-3) var(--space-8);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-md);
+  gap: var(--space-4);
+  overflow: hidden; // clip any child that would create a horizontal scrollbar
+
+  @media (max-width: #{$bp-md}) {
+    padding: var(--space-3) var(--space-5);
+  }
+
+  @media (max-width: #{$bp-sm}) {
+    padding: var(--space-2-5) var(--space-4);
+    gap: var(--space-2);
+  }
 }
 
 .header-left {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--space-1);
+  min-width: 0; // allow text truncation
 }
 
 .app-title {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: var(--font-size-2xl);
   color: var(--gray-900);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  @media (max-width: #{$bp-md}) {
+    font-size: var(--font-size-lg);
+  }
+
+  @media (max-width: #{$bp-sm}) {
+    font-size: var(--font-size-md);
+  }
 }
 
 .org-display {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--bright-blue);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
 }
 
 .header-center {
   flex: 2;
+  min-width: 0; // allow the flex item to shrink below its content size
   display: flex;
   justify-content: center;
+
+  // Hide the user-selector on mobile — it causes overflow
+  @media (max-width: #{$bp-sm}) {
+    display: none;
+  }
 }
 
 .user-selector {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
+
+  @media (max-width: #{$bp-md}) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+  }
 }
 
 .user-selector label {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--gray-700);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
 }
 
 .user-selector select {
-  padding: 0.5rem 1rem;
+  padding: var(--space-1-5) var(--space-3);
   border: 1px solid var(--gray-400);
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  background: white;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  background: var(--color-bg-surface);
   cursor: pointer;
-  min-width: 200px;
+  min-width: 160px;
+  max-width: 100%;
+
+  @media (max-width: #{$bp-md}) {
+    min-width: 120px;
+  }
 }
 
 .visually-hidden {
@@ -69,67 +115,135 @@
 }
 
 .header-right {
-  flex: 1;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 1rem;
+  gap: var(--space-3);
+  flex-shrink: 0;
 }
 
 .user-info {
   color: var(--gray-700);
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+
+  // Hide name/role text on mobile to save space
+  @media (max-width: #{$bp-sm}) {
+    display: none;
+  }
 }
 
 .btn-logout,
 .btn-login {
   background: var(--hot-red);
-  color: white;
+  color: var(--color-text-inverse);
   border: none;
-  padding: 0.5rem 1.5rem;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  font-weight: 500;
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
-  transition: background 0.2s ease;
-}
+  transition: background-color var(--duration-normal) var(--easing-ease-in-out);
+  white-space: nowrap;
 
-.btn-logout:hover,
-.btn-login:hover {
-  background: var(--orange-red);
+  @media (max-width: #{$bp-sm}) {
+    padding: var(--space-2) var(--space-3-5);
+  }
+
+  &:hover {
+    background: var(--orange-red);
+  }
 }
 
 .btn-login {
   background: var(--bright-blue);
+
+  &:hover {
+    background: var(--electric-violet);
+  }
 }
 
-.btn-login:hover {
-  background: var(--electric-violet);
+// Hamburger menu button — hidden on tablet/desktop, visible on mobile
+.btn-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-1-5);
+  background: transparent;
+  border: 1px solid var(--gray-400);
+  border-radius: var(--radius-md);
+  padding: var(--space-1-5) var(--space-2);
+  cursor: pointer;
+  flex-shrink: 0;
+
+  @media (max-width: #{$bp-sm}) {
+    display: flex;
+  }
 }
+
+.burger-bar {
+  display: block;
+  width: var(--space-5);
+  height: 2px;
+  background: var(--gray-900);
+  border-radius: var(--radius-sm);
+  transition: background-color var(--duration-normal) var(--easing-ease-in-out);
+}
+
+.btn-hamburger:hover .burger-bar {
+  background: var(--bright-blue);
+}
+
+// ── Navigation bar ────────────────────────────────────────────────────────────
 
 .app-nav {
   background: var(--gray-900);
   padding: 0;
   display: flex;
+  flex-wrap: wrap; // allow wrapping on narrow tablet before hamburger kicks in
   gap: 0;
+  overflow-x: hidden; // prevent any individual link from creating a horizontal scrollbar
+
+  // On mobile: hidden by default, revealed via .app-nav--open
+  @media (max-width: #{$bp-sm}) {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    display: none;
+
+    &--open {
+      display: flex;
+    }
+  }
 }
 
 .nav-link {
-  color: white;
+  color: var(--color-text-inverse);
   text-decoration: none;
-  padding: 1rem 1.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: background 0.2s ease;
+  padding: var(--space-3-5) var(--space-5);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  transition: background-color var(--duration-normal) var(--easing-ease-in-out);
   border-bottom: 3px solid transparent;
-}
+  white-space: nowrap;
 
-.nav-link:hover {
-  background: var(--gray-700);
-}
+  @media (max-width: #{$bp-sm}) {
+    padding: var(--space-3-5) var(--space-4);
+    border-bottom: none;
+    border-left: 3px solid transparent;
+  }
 
-.nav-link.active {
-  background: var(--bright-blue);
-  border-bottom-color: var(--electric-violet);
+  &:hover {
+    background: var(--gray-700);
+  }
+
+  &.active {
+    background: var(--bright-blue);
+    border-bottom-color: var(--electric-violet);
+
+    @media (max-width: #{$bp-sm}) {
+      border-bottom-color: transparent;
+      border-left-color: var(--electric-violet);
+    }
+  }
 }

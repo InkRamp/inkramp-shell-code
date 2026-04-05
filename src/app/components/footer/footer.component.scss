@@ -1,12 +1,22 @@
+@use 'breakpoints' as *;
+
+// Breakpoints ($bp-sm, $bp-md, $bp-lg) are imported from src/styles/_breakpoints.scss
+// via stylePreprocessorOptions.includePaths in angular.json.
+
 .app-footer {
   background: var(--gray-900);
-  color: white;
-  padding: 1rem 2rem;
+  color: var(--color-text-inverse);
+  padding: var(--space-4) var(--space-8);
   margin-top: auto;
   text-align: center;
 
+  @media (max-width: #{$bp-sm}) {
+    padding: var(--space-3) var(--space-4);
+  }
+
   .copyright {
     margin: 0;
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
+    word-break: break-word;
   }
 }

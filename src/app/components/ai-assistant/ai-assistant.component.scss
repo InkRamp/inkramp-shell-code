@@ -1,48 +1,51 @@
-// Panel dimensions (desktop default)
+@use 'breakpoints' as *;
+
+// Panel dimensions (desktop default) — component-specific, no token equivalent
 $ai-panel-width: 380px;
 $ai-panel-height: 560px;
 
-// Breakpoints (from design tokens)
-$bp-sm: 480px;
-$bp-md: 768px;
+// Breakpoints ($bp-sm, $bp-md, $bp-lg) are imported from src/styles/_breakpoints.scss
+// via stylePreprocessorOptions.includePaths in angular.json.
+
+// ── Desktop / tablet: fixed floating widget (bottom-right) ───────────────────
 
 .ai-assistant {
   position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
-  z-index: 1000;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  z-index: var(--z-index-dropdown);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.75rem;
-
-  // Mobile: hug the edges
-  @media (max-width: #{$bp-sm}) {
-    bottom: 1rem;
-    right: 1rem;
-  }
+  gap: var(--space-3);
 }
 
 .ai-toggle-btn {
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: 50%;
+  width: var(--space-14);
+  height: var(--space-14);
+  border-radius: var(--radius-full);
   border: none;
   background: var(--bright-blue);
-  color: white;
-  font-size: 1.5rem;
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-2xl);
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-xl);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform var(--duration-normal) var(--easing-ease-in-out),
+              box-shadow var(--duration-normal) var(--easing-ease-in-out);
 
   &:hover {
     background: var(--electric-violet);
     transform: scale(1.08);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-2xl);
   }
+}
+
+// Label is hidden on desktop — the circular button shows only the icon
+.ai-toggle-label {
+  display: none;
 }
 
 .ai-panel {
@@ -50,22 +53,15 @@ $bp-md: 768px;
   flex-direction: column;
   width: $ai-panel-width;
   height: $ai-panel-height;
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  background: white;
+  box-shadow: var(--shadow-2xl);
+  background: var(--color-bg-surface);
 
   // Tablet: narrower panel
   @media (max-width: #{$bp-md}) {
     width: 320px;
     height: 480px;
-  }
-
-  // Mobile: full-width panel, fixed height
-  @media (max-width: #{$bp-sm}) {
-    width: calc(100vw - 2rem);
-    height: 420px;
-    border-radius: 8px;
   }
 
   &--open {
@@ -77,28 +73,28 @@ $bp-md: 768px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1rem;
+  padding: var(--space-3) var(--space-4);
   background: var(--bright-blue);
-  color: white;
+  color: var(--color-text-inverse);
 }
 
 .ai-panel__title {
-  font-weight: 600;
-  font-size: 1rem;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-md);
 }
 
 .ai-panel__close {
   background: transparent;
   border: none;
-  color: white;
-  font-size: 1rem;
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-md);
   cursor: pointer;
-  line-height: 1;
-  padding: 0.25rem;
-  border-radius: 4px;
+  line-height: var(--line-height-none);
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
 
   &:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, var(--opacity-20));
   }
 }
 
@@ -107,3 +103,51 @@ $bp-md: 768px;
   border: none;
   width: 100%;
 }
+
+// ── Mobile (≤640px): accordion bar at bottom of screen ───────────────────────
+// Instead of a floating overlay that covers the page content, the AI widget
+// becomes a full-width toggle bar pinned to the bottom edge. The panel
+// expands upward (60 vh) so the background remains visible.
+
+@media (max-width: #{$bp-sm}) {
+  .ai-assistant {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    z-index: var(--z-index-sticky);
+  }
+
+  // The panel slots in above the toggle bar when open
+  .ai-panel {
+    width: 100%;
+    height: 60vh;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  }
+
+  // Toggle bar replaces the circular button on mobile
+  .ai-toggle-btn {
+    width: 100%;
+    height: var(--space-12);
+    border-radius: 0;
+    font-size: var(--font-size-sm);
+    gap: var(--space-2);
+    box-shadow: var(--shadow-lg);
+
+    // Disable the scale transform — it looks odd on a full-width bar
+    &:hover {
+      transform: none;
+      box-shadow: var(--shadow-lg);
+    }
+  }
+
+  // Show the label inside the bar so the user knows what to tap
+  .ai-toggle-label {
+    display: inline;
+    font-weight: var(--font-weight-medium);
+  }
+}
+

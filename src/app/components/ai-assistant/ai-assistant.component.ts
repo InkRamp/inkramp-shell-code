@@ -3,17 +3,18 @@ import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Subscription } from 'rxjs';
 import { AuthService, EventBus, UserInfo } from '@opensourcekd/ng-common-libs';
-import { AIBridgeService } from '../../services/ai-bridge.service';
+import { MessageBridgeService } from '../../services/message-bridge.service';
+import { OrgRolesTokenPayload, extractUserRoles, hasAiAssistantAccess } from '../../../configs/mfe';
 
 const AI_ASSISTANT_URL = 'https://opensourcekd.github.io/all-mfe-builds/mfe-AI/';
 
 /**
  * Floating AI assistant widget.
  * Renders a toggle button and an iframe pointing to the AI MFE.
- * Visible only when the user is authenticated.
+ * Visible only when the user is authenticated AND holds a role of org-lead or above.
  *
  * Communication between the iframe and the rest of the app is handled by
- * AIBridgeService — MFEs subscribe to EventBus events and are unaware of
+ * MessageBridgeService — MFEs subscribe to EventBus events and are unaware of
  * the bridge or the iframe.
  */
 @Component({
@@ -25,6 +26,7 @@ const AI_ASSISTANT_URL = 'https://opensourcekd.github.io/all-mfe-builds/mfe-AI/'
 })
 export class AiAssistantComponent implements OnInit, OnDestroy {
   isLoggedIn = false;
+  hasAiAccess = false;
   isOpen = false;
   readonly aiUrl: SafeResourceUrl;
 
@@ -33,27 +35,31 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
   private eventBus = inject(EventBus);
   private sanitizer = inject(DomSanitizer);
   private ngZone = inject(NgZone);
-  private aiBridge = inject(AIBridgeService);
+  private bridge = inject(MessageBridgeService);
 
   constructor() {
     this.aiUrl = this.sanitizer.bypassSecurityTrustResourceUrl(AI_ASSISTANT_URL);
   }
 
   ngOnInit(): void {
+    // user$ covers the synchronous initial state (e.g. token already in sessionStorage).
     this.subscriptions.add(
       this.authService.user$.subscribe((user: UserInfo | null) => {
         this.isLoggedIn = !!user;
-        if (!user) {
+        this.hasAiAccess = user ? this.checkAiAccess() : false;
+        if (!this.isLoggedIn || !this.hasAiAccess) {
           this.isOpen = false;
-          this.aiBridge.disconnect();
+          this.bridge.disconnect();
         }
       })
     );
 
+    // EventBus events cover out-of-zone changes (OAuth callback, logout, etc.).
     this.subscriptions.add(
       this.eventBus.on('auth:login_success').subscribe(() => {
         this.ngZone.run(() => {
           this.isLoggedIn = true;
+          this.hasAiAccess = this.checkAiAccess();
         });
       })
     );
@@ -61,24 +67,27 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.eventBus.on('auth:logout').subscribe(() => {
         this.isLoggedIn = false;
+        this.hasAiAccess = false;
         this.isOpen = false;
-        this.aiBridge.disconnect();
+        this.bridge.disconnect();
       })
     );
 
     this.subscriptions.add(
       this.eventBus.on('auth:login_failure').subscribe(() => {
         this.isLoggedIn = false;
+        this.hasAiAccess = false;
         this.isOpen = false;
-        this.aiBridge.disconnect();
+        this.bridge.disconnect();
       })
     );
 
     this.subscriptions.add(
       this.eventBus.on('auth:session_expired').subscribe(() => {
         this.isLoggedIn = false;
+        this.hasAiAccess = false;
         this.isOpen = false;
-        this.aiBridge.disconnect();
+        this.bridge.disconnect();
       })
     );
   }
@@ -87,14 +96,20 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
     this.isOpen = !this.isOpen;
   }
 
-  /** Called when the iframe finishes loading — connects the AIBridge. */
+  /** Called when the iframe finishes loading — connects the MessageBridge. */
   onIframeLoad(iframe: HTMLIFrameElement): void {
-    this.aiBridge.connect(iframe);
+    this.bridge.connect(iframe);
   }
 
   ngOnDestroy(): void {
-    this.aiBridge.disconnect();
+    this.bridge.disconnect();
     this.subscriptions.unsubscribe();
+  }
+
+  /** Returns true when the current token grants AI assistant access (org-lead+). */
+  private checkAiAccess(): boolean {
+    const token = this.authService.getDecodedToken() as OrgRolesTokenPayload | null;
+    return hasAiAssistantAccess(extractUserRoles(token));
   }
 }
 
