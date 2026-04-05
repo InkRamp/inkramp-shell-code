@@ -8,7 +8,7 @@ import { AuthService, EventBus, UserInfo } from '@opensourcekd/ng-common-libs';
 import { MessageBridgeService } from '../../services/message-bridge.service';
 import { MFE_CONFIGS, OrgRolesTokenPayload, extractUserRoles, hasAiAssistantAccess } from '../../../configs/mfe';
 
-const AI_ASSISTANT_URL = 'https://opensourcekd.github.io/all-mfe-builds/mfe-AI/';
+const AI_ASSISTANT_URL = 'https://opensourcekd.github.io/all-mfe-builds/mfe-AI-CHATBOT/';
 
 /**
  * Floating AI assistant widget.
