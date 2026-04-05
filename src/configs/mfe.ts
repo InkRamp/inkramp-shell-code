@@ -101,7 +101,7 @@ export const MFE_CONFIGS: MfeConfig[] = [
         displayName: 'AI Analytics',
         remoteName: 'aiAnalytics',
         exposedModule: './Component',
-        url: '',
+        url: '', // No remote MFE yet — page renders a built-in placeholder component
         route: 'ai-analytics',
         allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ORG_LEAD, UserRole.SALES_EXECUTIVE],
         priority: 1,
