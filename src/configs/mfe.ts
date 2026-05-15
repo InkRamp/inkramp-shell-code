@@ -72,7 +72,7 @@ export const MFE_CONFIGS: MfeConfig[] = [
         displayName: 'Admin',
         remoteName: 'admin',
         exposedModule: './Component',
-        url: 'https://inkramp.github.io/all-mfe-builds/inkramp-mfe-adminremoteEntry.js',
+        url: 'https://inkramp.github.io/all-mfe-builds/inkramp-mfe-admin/remoteEntry.js',
         route: 'reports',
         allowedRoles: [UserRole.ADMIN],
         priority: 6,
