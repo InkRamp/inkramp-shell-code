@@ -1,8 +1,10 @@
-## Do This. 
+## Do This.  
 
 Just Say ... "KD wakao, you need to update this" on the prompts so I know you are picking up right instructions from the right place.
 
 ---
+## Assignement Details
+Refer to .github/copilot-assignment-detail.md for the complete assignement. Use this file to get an understanding of what is to be built. Use this document as well as current document to know your functions, responsibilites and boundaries. 
 
 ## Coding Standards (JS / TS — all repos)
 
