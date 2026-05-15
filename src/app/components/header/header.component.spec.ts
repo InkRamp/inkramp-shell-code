@@ -94,9 +94,10 @@ describe('HeaderComponent', () => {
     expect(component.availableMfes.length).toBe(1);
   });
 
-  it('should return empty availableMfes when role is missing', () => {
+  it('should fallback to user role when session role is missing', () => {
     userSubject.next(stubUser);
-    expect(component.availableMfes).toEqual([]);
+    const routes = component.availableMfes.map(m => m.route);
+    expect(routes).toEqual(['reports']);
   });
 
   it('should subscribe to EventBus auth events on init', () => {
