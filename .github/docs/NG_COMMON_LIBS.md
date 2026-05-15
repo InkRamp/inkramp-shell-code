@@ -52,7 +52,7 @@ import { EventBusService } from '@opensourcekd/ng-common-libs/mfe';
 - **Purpose**: OAuth2/OIDC authentication via Auth0
 - **Storage**: sessionStorage (NOT localStorage)
 - **Features**: login, logout, token refresh, session management
-- **Reusability**: High - needed in all OpenSourceKD Angular applications
+- **Reusability**: High - needed in all InkRamp Angular applications
 
 ### 2. RoleService
 - **Purpose**: Role-Based Access Control (RBAC)
@@ -152,7 +152,7 @@ Follow Semantic Versioning (SemVer):
 
 ## Related Resources
 
-- **Project Repository**: OpensourceKD/i17e-code
+- **Project Repository**: InkRamp/shell-code
 - **Current Location**: `src/_temp-shared/`
 - **Documentation**: `.github/docs/ARCHITECTURE.md`
 - **Migration Plan**: `src/_temp-shared/README.md`

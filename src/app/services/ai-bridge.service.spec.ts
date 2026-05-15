@@ -3,7 +3,7 @@ import { EventBus } from '@opensourcekd/ng-common-libs';
 import { AIBridgeService, AiBridgeConfig, AiMessage, AI_BRIDGE_CONFIG, DEFAULT_AI_BRIDGE_CONFIG } from './ai-bridge.service';
 import { MessageBridgeService } from './message-bridge.service';
 
-const TRUSTED_ORIGIN = 'https://opensourcekd.github.io';
+const TRUSTED_ORIGIN = 'https://InkRamp.github.io';
 
 describe('AIBridgeService', () => {
   let service: AIBridgeService;
@@ -177,7 +177,7 @@ describe('AIBridgeService', () => {
     });
 
     it('should expose DEFAULT_AI_BRIDGE_CONFIG with expected shape', () => {
-      expect(DEFAULT_AI_BRIDGE_CONFIG.trustedOrigin).toBe('https://opensourcekd.github.io');
+      expect(DEFAULT_AI_BRIDGE_CONFIG.trustedOrigin).toBe('https://InkRamp.github.io');
       expect(DEFAULT_AI_BRIDGE_CONFIG.maxPayloadSize).toBe(64_000);
     });
   });

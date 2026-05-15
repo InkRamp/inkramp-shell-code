@@ -18,8 +18,8 @@ const authService = new AuthService(
     domain: APP_CONFIG.auth0Domain,
     clientId: APP_CONFIG.auth0ClientId,
     audience: 'https://something', //APP_CONFIG.apiUrl,
-    redirectUri: `${window.location.origin}/i17e`,
-    logoutUri: `${window.location.origin}/i17e`,
+    redirectUri: `${window.location.origin}/InkRamp`,
+    logoutUri: `${window.location.origin}/InkRamp`,
     scope: 'openid profile email'
   },
   eventBus,
@@ -47,12 +47,12 @@ export function bootstrap() {
       { provide: EventBus, useValue: eventBus },
       // Provide AuthService instance
       { provide: AuthService, useValue: authService },
-      // Provide APP_CONFIG from opensourcekd library
+      // Provide APP_CONFIG from InkRamp library
       { provide: 'APP_CONFIG', useValue: APP_CONFIG },
       // AI Bridge configuration — swap trustedOrigin per environment without touching service code
       {
         provide: AI_BRIDGE_CONFIG,
-        useValue: { trustedOrigin: 'https://opensourcekd.github.io', maxPayloadSize: 64_000 }
+        useValue: { trustedOrigin: 'https://InkRamp.github.io', maxPayloadSize: 64_000 }
       },
       // Register the concrete bridge implementation against the abstract token.
       // Components inject MessageBridgeService — they are decoupled from AIBridgeService.

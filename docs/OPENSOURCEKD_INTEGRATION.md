@@ -1,10 +1,10 @@
-# OpenSourceKD Library Integration (v2.0.7)
+# InkRamp Library Integration (v2.0.7)
 
 This document explains how the application consumes the `@opensourcekd/ng-common-libs` library (v2.0.7) with pure TypeScript services.
 
 ## Overview
 
-The application uses framework-agnostic services from the opensourcekd library, configured and provided at bootstrap time using the `useValue` pattern.
+The application uses framework-agnostic services from the InkRamp library, configured and provided at bootstrap time using the `useValue` pattern.
 
 ## Library Version
 
@@ -252,7 +252,7 @@ The AuthService uses configurable storage (sessionStorage by default):
 
 ## Migration Notes
 
-- The EventBusService now wraps the opensourcekd EventBus (v2.0.7)
+- The EventBusService now wraps the InkRamp EventBus (v2.0.7)
 - AuthService replaces custom Auth0 integration
 - APP_CONFIG provides centralized access to configuration
 - All services use sessionStorage for security

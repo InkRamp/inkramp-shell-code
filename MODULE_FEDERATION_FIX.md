@@ -150,7 +150,7 @@ NPM package provides generic utilities:
 
 - `webpack.config.js` - Module Federation configuration
 - `package.json` - Dependencies (npm package NOT added to avoid conflict)
-- `tsconfig.json` - Path mappings that currently redirect @opensourcekd namespace
+- `tsconfig.json` - Path mappings that currently redirect @InkRamp namespace
 - `src/_temp-shared/` - Current local services
 - `MIGRATION_TEMP_SHARED.md` - Migration documentation
 

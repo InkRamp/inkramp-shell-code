@@ -107,13 +107,13 @@ describe('AppComponent', () => {
 
   it('should navigate to first available route when returnTo is absent on auth:login_success', async () => {
     authServiceMock.getDecodedToken.and.returnValue({
-      org_and_roles: { hdfc: ['super-admin'] }
+      org_and_roles: { hdfc: ['buyer'] }
     });
     await component.ngOnInit();
     loginSuccessSubject.next({});
 
-    // highest-priority MFE for super-admin is 'rules' (priority 8)
-    expect(routerMock.navigate).toHaveBeenCalledWith(['/rules'], { replaceUrl: true });
+    // highest-priority MFE for buyer is 'buyer' route (priority 8)
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/buyer'], { replaceUrl: true });
   });
 
   it('should navigate to / inside ngZone on auth:logout', async () => {

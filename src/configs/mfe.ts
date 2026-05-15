@@ -1,14 +1,12 @@
 import { LoadRemoteModuleScriptOptions } from "@angular-architects/module-federation";
 
 /**
- * User roles in descending order of privilege
- * Duplicated here to avoid circular dependency and eager module consumption
+ * User roles — one role per MFE (1:1 mapping)
  */
 export enum UserRole {
-  SUPER_ADMIN = 'super-admin',
-  ORG_ADMIN = 'org-admin',
-  ORG_LEAD = 'org-lead',
-  SALES_EXECUTIVE = 'sales-executive'
+  ADMIN = 'admin',
+  BUYER = 'buyer',
+  SUPPLIER = 'supplier'
 }
 
 /**
@@ -23,7 +21,7 @@ export interface MfeConfig {
   exposedModule: string;
   url: string;
   route: string;
-  allowedRoles: UserRole[];
+  allowedRoles: string[];
   priority: number; // Higher number = higher priority (load first)
   icon?: string;
   showAiAssistant?: boolean; // When false, hides the AI assistant widget on this route (default: true)
@@ -42,71 +40,44 @@ export interface InterfaceMfeUrl extends LoadRemoteModuleScriptOptions{
 /**
  * MFE configurations with role-based access and priority loading
  * Priority: Higher number = higher priority (loaded first)
- * - 10: Critical (load immediately)
- * - 5-9: High (preload on login)
- * - 1-4: Normal (load on demand)
  */
 export const MFE_CONFIGS: MfeConfig[] = [
     {
-        id: 'mfe-crud-rules',
-        name: 'crud-rules',
-        displayName: 'Manage Incentive Rules',
-        remoteName: 'crudRules',
+        id: 'mfe-buyer',
+        name: 'buyer',
+        displayName: 'Buy Products',
+        remoteName: 'buyer',
         exposedModule: './Component',
-        url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-CRUD_RULES/remoteEntry.js',
-        route: 'rules',
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ORG_LEAD],
+        url: 'https://inkramp.github.io/all-mfe-builds/inkramp-mfe-buyer/remoteEntry.js',
+        route: 'buyer',
+        allowedRoles: [UserRole.BUYER],
         priority: 8,
         icon: 'settings'
     },
     {
-        id: 'mfe-my-sales',
-        name: 'my-sales',
-        displayName: 'My Sales History',
-        remoteName: 'mySales',
+        id: 'mfe-supplier',
+        name: 'supplier',
+        displayName: 'Suppliers',
+        remoteName: 'supplier',
         exposedModule: './Component',
-        url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-MY_SALES/remoteEntry.js',
+        url: 'https://inkramp.github.io/all-mfe-builds/inkramp-mfe-supplier/remoteEntry.js',
         route: 'sales',
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ORG_LEAD, UserRole.SALES_EXECUTIVE],
+        allowedRoles: [UserRole.SUPPLIER],
         priority: 7,
         icon: 'list'
     },
     {
-        id: 'mfe-my-report',
-        name: 'my-report',
-        displayName: 'My Incentive Reports',
-        remoteName: 'myReport',
+        id: 'mfe-admin',
+        name: 'admin',
+        displayName: 'Admin',
+        remoteName: 'admin',
         exposedModule: './Component',
-        url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-MY_REPORT/remoteEntry.js',
+        url: 'https://inkramp.github.io/all-mfe-builds/inkramp-mfe-adminremoteEntry.js',
         route: 'reports',
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ORG_LEAD, UserRole.SALES_EXECUTIVE],
+        allowedRoles: [UserRole.ADMIN],
         priority: 6,
         icon: 'chart'
     },
-    {
-        id: 'mfe-users-crud',
-        name: 'users-crud',
-        displayName: 'User Management',
-        remoteName: 'usersCrud',
-        exposedModule: './Component',
-        url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-USERS_CRUD/remoteEntry.js',
-        route: 'users',
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN],
-        priority: 7,
-        icon: 'users'
-    },
-    {
-        id: 'mfe-ai-analytics',
-        name: 'ai-analytics',
-        displayName: 'AI Analytics',
-        remoteName: 'mfeAi',
-        exposedModule: './Component',
-        url: 'https://opensourcekd.github.io/all-mfe-builds/mfe-AI/remoteEntry.js',
-        route: 'ai-analytics',
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ORG_LEAD, UserRole.SALES_EXECUTIVE],
-        priority: 1,
-        icon: 'analytics'
-    }
 ];
 
 /**
@@ -148,18 +119,17 @@ export function getHighestPriorityRoute(userRoles: string[]): string | null {
 }
 
 /**
- * Roles that grant access to the AI assistant (org-lead and above).
- * Sales executives do not have access to the AI assistant panel.
+ * Roles that grant access to the AI assistant (all authenticated roles).
  */
 export const AI_ASSISTANT_ROLES: UserRole[] = [
-  UserRole.SUPER_ADMIN,
-  UserRole.ORG_ADMIN,
-  UserRole.ORG_LEAD,
+  UserRole.ADMIN,
+  UserRole.BUYER,
+  UserRole.SUPPLIER,
 ];
 
 /**
  * Pure function: returns true when the user holds at least one role that
- * grants access to the AI assistant (org-lead and above).
+ * grants access to the AI assistant.
  */
 export function hasAiAssistantAccess(userRoles: string[]): boolean {
   const roleSet = new Set(userRoles);

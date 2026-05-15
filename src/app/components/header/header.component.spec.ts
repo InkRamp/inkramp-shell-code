@@ -16,7 +16,7 @@ describe('HeaderComponent', () => {
   let loginFailureSubject: Subject<unknown>;
   let sessionExpiredSubject: Subject<unknown>;
 
-  const stubUser: UserInfo = { sub: 'u1', email: 'test@test.com', name: 'Test', role: 'org-admin' };
+  const stubUser: UserInfo = { sub: 'u1', email: 'test@test.com', name: 'Test', role: 'admin' };
 
   const mockToken = (orgAndRoles: Record<string, string[]>) => {
     const token: OrgRolesTokenPayload = { org_and_roles: orgAndRoles };
@@ -75,43 +75,28 @@ describe('HeaderComponent', () => {
     expect(component.availableMfes).toEqual([]);
   });
 
-  it('should show all 4 MFEs for super-admin', () => {
-    mockToken({ hdfc: [UserRole.SUPER_ADMIN] });
-    userSubject.next(stubUser);
-    expect(component.availableMfes.length).toBe(4);
-  });
-
-  it('should show users-crud, crud-rules, my-sales, my-report for org-admin', () => {
-    mockToken({ hdfc: [UserRole.ORG_ADMIN] });
+  it('should show only the admin MFE for admin role', () => {
+    mockToken({ hdfc: [UserRole.ADMIN] });
     userSubject.next(stubUser);
     const ids = component.availableMfes.map(m => m.id);
-    expect(ids).toContain('mfe-users-crud');
-    expect(ids).toContain('mfe-crud-rules');
-    expect(ids).toContain('mfe-my-sales');
-    expect(ids).toContain('mfe-my-report');
-    expect(component.availableMfes.length).toBe(4);
+    expect(ids).toContain('mfe-admin');
+    expect(component.availableMfes.length).toBe(1);
   });
 
-  it('should show crud-rules, my-sales, my-report but NOT users-crud for org-lead', () => {
-    mockToken({ hdfc: [UserRole.ORG_LEAD] });
+  it('should show only the buyer MFE for buyer role', () => {
+    mockToken({ hdfc: [UserRole.BUYER] });
     userSubject.next(stubUser);
     const ids = component.availableMfes.map(m => m.id);
-    expect(ids).not.toContain('mfe-users-crud');
-    expect(ids).toContain('mfe-crud-rules');
-    expect(ids).toContain('mfe-my-sales');
-    expect(ids).toContain('mfe-my-report');
-    expect(component.availableMfes.length).toBe(3);
+    expect(ids).toContain('mfe-buyer');
+    expect(component.availableMfes.length).toBe(1);
   });
 
-  it('should show only my-sales and my-report for sales-executive', () => {
-    mockToken({ hdfc: [UserRole.SALES_EXECUTIVE] });
+  it('should show only the supplier MFE for supplier role', () => {
+    mockToken({ hdfc: [UserRole.SUPPLIER] });
     userSubject.next(stubUser);
     const ids = component.availableMfes.map(m => m.id);
-    expect(ids).not.toContain('mfe-users-crud');
-    expect(ids).not.toContain('mfe-crud-rules');
-    expect(ids).toContain('mfe-my-sales');
-    expect(ids).toContain('mfe-my-report');
-    expect(component.availableMfes.length).toBe(2);
+    expect(ids).toContain('mfe-supplier');
+    expect(component.availableMfes.length).toBe(1);
   });
 
   it('should return empty availableMfes when token has no org_and_roles', () => {
@@ -121,7 +106,7 @@ describe('HeaderComponent', () => {
   });
 
   it('should sort available MFEs by priority descending', () => {
-    mockToken({ hdfc: [UserRole.SUPER_ADMIN] });
+    mockToken({ hdfc: [UserRole.BUYER, UserRole.SUPPLIER] });
     userSubject.next(stubUser);
     const priorities = component.availableMfes.map(m => m.priority);
     expect(priorities.every((p, i) => i === 0 || priorities[i - 1] >= p)).toBeTrue();
@@ -166,12 +151,12 @@ describe('HeaderComponent', () => {
 
   it('should refresh nav on auth:login_success event', () => {
     authServiceMock.getUser.and.returnValue(stubUser);
-    mockToken({ hdfc: [UserRole.SUPER_ADMIN] });
+    mockToken({ hdfc: [UserRole.ADMIN] });
 
     loginSuccessSubject.next({ appState: { returnTo: '/' } });
 
     expect(component.currentUser).toBe(stubUser);
-    expect(component.availableMfes.length).toBe(4);
+    expect(component.availableMfes.length).toBe(1);
   });
 
   it('should unsubscribe all subscriptions on destroy', () => {

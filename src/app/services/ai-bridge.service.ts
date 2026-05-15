@@ -24,7 +24,7 @@ export const AI_BRIDGE_CONFIG = new InjectionToken<AiBridgeConfig>('AI_BRIDGE_CO
 
 /** Safe fallback used when no {@link AI_BRIDGE_CONFIG} token is provided. */
 export const DEFAULT_AI_BRIDGE_CONFIG: AiBridgeConfig = {
-  trustedOrigin: 'https://opensourcekd.github.io',
+  trustedOrigin: 'https://InkRamp.github.io',
   maxPayloadSize: 64_000,
 };
 

@@ -18,20 +18,20 @@ describe('AiAssistantComponent', () => {
   let loginFailureSubject: Subject<unknown>;
   let sessionExpiredSubject: Subject<unknown>;
 
-  /** Token granting org-lead role — has AI access. */
-  const orgLeadToken: OrgRolesTokenPayload = {
-    org_and_roles: { 'test-org': ['org-lead'] }
+  /** Token granting admin role — has AI access. */
+  const adminToken: OrgRolesTokenPayload = {
+    org_and_roles: { 'test-org': ['admin'] }
   };
-  /** Token granting sales-executive role — NO AI access. */
-  const salesExecToken: OrgRolesTokenPayload = {
-    org_and_roles: { 'test-org': ['sales-executive'] }
+  /** Token granting buyer role — has AI access. */
+  const buyerToken: OrgRolesTokenPayload = {
+    org_and_roles: { 'test-org': ['buyer'] }
   };
-  /** Token granting org-admin role — has AI access. */
-  const orgAdminToken: OrgRolesTokenPayload = {
-    org_and_roles: { 'test-org': ['org-admin'] }
+  /** Token granting supplier role — has AI access. */
+  const supplierToken: OrgRolesTokenPayload = {
+    org_and_roles: { 'test-org': ['supplier'] }
   };
 
-  const stubUser: UserInfo = { sub: 'u1', email: 'test@test.com', name: 'Test', role: 'org-lead' };
+  const stubUser: UserInfo = { sub: 'u1', email: 'test@test.com', name: 'Test', role: 'admin' };
 
   beforeEach(async () => {
     userSubject = new Subject<UserInfo | null>();
@@ -42,8 +42,8 @@ describe('AiAssistantComponent', () => {
 
     authServiceMock = jasmine.createSpyObj('AuthService', ['getId', 'getDecodedToken']);
     authServiceMock.user$ = userSubject.asObservable() as any;
-    // Default: return an org-lead token so AI is accessible
-    authServiceMock.getDecodedToken.and.returnValue(orgLeadToken);
+    // Default: return an admin token so AI is accessible
+    authServiceMock.getDecodedToken.and.returnValue(adminToken);
 
     eventBusMock = jasmine.createSpyObj('EventBus', ['on', 'emit', 'getId']);
     eventBusMock.on.and.callFake((event: string) => {
@@ -83,31 +83,31 @@ describe('AiAssistantComponent', () => {
     expect(el.querySelector('.ai-assistant')).toBeNull();
   });
 
-  it('should be visible after user$ emits a user with org-lead role', () => {
-    authServiceMock.getDecodedToken.and.returnValue(orgLeadToken);
+  it('should be visible after user$ emits a user with admin role', () => {
+    authServiceMock.getDecodedToken.and.returnValue(adminToken);
     userSubject.next(stubUser);
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelector('.ai-assistant')).not.toBeNull();
   });
 
-  it('should NOT be visible after user$ emits a user with sales-executive role', () => {
-    authServiceMock.getDecodedToken.and.returnValue(salesExecToken);
+  it('should NOT be visible after user$ emits a user with no recognized role', () => {
+    authServiceMock.getDecodedToken.and.returnValue({ org_and_roles: { 'test-org': ['unknown-role'] } });
     userSubject.next(stubUser);
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelector('.ai-assistant')).toBeNull();
   });
 
-  it('should be visible for org-admin role', () => {
-    authServiceMock.getDecodedToken.and.returnValue(orgAdminToken);
+  it('should be visible for buyer role', () => {
+    authServiceMock.getDecodedToken.and.returnValue(buyerToken);
     userSubject.next(stubUser);
     fixture.detectChanges();
     expect(component.hasAiAccess).toBeTrue();
   });
 
-  it('should be visible for super-admin role', () => {
-    authServiceMock.getDecodedToken.and.returnValue({ org_and_roles: { 'test-org': ['super-admin'] } });
+  it('should be visible for supplier role', () => {
+    authServiceMock.getDecodedToken.and.returnValue(supplierToken);
     userSubject.next(stubUser);
     fixture.detectChanges();
     expect(component.hasAiAccess).toBeTrue();
@@ -121,7 +121,7 @@ describe('AiAssistantComponent', () => {
   });
 
   it('should show the AI panel when toggle is called', () => {
-    authServiceMock.getDecodedToken.and.returnValue(orgLeadToken);
+    authServiceMock.getDecodedToken.and.returnValue(adminToken);
     userSubject.next(stubUser);
     fixture.detectChanges();
 
@@ -133,7 +133,7 @@ describe('AiAssistantComponent', () => {
   });
 
   it('should hide the AI panel on second toggle call', () => {
-    authServiceMock.getDecodedToken.and.returnValue(orgLeadToken);
+    authServiceMock.getDecodedToken.and.returnValue(adminToken);
     userSubject.next(stubUser);
     component.isOpen = true;
     fixture.detectChanges();
@@ -146,7 +146,7 @@ describe('AiAssistantComponent', () => {
   });
 
   it('should set isLoggedIn=true and refresh hasAiAccess on auth:login_success', () => {
-    authServiceMock.getDecodedToken.and.returnValue(orgLeadToken);
+    authServiceMock.getDecodedToken.and.returnValue(adminToken);
     loginSuccessSubject.next(null);
     expect(component.isLoggedIn).toBeTrue();
     expect(component.hasAiAccess).toBeTrue();
@@ -208,7 +208,7 @@ describe('AiAssistantComponent', () => {
   it('should expose a SafeResourceUrl for the AI iframe', () => {
     const sanitizer = TestBed.inject(DomSanitizer);
     const expected = sanitizer.bypassSecurityTrustResourceUrl(
-      'https://opensourcekd.github.io/all-mfe-builds/mfe-AI-CHATBOT/'
+      'https://InkRamp.github.io/InkRamp/mfe-AI-CHATBOT/'
     );
     // Both values should be SafeResourceUrl objects (not raw strings)
     expect(typeof component.aiUrl).not.toBe('string');
@@ -251,7 +251,7 @@ describe('AiAssistantComponent', () => {
     });
 
     it('should disconnect the bridge when user has no AI-eligible role', () => {
-      authServiceMock.getDecodedToken.and.returnValue(salesExecToken);
+      authServiceMock.getDecodedToken.and.returnValue({ org_and_roles: { 'test-org': ['unknown-role'] } });
       userSubject.next(stubUser);
       expect(bridgeMock.disconnect).toHaveBeenCalled();
     });

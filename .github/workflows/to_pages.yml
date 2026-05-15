@@ -1,4 +1,4 @@
-name: Deploy to i17e repository within this same org
+name: Deploy to InkRamp repository within this same org
 
 on:
   push:
@@ -41,13 +41,13 @@ jobs:
       run: |
             npm i
             npm run build -- --configuration production
-            #npm run build -- --configuration production --base-href "/i17e/"
+            #npm run build -- --configuration production --base-href "/InkRamp/"
 
     - name: 404 hack
       run: |
             # echo 'Lets see what we have moko'
             # ls -l --ignore=node_modules
-            cp dist/i17e/index.html dist/i17e/404.html
+            cp dist/InkRamp/index.html dist/InkRamp/404.html
 
     # - name: Debug dist
     #   run: ls -R dist
@@ -57,6 +57,6 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         personal_token: ${{ secrets.PAT_TOKEN }}
-        external_repository: OpensourceKD/i17e
+        external_repository: InkRamp/shell
         publish_branch: main
-        publish_dir: ./dist/i17e
+        publish_dir: ./dist/InkRamp
