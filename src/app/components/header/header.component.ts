@@ -83,7 +83,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   /** Update navigation state from a user info object (null = logged out). */
   private updateNavState(user: UserInfo | null): void {
     this.currentUser = user;
-    this.availableMfes = user ? this.getAvailableMfes(user) : [];
+    this.availableMfes = user ? this.getAvailableMfes() : [];
   }
 
   /** Clear navigation state on logout, session expiry or login failure. */
@@ -95,11 +95,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   /**
    * Returns MFE configs accessible to the current user based on their roles.
-   * Delegates to shared pure functions from mfe.ts (DRY).
+   * Session storage is the source of truth for role-based MFE visibility.
    */
-  private getAvailableMfes(user: UserInfo): MfeConfig[] {
-    const role = getSessionRole() ?? user.role?.toLowerCase() ?? null;
-    return filterMfesByRole(role);
+  private getAvailableMfes(): MfeConfig[] {
+    return filterMfesByRole(getSessionRole());
   }
 
   ngOnDestroy(): void {

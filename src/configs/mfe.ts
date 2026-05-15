@@ -16,6 +16,12 @@ export interface MfeConfig {
   showAiAssistant?: boolean; // When false, hides the AI assistant widget on this route (default: true)
 }
 
+export type MfeRemoteConfig = LoadRemoteModuleScriptOptions & {
+  remoteName: string;
+  exposedModule: string;
+  url: string;
+};
+
 export const MFE_CONFIGS: MfeConfig[] = [
     {
         displayName: 'Buy Products',
@@ -52,15 +58,27 @@ export function extractUserRoles(token: OrgRolesTokenPayload | null): string[] {
   return token?.org_and_roles ? Object.values(token.org_and_roles).flat() : [];
 }
 
+/**
+ * Reads the active user role from sessionStorage.
+ * Returns the normalized lowercase role string, or null when absent.
+ */
 export function getSessionRole(): string | null {
   const role = sessionStorage.getItem('role');
   return role ? role.trim().toLowerCase() : null;
 }
 
+/**
+ * Pure function that returns only MFEs mapped to the provided role.
+ * Returns an empty array when no role is available.
+ */
 export function filterMfesByRole(role: string | null): MfeConfig[] {
   return role ? MFE_CONFIGS.filter(mfe => mfe.role === role) : [];
 }
 
+/**
+ * Returns the first route path available for the provided role.
+ * Route is prefixed with '/', or null when no MFE matches.
+ */
 export function getFirstAvailableRoute(role: string | null): string | null {
   const firstMfe = filterMfesByRole(role)[0];
   return firstMfe ? `/${firstMfe.route}` : null;
@@ -77,8 +95,13 @@ export function hasAiAssistantAccess(userRoles: string[]): boolean {
   return AI_ASSISTANT_ROLES.some(role => roleSet.has(role));
 }
 
-export function getMfeRemoteConfig(name: string | null): LoadRemoteModuleScriptOptions | undefined {
-  return MFE_CONFIGS
-    .filter(mfe => mfe.remoteName === name)
-    .map(({ remoteName, exposedModule, url }) => ({ remoteName, exposedModule, url }))[0];
+/**
+ * Finds an MFE by remote name and returns its remote-loading config.
+ * Returns undefined when no matching MFE exists.
+ */
+export function getMfeRemoteConfig(name: string | null): MfeRemoteConfig | undefined {
+  const mfe = MFE_CONFIGS.find(item => item.remoteName === name);
+  return mfe
+    ? { remoteName: mfe.remoteName, exposedModule: mfe.exposedModule, url: mfe.url }
+    : undefined;
 }
