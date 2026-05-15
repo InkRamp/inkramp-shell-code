@@ -4,11 +4,16 @@ import { LoadRemoteModuleScriptOptions } from "@angular-architects/module-federa
  * User roles in descending order of privilege
  * Duplicated here to avoid circular dependency and eager module consumption
  */
-export enum UserRole {
+export enum UserRole2 {
   SUPER_ADMIN = 'super-admin',
   ORG_ADMIN = 'org-admin',
   ORG_LEAD = 'org-lead',
   SALES_EXECUTIVE = 'sales-executive'
+}
+export enum UserRole {
+  ADMIN = 'admin',
+  BUYER = 'buyer',
+  SUPPLIER = 'supplier'
 }
 
 /**
@@ -48,65 +53,41 @@ export interface InterfaceMfeUrl extends LoadRemoteModuleScriptOptions{
  */
 export const MFE_CONFIGS: MfeConfig[] = [
     {
-        id: 'mfe-crud-rules',
-        name: 'crud-rules',
-        displayName: 'Manage Incentive Rules',
-        remoteName: 'crudRules',
+        id: 'mfe-buyer',
+        name: 'buyer',
+        displayName: 'Buy Products',
+        remoteName: 'buyer',
         exposedModule: './Component',
-        url: 'https://InkRamp.github.io/InkRamp/mfe-CRUD_RULES/remoteEntry.js',
-        route: 'rules',
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ORG_LEAD],
+        url: 'https://InkRamp.github.io/InkRamp/inkramp-mfe-buyer/remoteEntry.js',
+        route: 'buyer',
+        allowedRoles: [UserRole.BUYER],
         priority: 8,
         icon: 'settings'
     },
     {
-        id: 'mfe-my-sales',
-        name: 'my-sales',
-        displayName: 'My Sales History',
-        remoteName: 'mySales',
+        id: 'mfe-supplier',
+        name: 'supplier',
+        displayName: 'Suppliers',
+        remoteName: 'supplier',
         exposedModule: './Component',
-        url: 'https://InkRamp.github.io/InkRamp/mfe-MY_SALES/remoteEntry.js',
+        url: 'https://InkRamp.github.io/InkRamp/inkramp-mfe-supplier/remoteEntry.js',
         route: 'sales',
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ORG_LEAD, UserRole.SALES_EXECUTIVE],
+        allowedRoles: [UserRole.SUPPLIER],
         priority: 7,
         icon: 'list'
     },
     {
-        id: 'mfe-my-report',
-        name: 'my-report',
-        displayName: 'My Incentive Reports',
-        remoteName: 'myReport',
+        id: 'mfe-admin',
+        name: 'admin',
+        displayName: 'Admin',
+        remoteName: 'admin',
         exposedModule: './Component',
-        url: 'https://InkRamp.github.io/InkRamp/mfe-MY_REPORT/remoteEntry.js',
+        url: 'https://InkRamp.github.io/InkRamp/inkramp-mfe-admin/remoteEntry.js',
         route: 'reports',
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ORG_LEAD, UserRole.SALES_EXECUTIVE],
+        allowedRoles: [UserRole.ADMIN],
         priority: 6,
         icon: 'chart'
     },
-    {
-        id: 'mfe-users-crud',
-        name: 'users-crud',
-        displayName: 'User Management',
-        remoteName: 'usersCrud',
-        exposedModule: './Component',
-        url: 'https://InkRamp.github.io/InkRamp/mfe-USERS_CRUD/remoteEntry.js',
-        route: 'users',
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN],
-        priority: 7,
-        icon: 'users'
-    },
-    {
-        id: 'mfe-ai-analytics',
-        name: 'ai-analytics',
-        displayName: 'AI Analytics',
-        remoteName: 'mfeAi',
-        exposedModule: './Component',
-        url: 'https://InkRamp.github.io/InkRamp/mfe-AI/remoteEntry.js',
-        route: 'ai-analytics',
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ORG_LEAD, UserRole.SALES_EXECUTIVE],
-        priority: 1,
-        icon: 'analytics'
-    }
 ];
 
 /**
