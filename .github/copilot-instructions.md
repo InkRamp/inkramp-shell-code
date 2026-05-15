@@ -73,10 +73,10 @@ These rules apply to every repository in the InkRamp organization.
 #### Core services (temporary location)
 
 - Current location: `src/_temp-shared/` (temporary).
-- Migration target: shared package `@opensourcekd/ng-common-libs` or project-owned code in `src/app`.
+- Migration target: shared package `@InkRamp/ng-common-libs` or project-owned code in `src/app`.
 - Import aliases:
   - `@org/core-services` (legacy, currently supported)
-  - `@opensourcekd/ng-common-libs` (future canonical package)
+  - `@InkRamp/ng-common-libs` (future canonical package)
 - Key services:
   - `AuthService`: Auth0 OIDC/OAuth2 lifecycle using `sessionStorage`
   - `RoleService`: RBAC and permission mapping
@@ -118,7 +118,7 @@ These rules apply to every repository in the InkRamp organization.
 - Use pure functions for transformation/filtering logic; pass all inputs as parameters and avoid side effects.
 - Follow SOLID (especially SRP and DIP), DRY, and YAGNI.
 - Prefer declarative syntax (`??`, `?.`, `map/filter/sort`, guard clauses) over nested conditionals.
-- Use design tokens from `@opensourcekd/ng-common-libs` for colors/spacing; no hardcoded values.
+- Use design tokens from `@InkRamp/ng-common-libs` for colors/spacing; no hardcoded values.
 - Use responsive breakpoints: `sm: 480px`, `md: 768px`, `lg: 1024px`; shell owns container sizing/positioning, MFE owns internal layout.
 - Route AI iframe communication through `AIBridgeService` (`postMessage` → EventBus events such as `ai:message`, `ai:action`).
 

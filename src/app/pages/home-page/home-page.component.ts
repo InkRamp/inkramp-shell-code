@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { AuthService, TokenPayload } from '@opensourcekd/ng-common-libs';
+import { AuthService, TokenPayload } from '@InkRamp/ng-common-libs';
 import { MFE_CONFIGS } from '../../../configs/mfe';
 
 /**

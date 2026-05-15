@@ -1,6 +1,6 @@
 /*
  * DUMMY PLACEHOLDER API
- * All real implementations have been moved to @opensourcekd/ng-common-libs
+ * All real implementations have been moved to @InkRamp/ng-common-libs
  * This file only contains minimal dummy placeholders for reference
  */
 

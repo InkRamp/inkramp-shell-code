@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NgZone } from '@angular/core';
 import { Subject } from 'rxjs';
 import { AppComponent } from './app.component';
-import { EventBus, AuthService } from '@opensourcekd/ng-common-libs';
+import { EventBus, AuthService } from '@InkRamp/ng-common-libs';
 import { MessageBridgeService } from './services/message-bridge.service';
 
 describe('AppComponent', () => {

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { AuthService, TokenPayload } from '@opensourcekd/ng-common-libs';
+import { AuthService, TokenPayload } from '@InkRamp/ng-common-libs';
 import { roleGuard, adminGuard, superAdminGuard, allRolesGuard } from './role.guard';
 
 interface OrgRolesTokenPayload extends TokenPayload {

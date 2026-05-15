@@ -6,12 +6,12 @@ import { Subscription } from 'rxjs';
 import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { AiAssistantComponent } from './components/ai-assistant/ai-assistant.component';
-import { EventBus, AuthService } from '@opensourcekd/ng-common-libs';
+import { EventBus, AuthService } from '@InkRamp/ng-common-libs';
 import { OrgRolesTokenPayload, extractUserRoles, getHighestPriorityRoute } from '../configs/mfe';
 
 /**
  * Root application component
- * NOTE: Auth/Role/MFE services removed - functionality moved to @opensourcekd/ng-common-libs
+ * NOTE: Auth/Role/MFE services removed - functionality moved to @InkRamp/ng-common-libs
  */
 @Component({
   selector: 'app-root',

@@ -53,12 +53,12 @@ This document describes the architecture of the i17e Incentive Management System
 ## Core Services (`src/_temp-shared/`)
 
 ⚠️ **Temporary Location**: These services are in a transitional state and will be migrated to either:
-1. External package: `@opensourcekd/ng-common-libs` (for reuse across projects)
+1. External package: `@InkRamp/ng-common-libs` (for reuse across projects)
 2. Core application: Integrated directly into the main application (for project-specific code)
 
 **Import Paths**:
 - `@org/core-services` (legacy, still supported)
-- `@opensourcekd/ng-common-libs` (future package name)
+- `@InkRamp/ng-common-libs` (future package name)
 
 The shared services provide cross-cutting concerns for all MFEs:
 

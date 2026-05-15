@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Subject } from 'rxjs';
 import { DomSanitizer } from '@angular/platform-browser';
-import { AuthService, EventBus, UserInfo } from '@opensourcekd/ng-common-libs';
+import { AuthService, EventBus, UserInfo } from '@InkRamp/ng-common-libs';
 import { AiAssistantComponent } from './ai-assistant.component';
 import { MessageBridgeService } from '../../services/message-bridge.service';
 import { OrgRolesTokenPayload } from '../../../configs/mfe';
@@ -208,7 +208,7 @@ describe('AiAssistantComponent', () => {
   it('should expose a SafeResourceUrl for the AI iframe', () => {
     const sanitizer = TestBed.inject(DomSanitizer);
     const expected = sanitizer.bypassSecurityTrustResourceUrl(
-      'https://opensourcekd.github.io/all-mfe-builds/mfe-AI-CHATBOT/'
+      'https://InkRamp.github.io/InkRamp/mfe-AI-CHATBOT/'
     );
     // Both values should be SafeResourceUrl objects (not raw strings)
     expect(typeof component.aiUrl).not.toBe('string');

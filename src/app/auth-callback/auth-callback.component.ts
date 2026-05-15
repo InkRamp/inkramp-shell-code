@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
-import { AuthService } from '@opensourcekd/ng-common-libs';
+import { AuthService } from '@InkRamp/ng-common-libs';
 
 /**
  * Auth callback component

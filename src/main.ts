@@ -2,7 +2,7 @@ import { initFederation } from "@angular-architects/module-federation";
 import MFE from "./configs/mfe";
 
 /**
- * You get something like this from MFE // {pokemon:'https://opensourcekd.github.io/pokemon/remoteEntry.js'}
+ * You get something like this from MFE // {pokemon:'https://InkRamp.github.io/pokemon/remoteEntry.js'}
  */
 const MFEs = MFE
     .filter(({ url }) => !!url)

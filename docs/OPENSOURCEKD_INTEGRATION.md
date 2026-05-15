@@ -1,10 +1,10 @@
-# OpenSourceKD Library Integration (v2.0.7)
+# InkRamp Library Integration (v2.0.7)
 
-This document explains how the application consumes the `@opensourcekd/ng-common-libs` library (v2.0.7) with pure TypeScript services.
+This document explains how the application consumes the `@InkRamp/ng-common-libs` library (v2.0.7) with pure TypeScript services.
 
 ## Overview
 
-The application uses framework-agnostic services from the opensourcekd library, configured and provided at bootstrap time using the `useValue` pattern.
+The application uses framework-agnostic services from the InkRamp library, configured and provided at bootstrap time using the `useValue` pattern.
 
 ## Library Version
 
@@ -17,7 +17,7 @@ Current version: **2.0.7**
 
 Key changes from v1.x:
 - No more `/core` and `/angular` subpath exports
-- All exports available directly from `@opensourcekd/ng-common-libs`
+- All exports available directly from `@InkRamp/ng-common-libs`
 - Includes `AuthService` for Auth0 integration
 - Includes `APP_CONFIG` with build-time configuration
 
@@ -28,7 +28,7 @@ Key changes from v1.x:
 The library provides `APP_CONFIG` with environment-specific values configured at build time:
 
 ```typescript
-import { APP_CONFIG } from '@opensourcekd/ng-common-libs';
+import { APP_CONFIG } from '@InkRamp/ng-common-libs';
 
 // Available configuration:
 APP_CONFIG.auth0Domain    // Auth0 domain
@@ -43,7 +43,7 @@ APP_CONFIG.apiUrl         // Backend API URL
 Services are instantiated and configured before Angular bootstraps in `src/bootstrap.ts`:
 
 ```typescript
-import { EventBus, AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs';
+import { EventBus, AuthService, APP_CONFIG } from '@InkRamp/ng-common-libs';
 
 // Create EventBus instance
 const eventBus = new EventBus();
@@ -76,7 +76,7 @@ bootstrapApplication(AppComponent, {
 
 ```typescript
 import { Component, inject } from '@angular/core';
-import { EventBus } from '@opensourcekd/ng-common-libs';
+import { EventBus } from '@InkRamp/ng-common-libs';
 
 @Component({
   selector: 'app-example',
@@ -103,7 +103,7 @@ export class ExampleComponent {
 
 ```typescript
 import { Component, inject } from '@angular/core';
-import { AuthService } from '@opensourcekd/ng-common-libs';
+import { AuthService } from '@InkRamp/ng-common-libs';
 
 @Component({
   selector: 'app-auth-example',
@@ -138,7 +138,7 @@ export class AuthExampleComponent {
 
 ```typescript
 import { Component, inject } from '@angular/core';
-import { APP_CONFIG } from '@opensourcekd/ng-common-libs';
+import { APP_CONFIG } from '@InkRamp/ng-common-libs';
 
 @Component({
   selector: 'app-config-example',
@@ -162,7 +162,7 @@ For backward compatibility and convenience, the application provides an Angular 
 
 ```typescript
 import { Injectable, inject } from '@angular/core';
-import { EventBus } from '@opensourcekd/ng-common-libs';
+import { EventBus } from '@InkRamp/ng-common-libs';
 
 @Injectable({ providedIn: 'root' })
 export class EventBusService {
@@ -205,8 +205,8 @@ export class EventBusService {
 ### Breaking Changes
 
 1. **No subpath exports**: 
-   - Old: `@opensourcekd/ng-common-libs/core`
-   - New: `@opensourcekd/ng-common-libs`
+   - Old: `@InkRamp/ng-common-libs/core`
+   - New: `@InkRamp/ng-common-libs`
 
 2. **AuthService available**: New full-featured Auth0 service included
 
@@ -219,17 +219,17 @@ export class EventBusService {
 1. Update imports:
    ```typescript
    // Before
-   import { EventBus } from '@opensourcekd/ng-common-libs/core';
+   import { EventBus } from '@InkRamp/ng-common-libs/core';
    
    // After
-   import { EventBus } from '@opensourcekd/ng-common-libs';
+   import { EventBus } from '@InkRamp/ng-common-libs';
    ```
 
 2. Remove local environment files
 
 3. Use APP_CONFIG from library:
    ```typescript
-   import { APP_CONFIG } from '@opensourcekd/ng-common-libs';
+   import { APP_CONFIG } from '@InkRamp/ng-common-libs';
    ```
 
 4. Update tsconfig.json to remove subpath mappings
@@ -252,7 +252,7 @@ The AuthService uses configurable storage (sessionStorage by default):
 
 ## Migration Notes
 
-- The EventBusService now wraps the opensourcekd EventBus (v2.0.7)
+- The EventBusService now wraps the InkRamp EventBus (v2.0.7)
 - AuthService replaces custom Auth0 integration
 - APP_CONFIG provides centralized access to configuration
 - All services use sessionStorage for security

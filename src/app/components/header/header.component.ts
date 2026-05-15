@@ -3,12 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { AuthService, EventBus, UserInfo } from '@opensourcekd/ng-common-libs';
+import { AuthService, EventBus, UserInfo } from '@InkRamp/ng-common-libs';
 import { MfeConfig, OrgRolesTokenPayload, extractUserRoles, filterMfesByRoles } from '../../../configs/mfe';
 
 /**
  * Header component for the application
- * Login/logout functionality enabled via AuthService from @opensourcekd/ng-common-libs
+ * Login/logout functionality enabled via AuthService from @InkRamp/ng-common-libs
  * Navigation links are derived from MFE_CONFIGS filtered by the authenticated user's roles,
  * respecting the role hierarchy: super-admin > org-admin > org-lead > sales-executive.
  */

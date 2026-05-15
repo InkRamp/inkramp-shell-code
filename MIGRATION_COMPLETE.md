@@ -42,17 +42,17 @@ In your Auth0 Dashboard → Applications → Your App:
    - Application Type: Single Page Application
    - **Allowed Callback URLs** (REQUIRED):
      ```
-     https://opensourcekd.github.io/all-mfe-builds/auth-callback,
+     https://InkRamp.github.io/InkRamp/auth-callback,
      http://localhost:4200/auth-callback
      ```
    - **Allowed Logout URLs** (REQUIRED - fixes logout error):
      ```
-     https://opensourcekd.github.io/all-mfe-builds,
+     https://InkRamp.github.io/InkRamp,
      http://localhost:4200
      ```
    - **Allowed Web Origins** (REQUIRED):
      ```
-     https://opensourcekd.github.io,
+     https://InkRamp.github.io,
      http://localhost:4200
      ```
 
@@ -74,8 +74,8 @@ export const AUTH0_CONFIG: Auth0Config = {
   clientId: 'YOUR_CLIENT_ID_HERE',     // ← UPDATE THIS
   
   // These should match your deployment URL
-  redirectUri: 'https://opensourcekd.github.io/all-mfe-builds/auth-callback',
-  logoutUri: 'https://opensourcekd.github.io/all-mfe-builds',
+  redirectUri: 'https://InkRamp.github.io/InkRamp/auth-callback',
+  logoutUri: 'https://InkRamp.github.io/InkRamp',
   
   scope: 'openid profile email',
   
@@ -103,7 +103,7 @@ exports.onExecutePostLogin = async (event, api) => {
 
 ### Step 5: Test Authentication
 1. Build the application: `npm run build`
-2. Start a local server: `npx http-server dist/all-mfe-builds`
+2. Start a local server: `npx http-server dist/InkRamp`
 3. Click "Login" button
 4. Authenticate with Auth0
 5. Check browser console for authentication logs

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 /**
  * DUMMY PLACEHOLDER SERVICE
- * This is a minimal placeholder - all real implementations moved to @opensourcekd/ng-common-libs
+ * This is a minimal placeholder - all real implementations moved to @InkRamp/ng-common-libs
  */
 @Injectable({
   providedIn: 'root'
@@ -13,6 +13,6 @@ export class CoreServicesService {
   }
 
   getPlaceholderMessage(): string {
-    return 'This is a dummy placeholder service - all implementations moved to @opensourcekd/ng-common-libs';
+    return 'This is a dummy placeholder service - all implementations moved to @InkRamp/ng-common-libs';
   }
 }

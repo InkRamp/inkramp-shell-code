@@ -18,13 +18,13 @@
 {
   "paths": {
     "@org/core-services": ["./src/_temp-shared/public-api.ts"],
-    "@opensourcekd/ng-common-libs": ["./src/_temp-shared/public-api.ts"],
-    "@opensourcekd/ng-common-libs/*": ["./src/_temp-shared/*"]
+    "@InkRamp/ng-common-libs": ["./src/_temp-shared/public-api.ts"],
+    "@InkRamp/ng-common-libs/*": ["./src/_temp-shared/*"]
   }
 }
 ```
 
-**Result**: Both `@org/core-services` and `@opensourcekd/ng-common-libs` imports work correctly.
+**Result**: Both `@org/core-services` and `@InkRamp/ng-common-libs` imports work correctly.
 
 ### 3. Updated Module Federation Configuration
 
@@ -50,7 +50,7 @@ exposes: {
 
 #### New Files
 - `src/_temp-shared/README.md` - Explains temporary structure
-- `.github/docs/NG_COMMON_LIBS.md` - Comprehensive guide for @opensourcekd/ng-common-libs
+- `.github/docs/NG_COMMON_LIBS.md` - Comprehensive guide for @InkRamp/ng-common-libs
 
 #### Updated Files
 - `.github/copilot-instructions.md` - Updated file organization and examples
@@ -103,12 +103,12 @@ import { AuthService, RoleService } from '@org/core-services';
 
 ### Option 2: Future Package Name (Recommended)
 ```typescript
-import { AuthService, RoleService } from '@opensourcekd/ng-common-libs';
+import { AuthService, RoleService } from '@InkRamp/ng-common-libs';
 ```
 
 ### Option 3: Direct Sub-path (Also Works)
 ```typescript
-import { AuthService } from '@opensourcekd/ng-common-libs/auth.service';
+import { AuthService } from '@InkRamp/ng-common-libs/auth.service';
 ```
 
 ## Next Steps (Future Work)
@@ -119,7 +119,7 @@ import { AuthService } from '@opensourcekd/ng-common-libs/auth.service';
 - [ ] Define versioning strategy
 
 ### Phase 2: Package Creation (if going to artifactory)
-- [ ] Create separate repository for `@opensourcekd/ng-common-libs`
+- [ ] Create separate repository for `@InkRamp/ng-common-libs`
 - [ ] Setup package structure with proper entry points
 - [ ] Write comprehensive tests
 - [ ] Setup CI/CD pipeline for publishing
@@ -173,8 +173,8 @@ All existing imports continue to work:
 ### Q: When will this temporary structure be removed?
 **A**: After decisions are made about what goes to the package vs. what stays in the app, and the migration is complete.
 
-### Q: Should I use `@org/core-services` or `@opensourcekd/ng-common-libs`?
-**A**: Use `@opensourcekd/ng-common-libs` for new code. It's the future path. The old alias will be deprecated eventually.
+### Q: Should I use `@org/core-services` or `@InkRamp/ng-common-libs`?
+**A**: Use `@InkRamp/ng-common-libs` for new code. It's the future path. The old alias will be deprecated eventually.
 
 ### Q: Will this affect remote MFEs?
 **A**: No. Module Federation exposes remain the same. Remote MFEs can continue importing as before.
