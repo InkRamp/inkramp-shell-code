@@ -57,7 +57,7 @@ describe('MfeWrapperComponent', () => {
 
   describe('ngAfterViewInit', () => {
     beforeEach(() => {
-      component.name = 'mySales';
+      component.name = 'buyer';
     });
 
     it('should create the MFE component using the shell EnvironmentInjector via createRemoteComponent', async () => {
@@ -86,7 +86,7 @@ describe('MfeWrapperComponent', () => {
 
   describe('ngOnDestroy', () => {
     it('should detach the MFE view from ApplicationRef and destroy the component to release resources', async () => {
-      component.name = 'mySales';
+      component.name = 'buyer';
       await component.ngAfterViewInit();
 
       component.ngOnDestroy();

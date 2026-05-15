@@ -1,15 +1,8 @@
 import { LoadRemoteModuleScriptOptions } from "@angular-architects/module-federation";
 
 /**
- * User roles in descending order of privilege
- * Duplicated here to avoid circular dependency and eager module consumption
+ * User roles — one role per MFE (1:1 mapping)
  */
-export enum UserRole2 {
-  SUPER_ADMIN = 'super-admin',
-  ORG_ADMIN = 'org-admin',
-  ORG_LEAD = 'org-lead',
-  SALES_EXECUTIVE = 'sales-executive'
-}
 export enum UserRole {
   ADMIN = 'admin',
   BUYER = 'buyer',
@@ -28,7 +21,7 @@ export interface MfeConfig {
   exposedModule: string;
   url: string;
   route: string;
-  allowedRoles: UserRole[];
+  allowedRoles: string[];
   priority: number; // Higher number = higher priority (load first)
   icon?: string;
   showAiAssistant?: boolean; // When false, hides the AI assistant widget on this route (default: true)
@@ -47,9 +40,6 @@ export interface InterfaceMfeUrl extends LoadRemoteModuleScriptOptions{
 /**
  * MFE configurations with role-based access and priority loading
  * Priority: Higher number = higher priority (loaded first)
- * - 10: Critical (load immediately)
- * - 5-9: High (preload on login)
- * - 1-4: Normal (load on demand)
  */
 export const MFE_CONFIGS: MfeConfig[] = [
     {
@@ -129,18 +119,17 @@ export function getHighestPriorityRoute(userRoles: string[]): string | null {
 }
 
 /**
- * Roles that grant access to the AI assistant (org-lead and above).
- * Sales executives do not have access to the AI assistant panel.
+ * Roles that grant access to the AI assistant (all authenticated roles).
  */
 export const AI_ASSISTANT_ROLES: UserRole[] = [
-  UserRole.SUPER_ADMIN,
-  UserRole.ORG_ADMIN,
-  UserRole.ORG_LEAD,
+  UserRole.ADMIN,
+  UserRole.BUYER,
+  UserRole.SUPPLIER,
 ];
 
 /**
  * Pure function: returns true when the user holds at least one role that
- * grants access to the AI assistant (org-lead and above).
+ * grants access to the AI assistant.
  */
 export function hasAiAssistantAccess(userRoles: string[]): boolean {
   const roleSet = new Set(userRoles);

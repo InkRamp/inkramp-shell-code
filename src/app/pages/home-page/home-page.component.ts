@@ -2,16 +2,8 @@ import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { AuthService, TokenPayload } from '@opensourcekd/ng-common-libs';
-import { MFE_CONFIGS } from '../../../configs/mfe';
-
-/**
- * Extended token payload including the org_and_roles custom claim.
- * Structure: { "hdfc": ["super-admin", "org-admin"], ... }
- */
-interface OrgRolesTokenPayload extends TokenPayload {
-  org_and_roles?: Record<string, string[]>;
-}
+import { AuthService } from '@opensourcekd/ng-common-libs';
+import { OrgRolesTokenPayload, extractUserRoles, getHighestPriorityRoute } from '../../../configs/mfe';
 
 /**
  * Home page component - landing page for the application.
@@ -46,13 +38,9 @@ export class HomePageComponent implements OnInit, OnDestroy {
 
   private redirectToFirstAvailableRoute(): void {
     const token = this.authService.getDecodedToken() as OrgRolesTokenPayload | null;
-    if (!token?.org_and_roles) return;
-    const userRoles = Object.values(token.org_and_roles).flat();
-    const availableMfes = MFE_CONFIGS
-      .filter(mfe => mfe.allowedRoles.some(role => userRoles.includes(role)))
-      .sort((a, b) => b.priority - a.priority);
-    if (availableMfes.length > 0) {
-      this.router.navigate(['/' + availableMfes[0].route]);
+    const route = getHighestPriorityRoute(extractUserRoles(token));
+    if (route) {
+      this.router.navigate([route]);
     }
   }
 
