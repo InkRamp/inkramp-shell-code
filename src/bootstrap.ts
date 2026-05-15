@@ -17,8 +17,8 @@ const authService = new AuthService(
     domain: 'dev-26sow24tone5na8a.us.auth0.com',
     clientId: 'ht41H0hORjG2GlwHQPRD5pknSjKHsmEB',//'21DGfAeeidKC4hw10PDx5HcOu1gZZF1s',
     audience: 'https://inkramp',//'https://something', //APP_CONFIG.apiUrl,
-    redirectUri: window.location.origin,
-    logoutUri: window.location.origin,
+    redirectUri: window.location.href,//window.location.origin,
+    logoutUri: window.location.href,//window.location.origin,
     scope: 'openid profile email'
   },
   eventBus,
