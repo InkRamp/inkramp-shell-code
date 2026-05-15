@@ -51,6 +51,6 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         personal_token: ${{ secrets.PAT_TOKEN }}
-        external_repository: InkRamp/InkRamp
+        external_repository: InkRamp/shell
         publish_branch: main
         publish_dir: ./dist/InkRamp

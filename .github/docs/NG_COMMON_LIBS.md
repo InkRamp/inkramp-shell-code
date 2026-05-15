@@ -152,7 +152,7 @@ Follow Semantic Versioning (SemVer):
 
 ## Related Resources
 
-- **Project Repository**: InkRamp/InkRamp-code
+- **Project Repository**: InkRamp/shell-code
 - **Current Location**: `src/_temp-shared/`
 - **Documentation**: `.github/docs/ARCHITECTURE.md`
 - **Migration Plan**: `src/_temp-shared/README.md`

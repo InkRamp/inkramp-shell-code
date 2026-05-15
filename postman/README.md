@@ -33,7 +33,7 @@ git status
 
 If git checkout doesn't work (shallow clone issues), you can download files from GitHub:
 
-1. Visit: https://github.com/InkRamp/InkRamp-code/tree/da5c5b462325597faf1847576552b3715a481872/postman
+1. Visit: https://github.com/InkRamp/shell-code/tree/da5c5b462325597faf1847576552b3715a481872/postman
 2. Click on each file and use "Raw" button to download
 3. Save files to your local `postman/` directory
 
