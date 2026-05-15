@@ -15,7 +15,7 @@ const eventBus = new EventBus({ id: 'shell' });
 const authService = new AuthService(
   {
     domain: 'dev-26sow24tone5na8a.us.auth0.com',
-    clientId: 'ht41H0hORjG2GlwHQPRD5pknSjKHsmEB',//'21DGfAeeidKC4hw10PDx5HcOu1gZZF1s',
+    clientId: '21DGfAeeidKC4hw10PDx5HcOu1gZZF1s', //'ht41H0hORjG2GlwHQPRD5pknSjKHsmEB'
     audience: 'https://inkramp',//'https://something', //APP_CONFIG.apiUrl,
     redirectUri: window.location.href,//window.location.origin,
     logoutUri: window.location.href,//window.location.origin,
@@ -35,6 +35,7 @@ const authService = new AuthService(
  * APP_CONFIG.apiUrl.
  */
 export function bootstrap() {
+  console.log("MIKA using",'21DGfAeeidKC4hw10PDx5HcOu1gZZF1s')
   return bootstrapApplication(AppComponent, {
     providers: [
       provideRouter(routes),
