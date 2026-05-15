@@ -13,7 +13,7 @@ const mfeRoutes: Routes = MFE_CONFIGS.map(mfe => ({
   path: mfe.route,
   component: MfePageComponent,
   data: { mfeName: mfe.remoteName },
-  canActivate: [roleGuard(mfe.allowedRoles as unknown as string[])]
+  canActivate: [roleGuard(mfe.allowedRoles)]
 }));
 
 export const routes: Routes = [

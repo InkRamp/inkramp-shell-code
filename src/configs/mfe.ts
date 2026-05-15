@@ -2,7 +2,6 @@ import { LoadRemoteModuleScriptOptions } from "@angular-architects/module-federa
 
 /**
  * User roles — one role per MFE (1:1 mapping)
- * Duplicated here to avoid circular dependency and eager module consumption
  */
 export enum UserRole {
   ADMIN = 'admin',
@@ -22,7 +21,7 @@ export interface MfeConfig {
   exposedModule: string;
   url: string;
   route: string;
-  allowedRoles: UserRole[];
+  allowedRoles: string[];
   priority: number; // Higher number = higher priority (load first)
   icon?: string;
   showAiAssistant?: boolean; // When false, hides the AI assistant widget on this route (default: true)
@@ -130,7 +129,7 @@ export const AI_ASSISTANT_ROLES: UserRole[] = [
 
 /**
  * Pure function: returns true when the user holds at least one role that
- * grants access to the AI assistant (org-lead and above).
+ * grants access to the AI assistant.
  */
 export function hasAiAssistantAccess(userRoles: string[]): boolean {
   const roleSet = new Set(userRoles);
