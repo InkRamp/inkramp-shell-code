@@ -1,149 +1,84 @@
 import { LoadRemoteModuleScriptOptions } from "@angular-architects/module-federation";
 
-/**
- * User roles — one role per MFE (1:1 mapping)
- */
 export enum UserRole {
   ADMIN = 'admin',
   BUYER = 'buyer',
   SUPPLIER = 'supplier'
 }
 
-/**
- * MFE configuration with metadata
- * Duplicated here to avoid circular dependency and eager module consumption
- */
 export interface MfeConfig {
-  id: string;
-  name: string;
   displayName: string;
   remoteName: string;
   exposedModule: string;
   url: string;
   route: string;
-  allowedRoles: string[];
-  priority: number; // Higher number = higher priority (load first)
-  icon?: string;
+  role: UserRole;
   showAiAssistant?: boolean; // When false, hides the AI assistant widget on this route (default: true)
 }
 
-/**
- * Interface for MFE URL configuration
- * Extends LoadRemoteModuleScriptOptions to support Module Federation
- */
-export interface InterfaceMfeUrl extends LoadRemoteModuleScriptOptions{
-    remoteName: string;
-    exposedModule: string;
-    url: string;
-}
-
-/**
- * MFE configurations with role-based access and priority loading
- * Priority: Higher number = higher priority (loaded first)
- */
 export const MFE_CONFIGS: MfeConfig[] = [
     {
-        id: 'mfe-buyer',
-        name: 'buyer',
         displayName: 'Buy Products',
         remoteName: 'buyer',
         exposedModule: './Component',
         url: 'https://inkramp.github.io/all-mfe-builds/inkramp-mfe-buyer/remoteEntry.js',
         route: 'buyer',
-        allowedRoles: [UserRole.BUYER],
-        priority: 8,
-        icon: 'settings'
+        role: UserRole.BUYER
     },
     {
-        id: 'mfe-supplier',
-        name: 'supplier',
         displayName: 'Suppliers',
         remoteName: 'supplier',
         exposedModule: './Component',
         url: 'https://inkramp.github.io/all-mfe-builds/inkramp-mfe-supplier/remoteEntry.js',
         route: 'sales',
-        allowedRoles: [UserRole.SUPPLIER],
-        priority: 7,
-        icon: 'list'
+        role: UserRole.SUPPLIER
     },
     {
-        id: 'mfe-admin',
-        name: 'admin',
         displayName: 'Admin',
         remoteName: 'admin',
         exposedModule: './Component',
         url: 'https://inkramp.github.io/all-mfe-builds/inkramp-mfe-admin/remoteEntry.js',
         route: 'reports',
-        allowedRoles: [UserRole.ADMIN],
-        priority: 6,
-        icon: 'chart'
+        role: UserRole.ADMIN
     },
 ];
 
-/**
- * Extended token payload including the org_and_roles custom claim.
- * Structure: { "hdfc": ["super-admin", "org-admin"], ... }
- * Single shared definition — import this instead of declaring locally (DRY).
- * The index signature matches TokenPayload for structural compatibility.
- */
 export interface OrgRolesTokenPayload {
   org_and_roles?: Record<string, string[]>;
   [key: string]: unknown;
 }
 
-/**
- * Pure function: extracts a flat list of all roles a user holds across all orgs.
- * Takes the decoded token as input; returns an empty array when no roles are present.
- */
 export function extractUserRoles(token: OrgRolesTokenPayload | null): string[] {
   return token?.org_and_roles ? Object.values(token.org_and_roles).flat() : [];
 }
 
-/**
- * Pure function: returns MFE configs accessible to a user given their flat role list,
- * sorted by priority descending (highest first).
- */
-export function filterMfesByRoles(userRoles: string[]): MfeConfig[] {
-  return MFE_CONFIGS
-    .filter(mfe => mfe.allowedRoles.some(role => userRoles.includes(role)))
-    .sort((a, b) => b.priority - a.priority);
+export function getSessionRole(): string | null {
+  const role = sessionStorage.getItem('role');
+  return role ? role.trim().toLowerCase() : null;
 }
 
-/**
- * Pure function: returns the highest-priority route the user can access (prefixed with '/'),
- * or null when no accessible routes exist.
- */
-export function getHighestPriorityRoute(userRoles: string[]): string | null {
-  const [top] = filterMfesByRoles(userRoles);
-  return top ? `/${top.route}` : null;
+export function filterMfesByRole(role: string | null): MfeConfig[] {
+  return role ? MFE_CONFIGS.filter(mfe => mfe.role === role) : [];
 }
 
-/**
- * Roles that grant access to the AI assistant (all authenticated roles).
- */
+export function getFirstAvailableRoute(role: string | null): string | null {
+  const firstMfe = filterMfesByRole(role)[0];
+  return firstMfe ? `/${firstMfe.route}` : null;
+}
+
 export const AI_ASSISTANT_ROLES: UserRole[] = [
   UserRole.ADMIN,
   UserRole.BUYER,
   UserRole.SUPPLIER,
 ];
 
-/**
- * Pure function: returns true when the user holds at least one role that
- * grants access to the AI assistant.
- */
 export function hasAiAssistantAccess(userRoles: string[]): boolean {
   const roleSet = new Set(userRoles);
   return AI_ASSISTANT_ROLES.some(role => roleSet.has(role));
 }
 
-/**
- * MFE array for Module Federation configuration
- * Contains all MFE configurations as InterfaceMfeUrl type
- */
-const MFE: Array<InterfaceMfeUrl> = MFE_CONFIGS.map(config => ({
-    remoteName: config.remoteName,
-    exposedModule: config.exposedModule,
-    url: config.url
-}));
-
-export default MFE
+export function getMfeRemoteConfig(name: string | null): LoadRemoteModuleScriptOptions | undefined {
+  return MFE_CONFIGS
+    .filter(mfe => mfe.remoteName === name)
+    .map(({ remoteName, exposedModule, url }) => ({ remoteName, exposedModule, url }))[0];
+}

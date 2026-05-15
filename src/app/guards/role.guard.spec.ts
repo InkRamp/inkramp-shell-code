@@ -2,21 +2,15 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { AuthService } from '@opensourcekd/ng-common-libs';
 import { roleGuard } from './role.guard';
-import { OrgRolesTokenPayload } from '../../configs/mfe';
 
 describe('Role Guards', () => {
   let router: Router;
   let authServiceMock: jasmine.SpyObj<AuthService>;
 
-  const mockToken = (orgAndRoles: Record<string, string[]>) => {
-    const token: OrgRolesTokenPayload = { org_and_roles: orgAndRoles };
-    authServiceMock.getDecodedToken.and.returnValue(token);
-  };
-
   beforeEach(() => {
-    authServiceMock = jasmine.createSpyObj('AuthService', ['isAuthenticatedSync', 'login', 'getDecodedToken']);
+    sessionStorage.clear();
+    authServiceMock = jasmine.createSpyObj('AuthService', ['isAuthenticatedSync', 'login']);
     authServiceMock.login.and.returnValue(Promise.resolve());
-    authServiceMock.getDecodedToken.and.returnValue(null);
 
     TestBed.configureTestingModule({
       providers: [
@@ -37,35 +31,33 @@ describe('Role Guards', () => {
   describe('roleGuard', () => {
     it('should allow access when user has the required role', () => {
       authServiceMock.isAuthenticatedSync.and.returnValue(true);
-      mockToken({ org1: ['admin'] });
+      sessionStorage.setItem('role', 'admin');
       const result = TestBed.runInInjectionContext(() =>
         roleGuard(['admin'])({} as any, {} as any)
       );
       expect(result).toBe(true);
     });
 
-    it('should allow access when user has one of the allowed roles across any org', () => {
+    it('should allow access when user has one of the allowed roles', () => {
       authServiceMock.isAuthenticatedSync.and.returnValue(true);
-      mockToken({ org1: ['buyer'], org2: ['supplier'] });
+      sessionStorage.setItem('role', 'supplier');
       const result = TestBed.runInInjectionContext(() =>
         roleGuard(['buyer', 'supplier'])({} as any, {} as any)
       );
       expect(result).toBe(true);
     });
 
-    it('should deny access when user has no matching roles', () => {
+    it('should deny access when role does not match', () => {
       authServiceMock.isAuthenticatedSync.and.returnValue(true);
-      mockToken({ hdfc: ['buyer'] });
+      sessionStorage.setItem('role', 'buyer');
       const result = TestBed.runInInjectionContext(() =>
         roleGuard(['admin'])({} as any, {} as any)
       );
       expect(result).not.toBe(true);
     });
 
-    it('should deny access when token has no org_and_roles claim', () => {
+    it('should deny access when no role is present in session storage', () => {
       authServiceMock.isAuthenticatedSync.and.returnValue(true);
-      const emptyToken: OrgRolesTokenPayload = {};
-      authServiceMock.getDecodedToken.and.returnValue(emptyToken);
       const result = TestBed.runInInjectionContext(() =>
         roleGuard(['admin'])({} as any, {} as any)
       );

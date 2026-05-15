@@ -14,4 +14,30 @@
     font-size: 1.1rem;
     margin-bottom: 2rem;
   }
+
+  .mfe-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .mfe-card {
+    display: block;
+    text-decoration: none;
+    border: 1px solid #d9d9d9;
+    border-radius: 8px;
+    padding: 1rem;
+    color: inherit;
+
+    h2 {
+      margin: 0 0 0.4rem;
+      font-size: 1.1rem;
+    }
+
+    p {
+      margin: 0;
+      color: #666;
+      font-size: 0.95rem;
+    }
+  }
 }

@@ -1,10 +1,10 @@
 import { initFederation } from "@angular-architects/module-federation";
-import MFE from "./configs/mfe";
+import { MFE_CONFIGS } from "./configs/mfe";
 
 /**
  * You get something like this from MFE // {pokemon:'https://InkRamp.github.io/pokemon/remoteEntry.js'}
  */
-const MFEs = MFE
+const MFEs = MFE_CONFIGS
     .filter(({ url }) => !!url)
     .reduce((prev,current)=>({...prev, [current.remoteName]:current.url}),{})
 

@@ -22,10 +22,10 @@ describe('AppComponent', () => {
       snapshot: { queryParams: {} }
     };
 
-    authServiceMock = jasmine.createSpyObj('AuthService', ['getId', 'handleCallback', 'getDecodedToken']);
+    sessionStorage.clear();
+    authServiceMock = jasmine.createSpyObj('AuthService', ['getId', 'handleCallback']);
     authServiceMock.getId.and.returnValue('shell');
     authServiceMock.handleCallback.and.returnValue(Promise.resolve({ success: true }));
-    authServiceMock.getDecodedToken.and.returnValue(null);
 
     loginSuccessSubject = new Subject();
     logoutSubject = new Subject();
@@ -97,7 +97,6 @@ describe('AppComponent', () => {
   });
 
   it('should NOT redirect when returnTo is absent and user has no accessible routes', async () => {
-    authServiceMock.getDecodedToken.and.returnValue(null);
     await component.ngOnInit();
     loginSuccessSubject.next({});
 
@@ -106,13 +105,10 @@ describe('AppComponent', () => {
   });
 
   it('should navigate to first available route when returnTo is absent on auth:login_success', async () => {
-    authServiceMock.getDecodedToken.and.returnValue({
-      org_and_roles: { hdfc: ['buyer'] }
-    });
+    sessionStorage.setItem('role', 'buyer');
     await component.ngOnInit();
     loginSuccessSubject.next({});
 
-    // highest-priority MFE for buyer is 'buyer' route (priority 8)
     expect(routerMock.navigate).toHaveBeenCalledWith(['/buyer'], { replaceUrl: true });
   });
 

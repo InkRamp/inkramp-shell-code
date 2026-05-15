@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { AuthService, EventBus, UserInfo } from '@opensourcekd/ng-common-libs';
 import { HeaderComponent } from './header.component';
-import { UserRole, OrgRolesTokenPayload } from '../../../configs/mfe';
+import { UserRole } from '../../../configs/mfe';
 
 describe('HeaderComponent', () => {
   let component: HeaderComponent;
@@ -18,12 +18,8 @@ describe('HeaderComponent', () => {
 
   const stubUser: UserInfo = { sub: 'u1', email: 'test@test.com', name: 'Test', role: 'admin' };
 
-  const mockToken = (orgAndRoles: Record<string, string[]>) => {
-    const token: OrgRolesTokenPayload = { org_and_roles: orgAndRoles };
-    authServiceMock.getDecodedToken.and.returnValue(token);
-  };
-
   beforeEach(async () => {
+    sessionStorage.clear();
     userSubject = new Subject<UserInfo | null>();
     loginSuccessSubject = new Subject<unknown>();
     logoutSubject = new Subject<unknown>();
@@ -31,12 +27,11 @@ describe('HeaderComponent', () => {
     sessionExpiredSubject = new Subject<unknown>();
 
     authServiceMock = jasmine.createSpyObj('AuthService', [
-      'login', 'logout', 'isAuthenticatedSync', 'getDecodedToken', 'getId', 'getUser'
+      'login', 'logout', 'isAuthenticatedSync', 'getId', 'getUser'
     ]);
     authServiceMock.user$ = userSubject.asObservable() as any;
     authServiceMock.login.and.returnValue(Promise.resolve());
     authServiceMock.logout.and.returnValue(Promise.resolve());
-    authServiceMock.getDecodedToken.and.returnValue(null);
     authServiceMock.getId.and.returnValue('mock-auth-id');
     authServiceMock.getUser.and.returnValue(null);
 
@@ -76,40 +71,32 @@ describe('HeaderComponent', () => {
   });
 
   it('should show only the admin MFE for admin role', () => {
-    mockToken({ hdfc: [UserRole.ADMIN] });
+    sessionStorage.setItem('role', UserRole.ADMIN);
     userSubject.next(stubUser);
-    const ids = component.availableMfes.map(m => m.id);
-    expect(ids).toContain('mfe-admin');
+    const routes = component.availableMfes.map(m => m.route);
+    expect(routes).toContain('reports');
     expect(component.availableMfes.length).toBe(1);
   });
 
   it('should show only the buyer MFE for buyer role', () => {
-    mockToken({ hdfc: [UserRole.BUYER] });
+    sessionStorage.setItem('role', UserRole.BUYER);
     userSubject.next(stubUser);
-    const ids = component.availableMfes.map(m => m.id);
-    expect(ids).toContain('mfe-buyer');
+    const routes = component.availableMfes.map(m => m.route);
+    expect(routes).toContain('buyer');
     expect(component.availableMfes.length).toBe(1);
   });
 
   it('should show only the supplier MFE for supplier role', () => {
-    mockToken({ hdfc: [UserRole.SUPPLIER] });
+    sessionStorage.setItem('role', UserRole.SUPPLIER);
     userSubject.next(stubUser);
-    const ids = component.availableMfes.map(m => m.id);
-    expect(ids).toContain('mfe-supplier');
+    const routes = component.availableMfes.map(m => m.route);
+    expect(routes).toContain('sales');
     expect(component.availableMfes.length).toBe(1);
   });
 
-  it('should return empty availableMfes when token has no org_and_roles', () => {
-    authServiceMock.getDecodedToken.and.returnValue({} as OrgRolesTokenPayload);
+  it('should return empty availableMfes when role is missing', () => {
     userSubject.next(stubUser);
     expect(component.availableMfes).toEqual([]);
-  });
-
-  it('should sort available MFEs by priority descending', () => {
-    mockToken({ hdfc: [UserRole.BUYER, UserRole.SUPPLIER] });
-    userSubject.next(stubUser);
-    const priorities = component.availableMfes.map(m => m.priority);
-    expect(priorities.every((p, i) => i === 0 || priorities[i - 1] >= p)).toBeTrue();
   });
 
   it('should subscribe to EventBus auth events on init', () => {
@@ -151,7 +138,7 @@ describe('HeaderComponent', () => {
 
   it('should refresh nav on auth:login_success event', () => {
     authServiceMock.getUser.and.returnValue(stubUser);
-    mockToken({ hdfc: [UserRole.ADMIN] });
+    sessionStorage.setItem('role', UserRole.ADMIN);
 
     loginSuccessSubject.next({ appState: { returnTo: '/' } });
 
