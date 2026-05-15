@@ -11,15 +11,14 @@ import { AIBridgeService, AI_BRIDGE_CONFIG } from './app/services/ai-bridge.serv
 // Create EventBus instance before bootstrap with 'shell' identifier
 const eventBus = new EventBus({ id: 'shell' });
 
-// Create AuthService instance with configuration from library's APP_CONFIG and 'shell' identifier
-console.log("Hey JOJO", APP_CONFIG)
+// Create AuthService instance with explicit Auth0 configuration and 'shell' identifier
 const authService = new AuthService(
   {
-    domain: APP_CONFIG.auth0Domain,
-    clientId: APP_CONFIG.auth0ClientId,
+    domain: 'dev-26sow24tone5na8a.us.auth0.com',
+    clientId: '21DGfAeeidKC4hw10PDx5HcOu1gZZF1s',
     audience: 'https://something', //APP_CONFIG.apiUrl,
-    redirectUri: `${window.location.origin}/shell`,
-    logoutUri: `${window.location.origin}/shell`,
+    redirectUri: window.location.origin,
+    logoutUri: window.location.origin,
     scope: 'openid profile email'
   },
   eventBus,
