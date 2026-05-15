@@ -7,7 +7,13 @@ import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { AiAssistantComponent } from './components/ai-assistant/ai-assistant.component';
 import { EventBus, AuthService } from '@opensourcekd/ng-common-libs';
-import { getFirstAvailableRoute, getSessionRole } from '../configs/mfe';
+import {
+  extractRolesFromDecodedToken,
+  getFirstAvailableRoute,
+  getSessionRole,
+  resolveFirstKnownRole,
+  storeSessionRole,
+} from '../configs/mfe';
 
 /**
  * Root application component
@@ -48,6 +54,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.eventBus.on<{ appState?: { returnTo?: string } }>('auth:login_success').subscribe((payload) => {
         console.log('[AppComponent] auth:login_success received');
         this.ngZone.run(() => {
+          this.resolveAndStoreRole();
           const targetRoute = payload?.appState?.returnTo ?? this.getFirstAvailableRoute();
           if (targetRoute) {
             this.router.navigate([targetRoute], { replaceUrl: true });
@@ -88,6 +95,18 @@ export class AppComponent implements OnInit, OnDestroy {
         // Do not redirect — preserves any non-auth query params already in the URL.
         console.error('[AppComponent] Auth callback failed:', error);
       }
+    }
+  }
+
+  private resolveAndStoreRole(): void {
+    const decoded = this.authService.getDecodedToken() as Record<string, unknown> | null;
+    const roles = extractRolesFromDecodedToken(decoded);
+    const role = resolveFirstKnownRole(roles)
+      ?? resolveFirstKnownRole([this.authService.getUserData()?.role ?? '']);
+    if (role) {
+      storeSessionRole(role);
+    } else {
+      console.warn('[AppComponent] No recognized role found in token after login');
     }
   }
 

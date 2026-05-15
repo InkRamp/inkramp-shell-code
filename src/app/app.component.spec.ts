@@ -23,9 +23,11 @@ describe('AppComponent', () => {
     };
 
     sessionStorage.clear();
-    authServiceMock = jasmine.createSpyObj('AuthService', ['getId', 'handleCallback']);
+    authServiceMock = jasmine.createSpyObj('AuthService', ['getId', 'handleCallback', 'getDecodedToken', 'getUserData']);
     authServiceMock.getId.and.returnValue('shell');
     authServiceMock.handleCallback.and.returnValue(Promise.resolve({ success: true }));
+    authServiceMock.getDecodedToken.and.returnValue(null);
+    authServiceMock.getUserData.and.returnValue(null);
 
     loginSuccessSubject = new Subject();
     logoutSubject = new Subject();
@@ -110,6 +112,36 @@ describe('AppComponent', () => {
     loginSuccessSubject.next({});
 
     expect(routerMock.navigate).toHaveBeenCalledWith(['/buyer'], { replaceUrl: true });
+  });
+
+  it('should extract role from decoded token and navigate on auth:login_success', async () => {
+    authServiceMock.getDecodedToken.and.returnValue({
+      org_and_roles: { 'org-123': ['buyer'] }
+    } as any);
+    await component.ngOnInit();
+    loginSuccessSubject.next({});
+
+    expect(sessionStorage.getItem('role')).toBe('buyer');
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/buyer'], { replaceUrl: true });
+  });
+
+  it('should extract role from namespaced org_and_roles claim in decoded token', async () => {
+    authServiceMock.getDecodedToken.and.returnValue({
+      'https://inkramp.io/org_and_roles': { 'org-123': ['supplier'] }
+    } as any);
+    await component.ngOnInit();
+    loginSuccessSubject.next({});
+
+    expect(sessionStorage.getItem('role')).toBe('supplier');
+  });
+
+  it('should fall back to getUserData role when decoded token has no org_and_roles', async () => {
+    authServiceMock.getDecodedToken.and.returnValue({});
+    authServiceMock.getUserData.and.returnValue({ id: '1', name: 'Test', email: 'test@test.com', role: 'admin', org: 'org-1' });
+    await component.ngOnInit();
+    loginSuccessSubject.next({});
+
+    expect(sessionStorage.getItem('role')).toBe('admin');
   });
 
   it('should navigate to / inside ngZone on auth:logout', async () => {

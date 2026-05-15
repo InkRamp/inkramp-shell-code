@@ -105,3 +105,34 @@ export function getMfeRemoteConfig(name: string | null): MfeRemoteConfig | undef
     ? { remoteName: mfe.remoteName, exposedModule: mfe.exposedModule, url: mfe.url }
     : undefined;
 }
+
+/**
+ * Extracts user roles from a decoded access token payload.
+ * Handles both direct `org_and_roles` and URL-namespaced variants
+ * (e.g. `https://inkramp.io/org_and_roles`).
+ */
+export function extractRolesFromDecodedToken(payload: Record<string, unknown> | null): string[] {
+  if (!payload) return [];
+  const key = Object.keys(payload).find(k => k === 'org_and_roles' || k.endsWith('/org_and_roles'));
+  const orgRoles = key ? payload[key] : null;
+  return orgRoles && typeof orgRoles === 'object'
+    ? Object.values(orgRoles as Record<string, string[]>).flat()
+    : [];
+}
+
+/**
+ * Returns the first role from the provided list that maps to a known UserRole.
+ * Returns null when no match is found.
+ */
+export function resolveFirstKnownRole(roles: string[]): string | null {
+  const knownRoles = new Set<string>(Object.values(UserRole));
+  return roles.find(r => knownRoles.has(r.toLowerCase())) ?? null;
+}
+
+/**
+ * Writes the resolved role to sessionStorage under the 'role' key.
+ * This is the single write-point for role persistence in the shell.
+ */
+export function storeSessionRole(role: string): void {
+  sessionStorage.setItem('role', role.toLowerCase());
+}
