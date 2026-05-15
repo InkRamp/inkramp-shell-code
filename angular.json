@@ -17,7 +17,7 @@
         "build": {
           "builder": "ngx-build-plus:browser",
           "options": {
-            "outputPath": "dist/i17e",
+            "outputPath": "dist/all-mfe-builds",
             "index": "src/index.html",
             "polyfills": [
               "zone.js"
@@ -35,7 +35,7 @@
             "main": "src/main.ts",
             "extraWebpackConfig": "webpack.config.js",
             "commonChunk": false,
-            "baseHref": "/i17e/",
+            "baseHref": "/all-mfe-builds/",
             "stylePreprocessorOptions": {
               "includePaths": [
                 "src/styles"

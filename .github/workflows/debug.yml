@@ -41,7 +41,7 @@ jobs:
       run: |
             # echo 'Lets see what we have moko'
             # ls -l --ignore=node_modules
-            cp dist/i17e/index.html dist/i17e/404.html
+            cp dist/all-mfe-builds/index.html dist/all-mfe-builds/404.html
 
     # - name: Debug dist
     #   run: ls -R dist
@@ -51,6 +51,6 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         personal_token: ${{ secrets.PAT_TOKEN }}
-        external_repository: OpensourceKD/i17e
+        external_repository: OpensourceKD/all-mfe-builds
         publish_branch: main
-        publish_dir: ./dist/i17e
+        publish_dir: ./dist/all-mfe-builds

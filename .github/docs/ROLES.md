@@ -101,9 +101,9 @@ Roles are encoded in JWT tokens using claims:
 // Namespaced custom claim format (Auth0)
 {
   "sub": "auth0|user-id-123",
-  "https://i17e.app/roles": ["TEAM_LEAD"],
-  "https://i17e.app/org_id": "org-456",
-  "https://i17e.app/team_id": "team-789"
+  "https://all-mfe-builds.app/roles": ["TEAM_LEAD"],
+  "https://all-mfe-builds.app/org_id": "org-456",
+  "https://all-mfe-builds.app/team_id": "team-789"
 }
 ```
 

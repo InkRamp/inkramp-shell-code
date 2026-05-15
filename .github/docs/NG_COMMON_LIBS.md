@@ -152,7 +152,7 @@ Follow Semantic Versioning (SemVer):
 
 ## Related Resources
 
-- **Project Repository**: OpensourceKD/i17e-code
+- **Project Repository**: OpensourceKD/all-mfe-builds-code
 - **Current Location**: `src/_temp-shared/`
 - **Documentation**: `.github/docs/ARCHITECTURE.md`
 - **Migration Plan**: `src/_temp-shared/README.md`

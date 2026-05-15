@@ -14,7 +14,7 @@ The files exist in commit `da5c5b462325597faf1847576552b3715a481872` (the commit
 
 ```bash
 # Navigate to repository root
-cd /path/to/i17e-code
+cd /path/to/all-mfe-builds-code
 
 # Fetch more git history if needed
 git fetch --unshallow 2>/dev/null || git fetch --depth=100
@@ -33,7 +33,7 @@ git status
 
 If git checkout doesn't work (shallow clone issues), you can download files from GitHub:
 
-1. Visit: https://github.com/OpensourceKD/i17e-code/tree/da5c5b462325597faf1847576552b3715a481872/postman
+1. Visit: https://github.com/OpensourceKD/all-mfe-builds-code/tree/da5c5b462325597faf1847576552b3715a481872/postman
 2. Click on each file and use "Raw" button to download
 3. Save files to your local `postman/` directory
 

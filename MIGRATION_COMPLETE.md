@@ -42,12 +42,12 @@ In your Auth0 Dashboard → Applications → Your App:
    - Application Type: Single Page Application
    - **Allowed Callback URLs** (REQUIRED):
      ```
-     https://opensourcekd.github.io/i17e/auth-callback,
+     https://opensourcekd.github.io/all-mfe-builds/auth-callback,
      http://localhost:4200/auth-callback
      ```
    - **Allowed Logout URLs** (REQUIRED - fixes logout error):
      ```
-     https://opensourcekd.github.io/i17e,
+     https://opensourcekd.github.io/all-mfe-builds,
      http://localhost:4200
      ```
    - **Allowed Web Origins** (REQUIRED):
@@ -74,8 +74,8 @@ export const AUTH0_CONFIG: Auth0Config = {
   clientId: 'YOUR_CLIENT_ID_HERE',     // ← UPDATE THIS
   
   // These should match your deployment URL
-  redirectUri: 'https://opensourcekd.github.io/i17e/auth-callback',
-  logoutUri: 'https://opensourcekd.github.io/i17e',
+  redirectUri: 'https://opensourcekd.github.io/all-mfe-builds/auth-callback',
+  logoutUri: 'https://opensourcekd.github.io/all-mfe-builds',
   
   scope: 'openid profile email',
   
@@ -103,7 +103,7 @@ exports.onExecutePostLogin = async (event, api) => {
 
 ### Step 5: Test Authentication
 1. Build the application: `npm run build`
-2. Start a local server: `npx http-server dist/i17e`
+2. Start a local server: `npx http-server dist/all-mfe-builds`
 3. Click "Login" button
 4. Authenticate with Auth0
 5. Check browser console for authentication logs
