@@ -1,8 +1,8 @@
-# @InkRamp/ng-common-libs - Knowledge Base
+# @opensourcekd/ng-common-libs - Knowledge Base
 
-## What is @InkRamp/ng-common-libs?
+## What is @opensourcekd/ng-common-libs?
 
-`@InkRamp/ng-common-libs` is the planned external package name for shared Angular services and utilities that will be extracted from this repository and published to an artifact repository (npm or private registry).
+`@opensourcekd/ng-common-libs` is the planned external package name for shared Angular services and utilities that will be extracted from this repository and published to an artifact repository (npm or private registry).
 
 ## Current Status
 
@@ -11,7 +11,7 @@
 ## Package Structure (Planned)
 
 ```
-@InkRamp/ng-common-libs/
+@opensourcekd/ng-common-libs/
 ├── auth/
 │   ├── auth.service.ts           # Auth0 authentication service
 │   └── auth.interceptor.ts       # HTTP authentication interceptor
@@ -35,15 +35,15 @@
 ```typescript
 // Both of these work right now and point to src/_temp-shared/
 import { AuthService, RoleService } from '@org/core-services';
-import { AuthService, RoleService } from '@InkRamp/ng-common-libs';
+import { AuthService, RoleService } from '@opensourcekd/ng-common-libs';
 ```
 
 ### Future (After Package Publication)
 ```typescript
 // Package will be installed via npm/private registry
-import { AuthService } from '@InkRamp/ng-common-libs/auth';
-import { RoleService } from '@InkRamp/ng-common-libs/rbac';
-import { EventBusService } from '@InkRamp/ng-common-libs/mfe';
+import { AuthService } from '@opensourcekd/ng-common-libs/auth';
+import { RoleService } from '@opensourcekd/ng-common-libs/rbac';
+import { EventBusService } from '@opensourcekd/ng-common-libs/mfe';
 ```
 
 ## Key Services to be Included
@@ -71,7 +71,7 @@ import { EventBusService } from '@InkRamp/ng-common-libs/mfe';
 
 ## Migration Decision Criteria
 
-### Goes to @InkRamp/ng-common-libs if:
+### Goes to @opensourcekd/ng-common-libs if:
 - ✅ Used across multiple projects
 - ✅ General-purpose functionality
 - ✅ Minimal project-specific dependencies
@@ -98,7 +98,7 @@ import { EventBusService } from '@InkRamp/ng-common-libs/mfe';
 ### Approach 1: Inject Config at Runtime
 ```typescript
 // In consuming application
-import { AUTH_CONFIG_TOKEN } from '@InkRamp/ng-common-libs/auth';
+import { AUTH_CONFIG_TOKEN } from '@opensourcekd/ng-common-libs/auth';
 
 providers: [
   { provide: AUTH_CONFIG_TOKEN, useValue: environment.auth0Config }
@@ -108,7 +108,7 @@ providers: [
 ### Approach 2: Environment-Based Config Files
 ```typescript
 // Package provides interface, app provides values
-import { Auth0Config } from '@InkRamp/ng-common-libs/auth';
+import { Auth0Config } from '@opensourcekd/ng-common-libs/auth';
 
 export const auth0Config: Auth0Config = {
   domain: 'your-tenant.auth0.com',

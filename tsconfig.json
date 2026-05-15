@@ -3,7 +3,7 @@
   "compilerOptions": {
     "paths": {
       "@org/core-services": ["./src/_temp-shared/public-api.ts"],
-      //"@InkRamp/ng-common-libs": ["./node_modules/@InkRamp/ng-common-libs/dist/index.d.ts"]
+      //"@opensourcekd/ng-common-libs": ["./node_modules/@opensourcekd/ng-common-libs/dist/index.d.ts"]
     },
     "outDir": "./dist/out-tsc",
     "strict": true,

@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivateFn, Router, RouterStateSnapshot } from '@angular/router';
-import { AuthService, TokenPayload } from '@InkRamp/ng-common-libs';
+import { AuthService, TokenPayload } from '@opensourcekd/ng-common-libs';
 
 /**
  * Extended token payload including the org_and_roles custom claim.

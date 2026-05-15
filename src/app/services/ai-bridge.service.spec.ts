@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { EventBus } from '@InkRamp/ng-common-libs';
+import { EventBus } from '@opensourcekd/ng-common-libs';
 import { AIBridgeService, AiBridgeConfig, AiMessage, AI_BRIDGE_CONFIG, DEFAULT_AI_BRIDGE_CONFIG } from './ai-bridge.service';
 import { MessageBridgeService } from './message-bridge.service';
 

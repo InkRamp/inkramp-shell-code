@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Subject } from 'rxjs';
 import { DomSanitizer } from '@angular/platform-browser';
-import { AuthService, EventBus, UserInfo } from '@InkRamp/ng-common-libs';
+import { AuthService, EventBus, UserInfo } from '@opensourcekd/ng-common-libs';
 import { AiAssistantComponent } from './ai-assistant.component';
 import { MessageBridgeService } from '../../services/message-bridge.service';
 import { OrgRolesTokenPayload } from '../../../configs/mfe';

@@ -1,4 +1,4 @@
-name: For development & debugging version of i17e
+name: For development & debugging version of InkRamp
 
 on:
   push:

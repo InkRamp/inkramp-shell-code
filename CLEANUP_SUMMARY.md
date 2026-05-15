@@ -1,7 +1,7 @@
 # Cleanup Summary - _temp-shared Directory
 
 ## Overview
-Successfully cleaned up the `_temp-shared` directory, removing all unnecessary implementations while keeping minimal dummy placeholders. All shareable functionality has been moved to the `@InkRamp/ng-common-libs` library.
+Successfully cleaned up the `_temp-shared` directory, removing all unnecessary implementations while keeping minimal dummy placeholders. All shareable functionality has been moved to the `@opensourcekd/ng-common-libs` library.
 
 ## Files Retained (3 files, 45 lines total)
 
@@ -17,7 +17,7 @@ Successfully cleaned up the `_temp-shared` directory, removing all unnecessary i
 
 3. **src/_temp-shared/public-api.ts** (15 lines)
    - Exports dummy placeholders
-   - Re-exports from `@InkRamp/ng-common-libs` (EventBus, AuthService, APP_CONFIG, UserInfo, UserData)
+   - Re-exports from `@opensourcekd/ng-common-libs` (EventBus, AuthService, APP_CONFIG, UserInfo, UserData)
 
 ## Files Removed (14 files, ~1,700 lines)
 
@@ -68,12 +68,12 @@ Simplified all test files to remove @org/core-services dependencies:
 
 ## Migration Path
 
-All removed functionality is now available in `@InkRamp/ng-common-libs`:
+All removed functionality is now available in `@opensourcekd/ng-common-libs`:
 
-- **AuthService** - Use from @InkRamp/ng-common-libs
-- **EventBus** - Use from @InkRamp/ng-common-libs
-- **APP_CONFIG** - Use from @InkRamp/ng-common-libs
-- **UserInfo, UserData types** - Use from @InkRamp/ng-common-libs
+- **AuthService** - Use from @opensourcekd/ng-common-libs
+- **EventBus** - Use from @opensourcekd/ng-common-libs
+- **APP_CONFIG** - Use from @opensourcekd/ng-common-libs
+- **UserInfo, UserData types** - Use from @opensourcekd/ng-common-libs
 
 ## Build Status
 ✅ **Build Successful**

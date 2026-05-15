@@ -55,16 +55,16 @@ shared: {
 
 ## Note About NPM Package
 
-The npm package `@InkRamp/ng-common-libs` is available but **NOT installed** in this PR.
+The npm package `@opensourcekd/ng-common-libs` is available but **NOT installed** in this PR.
 
 **Why?**
-- The namespace `@InkRamp/ng-common-libs` is currently mapped to local services in `tsconfig.json`
+- The namespace `@opensourcekd/ng-common-libs` is currently mapped to local services in `tsconfig.json`
 - Installing the npm package would create a **namespace conflict**
 - The local services in `src/_temp-shared/` are still in use and not yet decommissioned
 - The npm package should only be added after migrating away from local services
 
 **Current Setup**:
-- ⚠️ `tsconfig.json` maps `@InkRamp/ng-common-libs` → `./src/_temp-shared/`
+- ⚠️ `tsconfig.json` maps `@opensourcekd/ng-common-libs` → `./src/_temp-shared/`
 - ✅ Local services are fully functional
 - 📝 Migration to npm package should be done separately, after decommissioning local services
 
@@ -117,7 +117,7 @@ npm run build
 ## Next Steps (Optional)
 
 ### 1. Consider Migration to NPM Package (Future Work)
-Before migrating to `@InkRamp/ng-common-libs`:
+Before migrating to `@opensourcekd/ng-common-libs`:
 1. **Remove or rename tsconfig path mapping** to avoid namespace conflict
 2. **Decommission local services** in `src/_temp-shared/`
 3. **Install npm package** after clearing the namespace
@@ -159,7 +159,7 @@ NPM package provides generic utilities:
 - [Module Federation Documentation](https://webpack.js.org/concepts/module-federation/)
 - [Angular Module Federation Guide](https://www.angulararchitects.io/aktuelles/the-microfrontend-revolution-module-federation-in-webpack-5/)
 - [Semantic Versioning](https://semver.org/)
-- [@InkRamp/ng-common-libs on NPM](https://www.npmjs.com/package/@InkRamp/ng-common-libs)
+- [@opensourcekd/ng-common-libs on NPM](https://www.npmjs.com/package/@opensourcekd/ng-common-libs)
 
 ---
 

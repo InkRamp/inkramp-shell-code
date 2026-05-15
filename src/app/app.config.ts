@@ -6,7 +6,7 @@ import { routes } from './app.routes';
 
 /**
  * Application configuration
- * Note: Auth interceptor removed as auth is now handled by @InkRamp/ng-common-libs
+ * Note: Auth interceptor removed as auth is now handled by @opensourcekd/ng-common-libs
  */
 export const appConfig: ApplicationConfig = {
   providers: [

@@ -3,7 +3,7 @@ import { AppComponent } from './app/app.component';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { routes } from './app/app.routes';
-import { EventBus, AuthService, APP_CONFIG } from '@InkRamp/ng-common-libs';
+import { EventBus, AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs';
 import { bearerTokenInterceptor } from '@org/core-services';
 import { MessageBridgeService } from './app/services/message-bridge.service';
 import { AIBridgeService, AI_BRIDGE_CONFIG } from './app/services/ai-bridge.service';

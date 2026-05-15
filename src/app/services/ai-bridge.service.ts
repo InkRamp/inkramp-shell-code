@@ -1,5 +1,5 @@
 import { Injectable, InjectionToken, OnDestroy, inject } from '@angular/core';
-import { EventBus } from '@InkRamp/ng-common-libs';
+import { EventBus } from '@opensourcekd/ng-common-libs';
 import { MessageBridgeService } from './message-bridge.service';
 
 /** Message shape sent by the AI iframe via postMessage. */

@@ -4,7 +4,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
-import { AuthService, EventBus, UserInfo } from '@InkRamp/ng-common-libs';
+import { AuthService, EventBus, UserInfo } from '@opensourcekd/ng-common-libs';
 import { MessageBridgeService } from '../../services/message-bridge.service';
 import { MFE_CONFIGS, OrgRolesTokenPayload, extractUserRoles, hasAiAssistantAccess } from '../../../configs/mfe';
 

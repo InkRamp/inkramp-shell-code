@@ -1,4 +1,4 @@
-// Breakpoints — single source of truth matching the @InkRamp/ng-common-libs tokens.
+// Breakpoints — single source of truth matching the @opensourcekd/ng-common-libs tokens.
 // CSS custom properties cannot be used in @media conditions (CSS spec limitation),
 // so the token values are captured here as Sass variables and shared across all
 // component stylesheets via stylePreprocessorOptions.includePaths in angular.json.

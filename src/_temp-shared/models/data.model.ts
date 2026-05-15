@@ -1,6 +1,6 @@
 /**
  * DUMMY PLACEHOLDER MODEL
- * This is a minimal placeholder - all real implementations moved to @InkRamp/ng-common-libs
+ * This is a minimal placeholder - all real implementations moved to @opensourcekd/ng-common-libs
  */
 
 /**
