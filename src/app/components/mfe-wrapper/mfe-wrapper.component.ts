@@ -14,7 +14,7 @@ import {
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
-import MFE from '../../../configs/mfe';
+import { getMfeRemoteConfig } from '../../../configs/mfe';
 import { loadRemoteModule, LoadRemoteModuleScriptOptions } from '@angular-architects/module-federation';
 
 /** Shape of a lazily-loaded MFE remote module. */
@@ -68,8 +68,7 @@ export class MfeWrapperComponent implements AfterViewInit, OnDestroy {
   private componentRef?: ComponentRef<unknown>;
 
   async ngAfterViewInit(): Promise<void> {
-    const options: LoadRemoteModuleScriptOptions | undefined =
-      MFE.find(({ remoteName }) => remoteName === this.name);
+    const options: LoadRemoteModuleScriptOptions | undefined = getMfeRemoteConfig(this.name);
 
     if (!options) {
       console.error(`[MfeWrapperComponent] MFE configuration not found for: ${this.name}`);

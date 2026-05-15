@@ -1,6 +1,12 @@
 <div class="home-container">
   <h1>Incentive Management System</h1>
-  @if (!isLoggedIn) {
-    <p class="welcome-text">Welcome! Please log in to access the system.</p>
-  }
+  <p class="welcome-text">Choose a microapp to continue.</p>
+  <div class="mfe-grid">
+    @for (mfe of mfeCards; track mfe.remoteName) {
+      <a class="mfe-card" [routerLink]="['/', mfe.route]">
+        <h2>{{ mfe.displayName }}</h2>
+        <p>/{{ mfe.route }}</p>
+      </a>
+    }
+  </div>
 </div>

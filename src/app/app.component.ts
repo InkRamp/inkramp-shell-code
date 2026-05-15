@@ -7,7 +7,7 @@ import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { AiAssistantComponent } from './components/ai-assistant/ai-assistant.component';
 import { EventBus, AuthService } from '@opensourcekd/ng-common-libs';
-import { OrgRolesTokenPayload, extractUserRoles, getHighestPriorityRoute } from '../configs/mfe';
+import { getFirstAvailableRoute, getSessionRole } from '../configs/mfe';
 
 /**
  * Root application component
@@ -91,10 +91,8 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** Returns the highest-priority route the current user has access to, or null if none. */
   private getFirstAvailableRoute(): string | null {
-    const token = this.authService.getDecodedToken() as OrgRolesTokenPayload | null;
-    return getHighestPriorityRoute(extractUserRoles(token));
+    return getFirstAvailableRoute(getSessionRole());
   }
 
   ngOnDestroy(): void {

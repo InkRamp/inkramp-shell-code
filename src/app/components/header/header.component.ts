@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { AuthService, EventBus, UserInfo } from '@opensourcekd/ng-common-libs';
-import { MfeConfig, OrgRolesTokenPayload, extractUserRoles, filterMfesByRoles } from '../../../configs/mfe';
+import { MfeConfig, filterMfesByRole, getSessionRole } from '../../../configs/mfe';
 
 /**
  * Header component for the application
@@ -95,11 +95,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   /**
    * Returns MFE configs accessible to the current user based on their roles.
-   * Delegates to shared pure functions from mfe.ts (DRY).
+   * Session storage is the source of truth for role-based MFE visibility.
    */
   private getAvailableMfes(): MfeConfig[] {
-    const token = this.authService.getDecodedToken() as OrgRolesTokenPayload | null;
-    return filterMfesByRoles(extractUserRoles(token));
+    return filterMfesByRole(getSessionRole());
   }
 
   ngOnDestroy(): void {
