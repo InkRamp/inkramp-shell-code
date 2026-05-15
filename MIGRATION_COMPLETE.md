@@ -103,7 +103,7 @@ exports.onExecutePostLogin = async (event, api) => {
 
 ### Step 5: Test Authentication
 1. Build the application: `npm run build`
-2. Start a local server: `npx http-server dist/InkRamp`
+2. Start a local server: `npx http-server dist/shell`
 3. Click "Login" button
 4. Authenticate with Auth0
 5. Check browser console for authentication logs

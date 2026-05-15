@@ -18,8 +18,8 @@ const authService = new AuthService(
     domain: APP_CONFIG.auth0Domain,
     clientId: APP_CONFIG.auth0ClientId,
     audience: 'https://something', //APP_CONFIG.apiUrl,
-    redirectUri: `${window.location.origin}/InkRamp`,
-    logoutUri: `${window.location.origin}/InkRamp`,
+    redirectUri: `${window.location.origin}/shell`,
+    logoutUri: `${window.location.origin}/shell`,
     scope: 'openid profile email'
   },
   eventBus,

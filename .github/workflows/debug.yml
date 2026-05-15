@@ -41,7 +41,7 @@ jobs:
       run: |
             # echo 'Lets see what we have moko'
             # ls -l --ignore=node_modules
-            cp dist/InkRamp/index.html dist/InkRamp/404.html
+            cp dist/shell/index.html dist/shell/404.html
 
     # - name: Debug dist
     #   run: ls -R dist
@@ -53,4 +53,4 @@ jobs:
         personal_token: ${{ secrets.PAT_TOKEN }}
         external_repository: InkRamp/shell
         publish_branch: main
-        publish_dir: ./dist/InkRamp
+        publish_dir: ./dist/shell
