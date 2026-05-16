@@ -3,11 +3,13 @@ import { HomePageComponent } from './pages/home-page/home-page.component';
 import { MfePageComponent } from './pages/mfe-page/mfe-page.component';
 import { AuthCallbackComponent } from './auth-callback/auth-callback.component';
 import { MFE_CONFIGS } from '../configs/mfe';
+import { roleGuard } from './guards/role.guard';
 
 const mfeRoutes: Routes = MFE_CONFIGS.map(mfe => ({
   path: mfe.route,
   component: MfePageComponent,
-  data: { mfeName: mfe.remoteName }
+  data: { mfeName: mfe.remoteName },
+  canActivate: [roleGuard([mfe.role])]
 }));
 
 export const routes: Routes = [

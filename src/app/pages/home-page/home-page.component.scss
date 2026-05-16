@@ -15,6 +15,28 @@
     margin-bottom: 2rem;
   }
 
+  .login-prompt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 3rem 0;
+  }
+
+  .btn-login {
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--primary, #0d6efd);
+    color: #fff;
+    cursor: pointer;
+
+    &:hover {
+      opacity: 0.88;
+    }
+  }
+
   .mfe-grid {
     display: grid;
     gap: 1rem;

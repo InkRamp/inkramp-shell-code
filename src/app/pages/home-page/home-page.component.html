@@ -1,11 +1,18 @@
 <div class="home-container">
-  <p class="welcome-text">Choose a microapp to continue.</p>
-  <div class="mfe-grid">
-    @for (mfe of mfeCards; track mfe.remoteName) {
-      <a class="mfe-card" [routerLink]="['/', mfe.route]">
-        <h2>{{ mfe.displayName }}</h2>
-        <p>/{{ mfe.route }}</p>
-      </a>
-    }
-  </div>
+  @if (!currentUser) {
+    <div class="login-prompt">
+      <p class="welcome-text">Welcome to InkRamp. Please log in to continue.</p>
+      <button class="btn-login" (click)="login()">Login</button>
+    </div>
+  } @else {
+    <p class="welcome-text">Choose a microapp to continue.</p>
+    <div class="mfe-grid">
+      @for (mfe of availableMfes; track mfe.remoteName) {
+        <a class="mfe-card" [routerLink]="['/', mfe.route]">
+          <h2>{{ mfe.displayName }}</h2>
+          <p>/{{ mfe.route }}</p>
+        </a>
+      }
+    </div>
+  }
 </div>
