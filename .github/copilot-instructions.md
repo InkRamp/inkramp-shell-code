@@ -3,8 +3,13 @@
 Just Say ... "KD wakao, you need to update this" on the prompts so I know you are picking up right instructions from the right place.
 
 ---
-## Assignement Details
-Refer to .github/copilot-assignment-detail.md for the complete assignement. Use this file to get an understanding of what is to be built. Use this document as well as current document to know your functions, responsibilites and boundaries. 
+## Assignment Details
+Refer to .github/copilot-assignment-detail.md for the complete assignment. Use this file to get an understanding of what is to be built. Use this document as well as current document to know your functions, responsibilities and boundaries. 
+
+When available in the current repository, also use these supporting reference artifacts for review context:
+- `.github/auth-contracts.md` for the Auth0 `sessionStorage` contract
+- `.github/pulumi-outputs.md` for reviewed Pulumi stack outputs
+- `.github/swagger-docs.json` for the current OpenAPI contract
 
 ## Coding Standards (JS / TS — all repos)
 
@@ -79,6 +84,9 @@ These rules apply to every repository in the InkRamp organization.
 - Import aliases:
   - `@org/core-services` (legacy, currently supported)
   - `@opensourcekd/ng-common-libs` (future canonical package)
+- `@org/core-services` is a shared package replicated as an exact clone across repos; treat it as immutable in service repos and do not introduce local divergence.
+- HTTP interceptors available from shared services: `authInterceptor` and `BearerTokenInterceptor`.
+- Standardize all MFE HTTP wiring on `BearerTokenInterceptor`; if `authInterceptor` usage is encountered in an MFE, replace it with `BearerTokenInterceptor`.
 - Key services:
   - `AuthService`: Auth0 OIDC/OAuth2 lifecycle using `sessionStorage`
   - `RoleService`: RBAC and permission mapping
@@ -130,6 +138,7 @@ These rules apply to every repository in the InkRamp organization.
 - Do not store tokens in `localStorage`.
 - Do not log sensitive values (passwords, tokens, account numbers).
 - Do not bypass `AuthService` for API authentication flow.
+- Do not use mixed interceptor strategies across MFEs; use only `BearerTokenInterceptor`.
 - Do not hardcode colors or spacing.
 - Do not rely only on `user$` for auth-gated UI; pair it with EventBus auth events.
 - Do not rely only on `Router.navigate()` for post-auth UI refresh; wrap auth event handling in `NgZone.run()`.
@@ -278,4 +287,3 @@ Event-driven examples:
 
 - The sync workflow only reacts to pushes on `main` when `.github/copilot-instructions.md` changes.
 - If `.github/PROJECT_CONTEXT.md` is added later, treat it as the richer product brief that should inform future updates here.
-
