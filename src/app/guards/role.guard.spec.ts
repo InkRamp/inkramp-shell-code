@@ -9,8 +9,9 @@ describe('Role Guards', () => {
 
   beforeEach(() => {
     sessionStorage.clear();
-    authServiceMock = jasmine.createSpyObj('AuthService', ['isAuthenticatedSync', 'login']);
+    authServiceMock = jasmine.createSpyObj('AuthService', ['isAuthenticatedSync', 'login', 'getDecodedToken']);
     authServiceMock.login.and.returnValue(Promise.resolve());
+    authServiceMock.getDecodedToken.and.returnValue(null);
 
     TestBed.configureTestingModule({
       providers: [
@@ -62,6 +63,19 @@ describe('Role Guards', () => {
         roleGuard(['admin'])({} as any, {} as any)
       );
       expect(result).not.toBe(true);
+    });
+
+    it('should allow access when role is present in decoded token roles', () => {
+      authServiceMock.isAuthenticatedSync.and.returnValue(true);
+      authServiceMock.getDecodedToken.and.returnValue({
+        org_and_roles: {
+          'org-inkramp': ['admin']
+        }
+      });
+      const result = TestBed.runInInjectionContext(() =>
+        roleGuard(['admin'])({} as any, {} as any)
+      );
+      expect(result).toBe(true);
     });
 
     it('should redirect and initiate login when user is not authenticated', () => {
