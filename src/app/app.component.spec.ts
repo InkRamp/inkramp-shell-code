@@ -69,7 +69,7 @@ describe('AppComponent', () => {
   });
 
   it('should have the title', () => {
-    expect(component.title).toEqual('Incentive Management System');
+    expect(component.title).toEqual('InkRamp');
   });
 
   it('should subscribe to EventBus auth events on init', async () => {

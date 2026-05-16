@@ -21,7 +21,7 @@ import { OrgRolesTokenPayload, extractUserRoles, filterMfesByRoles, getFirstAvai
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit, OnDestroy {
-  title = 'Incentive Management System';
+  title = 'InkRamp';
   private subscriptions = new Subscription();
   private eventBus = inject(EventBus);
   private authService = inject(AuthService);
