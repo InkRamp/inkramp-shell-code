@@ -7,7 +7,7 @@ import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { AiAssistantComponent } from './components/ai-assistant/ai-assistant.component';
 import { EventBus, AuthService } from '@opensourcekd/ng-common-libs';
-import { getFirstAvailableRoute, getSessionRole } from '../configs/mfe';
+import { OrgRolesTokenPayload, extractUserRoles, filterMfesByRoles, getFirstAvailableRoute, getSessionRole } from '../configs/mfe';
 
 /**
  * Root application component
@@ -92,7 +92,9 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private getFirstAvailableRoute(): string | null {
-    return getFirstAvailableRoute(getSessionRole());
+    const token = this.authService.getDecodedToken() as OrgRolesTokenPayload | null;
+    const firstTokenMfe = filterMfesByRoles(extractUserRoles(token))[0];
+    return firstTokenMfe ? `/${firstTokenMfe.route}` : getFirstAvailableRoute(getSessionRole());
   }
 
   ngOnDestroy(): void {

@@ -208,7 +208,7 @@ describe('AiAssistantComponent', () => {
   it('should expose a SafeResourceUrl for the AI iframe', () => {
     const sanitizer = TestBed.inject(DomSanitizer);
     const expected = sanitizer.bypassSecurityTrustResourceUrl(
-      'https://InkRamp.github.io/InkRamp/mfe-AI-CHATBOT/'
+      'https://inkramp.github.io/all-mfe-builds/inkramp-mfe-AI-Analytics/'
     );
     // Both values should be SafeResourceUrl objects (not raw strings)
     expect(typeof component.aiUrl).not.toBe('string');
