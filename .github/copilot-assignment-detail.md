@@ -1,4 +1,4 @@
-The InkRamp Build — Assignment 
+The InkRamp Build — Assignment
 Role: Head of Engineering at PACTAP
 A finalist-stage exercise. We respect your time. Read this in full before you write a line of code.
 InkRamp is a fictional company we made up for this exercise. It is not affiliated with Pactap. Any
