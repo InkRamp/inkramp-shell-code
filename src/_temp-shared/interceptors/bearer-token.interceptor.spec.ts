@@ -78,6 +78,27 @@ describe('bearerTokenInterceptor', () => {
     req.flush([]);
   });
 
+  it('adds Authorization header when request matches API base exactly', () => {
+    setup('test-token');
+
+    http.get(API_URL).subscribe();
+
+    const req = controller.expectOne(API_URL);
+    expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
+    req.flush([]);
+  });
+
+  it('adds Authorization header when request matches API base with query params', () => {
+    setup('test-token');
+
+    const urlWithQuery = `${API_URL}?health=1`;
+    http.get(urlWithQuery).subscribe();
+
+    const req = controller.expectOne(urlWithQuery);
+    expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
+    req.flush([]);
+  });
+
   it('passes the original request through unchanged when no token', () => {
     setup(null);
 

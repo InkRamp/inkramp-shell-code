@@ -17,13 +17,23 @@ import { AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs';
  * Registration (in bootstrap.ts / app.config.ts):
  *   provideHttpClient(withFetch(), withInterceptors([bearerTokenInterceptor]))
  */
+const isApiRequest = (requestUrl: string, apiBaseUrl: string): boolean => {
+  const request = new URL(requestUrl, window.location.origin);
+  const apiBase = new URL(apiBaseUrl, window.location.origin);
+
+  if (request.origin !== apiBase.origin) {
+    return false;
+  }
+
+  const apiBasePath = apiBase.pathname.endsWith('/') ? apiBase.pathname : `${apiBase.pathname}/`;
+  return request.pathname === apiBase.pathname || request.pathname.startsWith(apiBasePath);
+};
+
 export const bearerTokenInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const token = authService.getTokenSync();
 
-  const apiBase = APP_CONFIG.apiUrl.endsWith('/') ? APP_CONFIG.apiUrl : `${APP_CONFIG.apiUrl}/`;
-
-  if (!token || !req.url.startsWith(apiBase)) {
+  if (!token || !isApiRequest(req.url, APP_CONFIG.apiUrl)) {
     return next(req);
   }
 
