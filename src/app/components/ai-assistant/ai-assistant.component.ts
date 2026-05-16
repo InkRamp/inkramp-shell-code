@@ -8,7 +8,7 @@ import { AuthService, EventBus, UserInfo } from '@opensourcekd/ng-common-libs';
 import { MessageBridgeService } from '../../services/message-bridge.service';
 import { MFE_CONFIGS, OrgRolesTokenPayload, extractUserRoles, hasAiAssistantAccess } from '../../../configs/mfe';
 
-const AI_ASSISTANT_URL = 'https://InkRamp.github.io/InkRamp/mfe-AI-CHATBOT/';
+const AI_ASSISTANT_URL = 'https://inkramp.github.io/all-mfe-builds/inkramp-mfe-AI-Analytics/';
 
 /**
  * Floating AI assistant widget.
@@ -134,4 +134,3 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
     return config ? (config.showAiAssistant ?? true) : true;
   }
 }
-
