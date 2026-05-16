@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
@@ -29,6 +29,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();
   private authService = inject(AuthService);
   private eventBus = inject(EventBus);
+  private ngZone = inject(NgZone);
 
   constructor(
     private router: Router
@@ -53,29 +54,37 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.eventBus.on('auth:login_success').subscribe(() => {
         const user = this.authService.getUser();
-        console.log('[HeaderComponent] auth:login_success — refreshing nav for:', user?.email);
-        this.updateNavState(user);
+        this.ngZone.run(() => {
+          console.log('[HeaderComponent] auth:login_success — refreshing nav for:', user?.email);
+          this.updateNavState(user);
+        });
       })
     );
 
     this.subscriptions.add(
       this.eventBus.on('auth:logout').subscribe(() => {
-        console.log('[HeaderComponent] auth:logout — clearing nav');
-        this.clearNavState();
+        this.ngZone.run(() => {
+          console.log('[HeaderComponent] auth:logout — clearing nav');
+          this.clearNavState();
+        });
       })
     );
 
     this.subscriptions.add(
       this.eventBus.on('auth:login_failure').subscribe(() => {
-        console.warn('[HeaderComponent] auth:login_failure — clearing nav');
-        this.clearNavState();
+        this.ngZone.run(() => {
+          console.warn('[HeaderComponent] auth:login_failure — clearing nav');
+          this.clearNavState();
+        });
       })
     );
 
     this.subscriptions.add(
       this.eventBus.on('auth:session_expired').subscribe(() => {
-        console.warn('[HeaderComponent] auth:session_expired — clearing nav');
-        this.clearNavState();
+        this.ngZone.run(() => {
+          console.warn('[HeaderComponent] auth:session_expired — clearing nav');
+          this.clearNavState();
+        });
       })
     );
   }
