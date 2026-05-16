@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { AuthService, EventBus, UserInfo } from '@opensourcekd/ng-common-libs';
 import { HeaderComponent } from './header.component';
-import { UserRole } from '../../../configs/mfe';
+import { OrgRolesTokenPayload, UserRole } from '../../../configs/mfe';
 
 describe('HeaderComponent', () => {
   let component: HeaderComponent;
@@ -17,6 +17,7 @@ describe('HeaderComponent', () => {
   let sessionExpiredSubject: Subject<unknown>;
 
   const stubUser: UserInfo = { sub: 'u1', email: 'test@test.com', name: 'Test', role: 'admin' };
+  const roleToken = (roles: string[]): OrgRolesTokenPayload => ({ org_and_roles: { org: roles } });
 
   beforeEach(async () => {
     sessionStorage.clear();
@@ -27,13 +28,14 @@ describe('HeaderComponent', () => {
     sessionExpiredSubject = new Subject<unknown>();
 
     authServiceMock = jasmine.createSpyObj('AuthService', [
-      'login', 'logout', 'isAuthenticatedSync', 'getId', 'getUser'
+      'login', 'logout', 'isAuthenticatedSync', 'getId', 'getUser', 'getDecodedToken'
     ]);
     authServiceMock.user$ = userSubject.asObservable() as any;
     authServiceMock.login.and.returnValue(Promise.resolve());
     authServiceMock.logout.and.returnValue(Promise.resolve());
     authServiceMock.getId.and.returnValue('mock-auth-id');
     authServiceMock.getUser.and.returnValue(null);
+    authServiceMock.getDecodedToken.and.returnValue(null);
 
     eventBusMock = jasmine.createSpyObj('EventBus', ['on', 'emit', 'getId']);
     eventBusMock.on.and.callFake((event: string) => {
@@ -71,15 +73,15 @@ describe('HeaderComponent', () => {
   });
 
   it('should show only the admin MFE for admin role', () => {
-    sessionStorage.setItem('role', UserRole.ADMIN);
+    authServiceMock.getDecodedToken.and.returnValue(roleToken([UserRole.ADMIN]));
     userSubject.next(stubUser);
     const routes = component.availableMfes.map(m => m.route);
-    expect(routes).toContain('reports');
+    expect(routes).toContain('admin');
     expect(component.availableMfes.length).toBe(1);
   });
 
   it('should show only the buyer MFE for buyer role', () => {
-    sessionStorage.setItem('role', UserRole.BUYER);
+    authServiceMock.getDecodedToken.and.returnValue(roleToken([UserRole.BUYER]));
     userSubject.next(stubUser);
     const routes = component.availableMfes.map(m => m.route);
     expect(routes).toContain('buyer');
@@ -87,14 +89,21 @@ describe('HeaderComponent', () => {
   });
 
   it('should show only the supplier MFE for supplier role', () => {
-    sessionStorage.setItem('role', UserRole.SUPPLIER);
+    authServiceMock.getDecodedToken.and.returnValue(roleToken([UserRole.SUPPLIER]));
     userSubject.next(stubUser);
     const routes = component.availableMfes.map(m => m.route);
-    expect(routes).toContain('sales');
+    expect(routes).toContain('supplier');
     expect(component.availableMfes.length).toBe(1);
   });
 
-  it('should return empty availableMfes when session role is missing', () => {
+  it('should show all MFEs mapped to all assigned token roles', () => {
+    authServiceMock.getDecodedToken.and.returnValue(roleToken([UserRole.ADMIN, UserRole.SUPPLIER]));
+    userSubject.next(stubUser);
+    const routes = component.availableMfes.map(m => m.route).sort();
+    expect(routes).toEqual(['admin', 'supplier']);
+  });
+
+  it('should return empty availableMfes when token and session roles are missing', () => {
     userSubject.next(stubUser);
     expect(component.availableMfes).toEqual([]);
   });
@@ -138,7 +147,7 @@ describe('HeaderComponent', () => {
 
   it('should refresh nav on auth:login_success event', () => {
     authServiceMock.getUser.and.returnValue(stubUser);
-    sessionStorage.setItem('role', UserRole.ADMIN);
+    authServiceMock.getDecodedToken.and.returnValue(roleToken([UserRole.ADMIN]));
 
     loginSuccessSubject.next({ appState: { returnTo: '/' } });
 

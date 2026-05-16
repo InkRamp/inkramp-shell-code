@@ -1,4 +1,4 @@
-# i17e Incentive Management System
+# i17e InkRamp
 
 An **Angular 18 Micro Frontend shell** using **Module Federation** for a multi-tenant SaaS incentive rules platform.
 

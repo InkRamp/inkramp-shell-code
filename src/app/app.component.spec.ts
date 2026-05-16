@@ -23,9 +23,10 @@ describe('AppComponent', () => {
     };
 
     sessionStorage.clear();
-    authServiceMock = jasmine.createSpyObj('AuthService', ['getId', 'handleCallback']);
+    authServiceMock = jasmine.createSpyObj('AuthService', ['getId', 'handleCallback', 'getDecodedToken']);
     authServiceMock.getId.and.returnValue('shell');
     authServiceMock.handleCallback.and.returnValue(Promise.resolve({ success: true }));
+    authServiceMock.getDecodedToken.and.returnValue(null);
 
     loginSuccessSubject = new Subject();
     logoutSubject = new Subject();
@@ -68,7 +69,7 @@ describe('AppComponent', () => {
   });
 
   it('should have the title', () => {
-    expect(component.title).toEqual('Incentive Management System');
+    expect(component.title).toEqual('InkRamp');
   });
 
   it('should subscribe to EventBus auth events on init', async () => {
@@ -110,6 +111,14 @@ describe('AppComponent', () => {
     loginSuccessSubject.next({});
 
     expect(routerMock.navigate).toHaveBeenCalledWith(['/buyer'], { replaceUrl: true });
+  });
+
+  it('should navigate to first available token role route when returnTo is absent', async () => {
+    authServiceMock.getDecodedToken.and.returnValue({ org_and_roles: { org: ['admin', 'supplier'] } });
+    await component.ngOnInit();
+    loginSuccessSubject.next({});
+
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/supplier'], { replaceUrl: true });
   });
 
   it('should navigate to / inside ngZone on auth:logout', async () => {

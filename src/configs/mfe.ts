@@ -36,7 +36,7 @@ export const MFE_CONFIGS: MfeConfig[] = [
         remoteName: 'supplier',
         exposedModule: './Component',
         url: 'https://inkramp.github.io/all-mfe-builds/inkramp-mfe-supplier/remoteEntry.js',
-        route: 'sales',
+        route: 'supplier',
         role: UserRole.SUPPLIER
     },
     {
@@ -44,7 +44,7 @@ export const MFE_CONFIGS: MfeConfig[] = [
         remoteName: 'admin',
         exposedModule: './Component',
         url: 'https://inkramp.github.io/all-mfe-builds/inkramp-mfe-admin/remoteEntry.js',
-        route: 'reports',
+        route: 'admin',
         role: UserRole.ADMIN
     },
 ];
@@ -55,7 +55,17 @@ export interface OrgRolesTokenPayload {
 }
 
 export function extractUserRoles(token: OrgRolesTokenPayload | null): string[] {
-  return token?.org_and_roles ? Object.values(token.org_and_roles).flat() : [];
+  if (!token?.org_and_roles) {
+    return [];
+  }
+  return Array.from(
+    new Set(
+      Object.values(token.org_and_roles)
+        .flat()
+        .map(role => role.trim().toLowerCase())
+        .filter(Boolean)
+    )
+  );
 }
 
 /**
@@ -72,7 +82,19 @@ export function getSessionRole(): string | null {
  * Returns an empty array when no role is available.
  */
 export function filterMfesByRole(role: string | null): MfeConfig[] {
-  return role ? MFE_CONFIGS.filter(mfe => mfe.role === role) : [];
+  return filterMfesByRoles(role ? [role] : []);
+}
+
+/**
+ * Pure function that returns MFEs mapped to any provided role.
+ * Returns an empty array when no roles are available.
+ */
+export function filterMfesByRoles(roles: string[]): MfeConfig[] {
+  if (!roles.length) {
+    return [];
+  }
+  const roleSet = new Set(roles.map(role => role.trim().toLowerCase()));
+  return MFE_CONFIGS.filter(mfe => roleSet.has(mfe.role));
 }
 
 /**
