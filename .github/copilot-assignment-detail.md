@@ -1,6 +1,19 @@
 The InkRamp Build — Assignment 
 Role: Head of Engineering at PACTAP
 A finalist-stage exercise. We respect your time. Read this in full before you write a line of code.
+
+Quick implementation brief for AI agents and repo copilots
+- Ship one coherent product, not three half-finished role demos.
+- Frontend scope is four apps: Shell + Buyer MFE + Supplier MFE + Admin MFE.
+- Buyer MFE must complete the buyer journey: conversational intake, image-assisted spec extraction, RFQ creation/list/detail, supplier matching, quote comparison, and buyer-facing document generation/status.
+- Supplier MFE must complete the supplier journey: supplier RFQ inbox/detail, quote submission, quote review, and supplier-side document/status flows that are actually backed by the assignment APIs.
+- Admin MFE must complete the admin journey: analytics dashboard, event visibility, AI run visibility where available, and role-gated operational oversight.
+- For assignment endpoints, Angular projects must use only the contract in `.github/swagger-docs.json`.
+- Do not use `https://noq8dav0ac.execute-api.us-east-1.amazonaws.com`.
+- Do not invent extra assignment endpoints or rely on ad-hoc API config files. If Swagger does not define it, call it out as a gap and move on.
+- Angular app pipelines must run tests in PR workflows as non-blocking checks (signal/reporting required even when failures do not gate merge).
+- Treat this assignment as a working automation model: only 2–3 human interventions (request quote, choose invoice/quote, admin oversight) and all remaining lifecycle steps should run through background orchestration/events with deterministic dummy automation where needed.
+
 InkRamp is a fictional company we made up for this exercise. It is not affiliated with Pactap. Any
 resemblance to actual print marketplaces is incidental and intentional — we want a domain that
 rhymes with ours without being ours.
