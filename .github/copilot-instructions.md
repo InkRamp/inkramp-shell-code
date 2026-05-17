@@ -47,6 +47,25 @@ These rules apply to every repository in the InkRamp organization.
 
 ---
 
+## Assignment API guardrails for Angular repos
+
+- For assignment endpoints, use only the routes and payloads defined in `.github/swagger-docs.json`.
+- Never call, reference, or suggest `https://noq8dav0ac.execute-api.us-east-1.amazonaws.com`.
+- Do not add or depend on `api.config.*`, environment endpoint maps, or invented base URLs for assignment APIs.
+- The reviewed assignment REST base URL is the one declared in `.github/swagger-docs.json` and mirrored in `.github/pulumi-outputs.md`.
+- If the needed endpoint is not present in Swagger, stop and flag the gap; do not invent a backend contract.
+- Treat `.github/auth-contracts.md` as the required Auth0 `sessionStorage` contract.
+
+## Assignment outcomes for the frontend apps
+
+- **Shell**: deliver auth, routing, shared layout, event bus wiring, and role-based entry into the correct microapp; do not place business workflows here.
+- **Buyer MFE**: deliver the buyer journey end to end — conversational intake, image-assisted spec capture, RFQ create/list/detail, supplier matching, quote comparison, and buyer document generation/status using Swagger-backed endpoints only.
+- **Supplier MFE**: deliver the supplier journey end to end — supplier-visible RFQs, RFQ detail, quote submission, quote review, and supplier-side document/status flows that are supported by Swagger.
+- **Admin MFE**: deliver the admin journey end to end — analytics dashboard, event visibility, AI run visibility where supported, and role-gated operational oversight surfaces.
+- Build complete role journeys, not scattered partial features. If Swagger does not support a feature yet, document the gap instead of faking completion.
+
+---
+
 ## Vertical Contexts
 
 ### Shell UI
@@ -56,7 +75,7 @@ These rules apply to every repository in the InkRamp organization.
 - Exposes a typed contract (`ShellAPI`) that MFEs consume via Module Federation shared scope.
 
 ### MFE (Micro-Frontend)
-- Each MFE owns a single business domain (e.g. `dashboard`, `settings`, `billing`).
+- Each MFE owns a single business domain and assignment role surface (`buyer`, `supplier`, or `admin`).
 - Must be independently deployable and lazy-loadable by the Shell.
 - Consumes auth context and shared libraries from the Shell via the shared scope — never bundles its own copies.
 - Exposes a single mount/unmount entrypoint and a typed public API surface.
@@ -121,6 +140,7 @@ These rules apply to every repository in the InkRamp organization.
 - Use standalone Angular components with explicit imports.
 - Provide robust error handling with user-friendly messages.
 - Use explicit TypeScript types for public APIs.
+- Keep assignment API clients aligned to `.github/swagger-docs.json` and collocate them with the feature that uses them.
 - Use RxJS correctly (`takeUntilDestroyed`, `async` pipe, proper teardown).
 - Implement loading and error states for async operations.
 - Store tokens in `sessionStorage` only (never `localStorage`).
@@ -132,12 +152,22 @@ These rules apply to every repository in the InkRamp organization.
 - Use responsive breakpoints: `sm: 480px`, `md: 768px`, `lg: 1024px`; shell owns container sizing/positioning, MFE owns internal layout.
 - Route AI iframe communication through `AIBridgeService` (`postMessage` → EventBus events such as `ai:message`, `ai:action`).
 
+#### Angular pipeline testing policy (assignment repos)
+
+- Every Angular app repo (`shell`, `buyer`, `supplier`, `admin`) must run unit/integration tests in GitHub Actions pull request pipelines.
+- Test jobs must be marked **non-blocking** for assignment velocity (e.g., `continue-on-error: true` or an equivalent non-gating configuration), while still uploading reports/artifacts and surfacing failures in logs.
+- Do not skip tests entirely; non-blocking means visible signal without hard merge/deploy blocking.
+- Keep a separate blocking build/deploy path so release packaging is still validated even when tests are flaky.
+
 #### FE code standards (never do)
 
 - Do not import directly across MFE boundaries (use `EventBusService`).
+- Do not call endpoints that are absent from `.github/swagger-docs.json`.
 - Do not store tokens in `localStorage`.
 - Do not log sensitive values (passwords, tokens, account numbers).
 - Do not bypass `AuthService` for API authentication flow.
+- Do not use `https://noq8dav0ac.execute-api.us-east-1.amazonaws.com`.
+- Do not introduce `api.config.*`, custom endpoint maps, or other assignment API registries outside the Swagger contract.
 - Do not use mixed interceptor strategies across MFEs; use only `BearerTokenInterceptor`.
 - Do not hardcode colors or spacing.
 - Do not rely only on `user$` for auth-gated UI; pair it with EventBus auth events.
@@ -168,6 +198,17 @@ These rules apply to every repository in the InkRamp organization.
 - Keep one `postman/` folder in the IaC repo with the shared collection, environments, and ordered journey requests for all endpoints.
 - Pull request workflows must run the Postman/Newman collection from that folder and publish the run report as an artifact.
 - Each Lambda function must have an equivalent workflow that watches only its folder changes and deploys only that Lambda.
+- IaC must provision automation infrastructure, not just CRUD APIs: Step Functions, EventBridge, SQS, schedules, and worker Lambdas required for background processing must be part of the baseline stack.
+
+### Assignment automation-first operating model (IaC + backend)
+- Optimize for near-zero manual operation after initial user intent capture.
+- Human intervention points should be limited to:
+  1. buyer submits/approves RFQ intent,
+  2. buyer selects final quote/invoice decision,
+  3. admin opens monitoring/oversight views when needed.
+- Everything else should be automated with managed workflows and events (matching, quote normalization, document generation, status transitions, analytics refresh, and notifications), using deterministic dummy/simulated processors where real integrations are unavailable.
+- IaC must wire these automations end-to-end so the assignment behaves like a working system out of the box, not a set of disconnected CRUD endpoints.
+- Define idempotency, retries, DLQ routing, and replay-safe handlers for all background tasks.
 
 ### Backend Module Boundaries
 - Module directories: `identity/`, `catalog/`, `rfq/`, `quoting/`, `documents/`, `ai-platform/`, `analytics/`
