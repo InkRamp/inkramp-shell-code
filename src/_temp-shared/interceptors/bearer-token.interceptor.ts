@@ -17,15 +17,29 @@ import { AuthService, APP_CONFIG } from '@opensourcekd/ng-common-libs';
  * Registration (in bootstrap.ts / app.config.ts):
  *   provideHttpClient(withFetch(), withInterceptors([bearerTokenInterceptor]))
  */
+const AUTH_WHITELIST = [
+  '2rjdttem3f.execute-api.us-east-1',
+  'amazonaws',
+  // add more match strings here
+];
+
 export const bearerTokenInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const token = authService.getTokenSync();
 
-  const apiBase = APP_CONFIG.apiUrl.endsWith('/') ? APP_CONFIG.apiUrl : `${APP_CONFIG.apiUrl}/`;
+  const shouldAttachToken = AUTH_WHITELIST.some((match) =>
+    req.url.includes(match)
+  );
 
-  if (!token || !req.url.startsWith(apiBase)) {
+  if (!token || !shouldAttachToken) {
     return next(req);
   }
 
-  return next(req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }));
+  return next(
+    req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+  );
 };
