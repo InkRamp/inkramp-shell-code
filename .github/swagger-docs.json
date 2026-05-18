@@ -1,467 +1,525 @@
-{  
+{
   "openapi": "3.0.3",
   "info": {
-    "title": "InkRamp API",
-    "description": "REST API for the InkRamp B2B print procurement marketplace. Base URL: https://2rjdttem3f.execute-api.us-east-1.amazonaws.com",
+    "title": "InkRamp Platform API",
     "version": "1.0.0",
-    "contact": {
-      "name": "InkRamp Engineering"
-    }
+    "description": "OpenAPI contract for InkRamp REST endpoints deployed behind API Gateway.\nThis specification is aligned with the current service routing and Postman journey tests.\nEach deployed stack also serves this contract at /docs/openapi.yaml with Swagger UI at /docs.\nBrowser CORS policy is centralized through shared gateway/runtime configuration and always includes https://inkramp.github.io plus localhost defaults.\n"
   },
   "servers": [
     {
-      "url": "https://2rjdttem3f.execute-api.us-east-1.amazonaws.com",
-      "description": "Production (AWS API Gateway)"
+      "url": "{baseUrl}",
+      "description": "InkRamp API Gateway base URL",
+      "variables": {
+        "baseUrl": {
+          "default": "https://your-api-id.execute-api.us-east-1.amazonaws.com"
+        }
+      }
     }
   ],
   "security": [
-    { "BearerAuth": [] }
-  ],
-  "components": {
-    "securitySchemes": {
-      "BearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT",
-        "description": "Auth0 JWT access token. Obtain via Auth0 OIDC flow and pass as Authorization: Bearer <token>."
-      }
-    },
-    "schemas": {
-      "UserProfile": {
-        "type": "object",
-        "properties": {
-          "sub": { "type": "string", "example": "auth0|abc123" },
-          "email": { "type": "string", "format": "email" },
-          "name": { "type": "string" },
-          "picture": { "type": "string", "format": "uri" },
-          "roles": {
-            "type": "array",
-            "items": { "type": "string", "enum": ["buyer", "supplier", "admin"] }
-          },
-          "metadata": { "type": "object" }
-        }
-      },
-      "RolesResponse": {
-        "type": "object",
-        "properties": {
-          "roles": {
-            "type": "array",
-            "items": { "type": "string", "enum": ["buyer", "supplier", "admin"] }
-          },
-          "permissions": {
-            "type": "array",
-            "items": { "type": "string" }
-          }
-        }
-      },
-      "CatalogItem": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string" },
-          "supplierId": { "type": "string" },
-          "name": { "type": "string" },
-          "description": { "type": "string" },
-          "capabilities": {
-            "type": "array",
-            "items": { "type": "string" },
-            "example": ["offset-print", "soft-touch-lamination", "uv-coating"]
-          },
-          "machinery": { "type": "array", "items": { "type": "string" } },
-          "leadTimeDays": { "type": "integer", "minimum": 1 },
-          "minQuantity": { "type": "integer" },
-          "maxQuantity": { "type": "integer" },
-          "paperInventory": { "type": "array", "items": { "type": "string" } },
-          "regionsServed": { "type": "array", "items": { "type": "string" } },
-          "certifications": { "type": "array", "items": { "type": "string" } },
-          "portfolioUrls": { "type": "array", "items": { "type": "string", "format": "uri" } },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
-        },
-        "required": ["id", "supplierId", "name", "capabilities"]
-      },
-      "CatalogListResponse": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/CatalogItem" }
-          },
-          "total": { "type": "integer" },
-          "page": { "type": "integer" },
-          "pageSize": { "type": "integer" }
-        }
-      },
-      "RFQ": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string" },
-          "buyerId": { "type": "string" },
-          "status": {
-            "type": "string",
-            "enum": ["draft", "open", "quoted", "accepted", "cancelled"]
-          },
-          "title": { "type": "string" },
-          "description": { "type": "string" },
-          "spec": { "$ref": "#/components/schemas/PrintSpec" },
-          "attachments": {
-            "type": "array",
-            "items": { "type": "string", "format": "uri" }
-          },
-          "deadline": { "type": "string", "format": "date-time" },
-          "deliveryCity": { "type": "string" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
-        },
-        "required": ["id", "buyerId", "status", "spec"]
-      },
-      "PrintSpec": {
-        "type": "object",
-        "properties": {
-          "format": { "type": "string", "example": "trifold-brochure" },
-          "quantity": { "type": "integer", "example": 5000 },
-          "paperWeight": { "type": "string", "example": "300gsm" },
-          "dimensions": { "type": "string", "example": "A4 (210×297mm)" },
-          "foldType": { "type": "string", "example": "tri-fold" },
-          "colourProfile": { "type": "string", "example": "CMYK" },
-          "finishes": {
-            "type": "array",
-            "items": { "type": "string" },
-            "example": ["soft-touch-lamination"]
-          },
-          "sides": { "type": "string", "enum": ["single", "double"] },
-          "specialInstructions": { "type": "string" }
-        },
-        "required": ["format", "quantity"]
-      },
-      "RFQCreateRequest": {
-        "type": "object",
-        "properties": {
-          "title": { "type": "string" },
-          "description": { "type": "string" },
-          "spec": { "$ref": "#/components/schemas/PrintSpec" },
-          "deadline": { "type": "string", "format": "date-time" },
-          "deliveryCity": { "type": "string" }
-        },
-        "required": ["title", "spec"]
-      },
-      "RFQListResponse": {
-        "type": "object",
-        "properties": {
-          "rfqs": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/RFQ" }
-          },
-          "total": { "type": "integer" },
-          "page": { "type": "integer" },
-          "pageSize": { "type": "integer" }
-        }
-      },
-      "Quote": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string" },
-          "rfqId": { "type": "string" },
-          "supplierId": { "type": "string" },
-          "status": {
-            "type": "string",
-            "enum": ["submitted", "accepted", "rejected", "expired"]
-          },
-          "unitPrice": { "type": "number", "format": "float" },
-          "totalPrice": { "type": "number", "format": "float" },
-          "currency": { "type": "string", "default": "INR" },
-          "leadTimeDays": { "type": "integer" },
-          "includedFinishes": { "type": "array", "items": { "type": "string" } },
-          "exclusions": { "type": "array", "items": { "type": "string" } },
-          "notes": { "type": "string" },
-          "validUntil": { "type": "string", "format": "date-time" },
-          "anomalies": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "Agent-detected anomalies vs other quotes or spec"
-          },
-          "createdAt": { "type": "string", "format": "date-time" }
-        },
-        "required": ["id", "rfqId", "supplierId", "status", "unitPrice", "totalPrice"]
-      },
-      "QuoteCreateRequest": {
-        "type": "object",
-        "properties": {
-          "unitPrice": { "type": "number", "format": "float" },
-          "totalPrice": { "type": "number", "format": "float" },
-          "currency": { "type": "string", "default": "INR" },
-          "leadTimeDays": { "type": "integer" },
-          "includedFinishes": { "type": "array", "items": { "type": "string" } },
-          "exclusions": { "type": "array", "items": { "type": "string" } },
-          "notes": { "type": "string" },
-          "validUntil": { "type": "string", "format": "date-time" }
-        },
-        "required": ["unitPrice", "totalPrice", "leadTimeDays"]
-      },
-      "QuoteListResponse": {
-        "type": "object",
-        "properties": {
-          "quotes": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/Quote" }
-          }
-        }
-      },
-      "Document": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string" },
-          "type": {
-            "type": "string",
-            "enum": ["purchase-order", "invoice", "quote-comparison", "rfq-attachment"]
-          },
-          "referenceId": { "type": "string", "description": "rfqId, quoteId, or orderId" },
-          "status": {
-            "type": "string",
-            "enum": ["pending", "processing", "ready", "failed"]
-          },
-          "url": { "type": "string", "format": "uri", "description": "S3 pre-signed URL (when status=ready)" },
-          "createdAt": { "type": "string", "format": "date-time" }
-        }
-      },
-      "DocumentCreateRequest": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "enum": ["purchase-order", "invoice", "quote-comparison", "rfq-attachment"]
-          },
-          "referenceId": { "type": "string" },
-          "metadata": { "type": "object" }
-        },
-        "required": ["type", "referenceId"]
-      },
-      "DocumentStatusResponse": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string" },
-          "status": {
-            "type": "string",
-            "enum": ["pending", "processing", "ready", "failed"]
-          },
-          "url": { "type": "string", "format": "uri" },
-          "error": { "type": "string" }
-        }
-      },
-      "AnalyticsDashboard": {
-        "type": "object",
-        "properties": {
-          "rfqsCreated": { "type": "integer" },
-          "avgQuoteTurnaroundHours": { "type": "number" },
-          "quoteConversionRate": { "type": "number", "format": "float", "description": "0–1" },
-          "supplierResponseRate": { "type": "number", "format": "float" },
-          "agentCostPerRfqUsd": { "type": "number", "format": "float" },
-          "aiInsight": {
-            "type": "string",
-            "description": "LLM-generated insight over recent data"
-          },
-          "period": { "type": "string", "example": "last_7_days" }
-        }
-      },
-      "AnalyticsEventsResponse": {
-        "type": "object",
-        "properties": {
-          "events": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "eventType": { "type": "string" },
-                "actorId": { "type": "string" },
-                "actorRole": { "type": "string" },
-                "payload": { "type": "object" },
-                "timestamp": { "type": "string", "format": "date-time" }
-              }
-            }
-          },
-          "total": { "type": "integer" }
-        }
-      },
-      "AIChatRequest": {
-        "type": "object",
-        "properties": {
-          "sessionId": { "type": "string" },
-          "message": { "type": "string" },
-          "attachments": {
-            "type": "array",
-            "items": { "type": "string", "format": "uri" },
-            "description": "S3 URLs of uploaded images/files for multimodal agent"
-          },
-          "context": { "type": "object", "description": "Optional domain context (rfqId, supplierId, etc.)" }
-        },
-        "required": ["message"]
-      },
-      "AIChatResponse": {
-        "type": "object",
-        "properties": {
-          "sessionId": { "type": "string" },
-          "runId": { "type": "string" },
-          "message": { "type": "string" },
-          "extractedSpec": { "$ref": "#/components/schemas/PrintSpec" },
-          "clarifyingQuestions": {
-            "type": "array",
-            "items": { "type": "string" }
-          },
-          "structuredRfq": { "$ref": "#/components/schemas/RFQCreateRequest" }
-        }
-      },
-      "AIActionRequest": {
-        "type": "object",
-        "properties": {
-          "action": {
-            "type": "string",
-            "enum": ["match-suppliers", "normalise-quotes", "generate-document", "compare-quotes"]
-          },
-          "payload": { "type": "object" }
-        },
-        "required": ["action", "payload"]
-      },
-      "AIActionResponse": {
-        "type": "object",
-        "properties": {
-          "runId": { "type": "string" },
-          "status": { "type": "string", "enum": ["queued", "running", "completed", "failed"] },
-          "result": { "type": "object" }
-        }
-      },
-      "AIRunResponse": {
-        "type": "object",
-        "description": "Agent run log entry — emitted for every agent execution",
-        "properties": {
-          "runId": { "type": "string" },
-          "agentId": { "type": "string" },
-          "model": { "type": "string", "example": "gpt-4o" },
-          "promptVersion": { "type": "string" },
-          "status": { "type": "string", "enum": ["queued", "running", "completed", "failed"] },
-          "toolsCalled": { "type": "array", "items": { "type": "string" } },
-          "inputTokens": { "type": "integer" },
-          "outputTokens": { "type": "integer" },
-          "estimatedCostUsd": { "type": "number", "format": "float" },
-          "latencyMs": { "type": "integer" },
-          "input": { "type": "object" },
-          "output": { "type": "object" },
-          "evalVerdict": { "type": "string", "enum": ["pass", "fail", "warn", null] },
-          "timestamp": { "type": "string", "format": "date-time" }
-        }
-      },
-      "ErrorResponse": {
-        "type": "object",
-        "properties": {
-          "error": { "type": "string" },
-          "message": { "type": "string" },
-          "statusCode": { "type": "integer" }
-        }
-      }
+    {
+      "bearerAuth": []
     }
-  },
+  ],
+  "tags": [
+    {
+      "name": "identity"
+    },
+    {
+      "name": "catalog"
+    },
+    {
+      "name": "rfq"
+    },
+    {
+      "name": "quoting"
+    },
+    {
+      "name": "documents"
+    },
+    {
+      "name": "analytics"
+    },
+    {
+      "name": "ai-platform"
+    }
+  ],
   "paths": {
     "/v1/me": {
       "get": {
-        "tags": ["identity"],
-        "summary": "Get current user profile",
-        "operationId": "getMe",
+        "tags": [
+          "identity"
+        ],
+        "summary": "Get current authenticated user profile",
         "responses": {
           "200": {
-            "description": "Current authenticated user profile",
+            "description": "User profile",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/UserProfile" }
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
               }
             }
-          },
-          "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+          }
         }
       }
     },
     "/v1/roles": {
       "get": {
-        "tags": ["identity"],
-        "summary": "Get roles and permissions for current user",
-        "operationId": "getRoles",
+        "tags": [
+          "identity"
+        ],
+        "summary": "Get roles for current authenticated user",
         "responses": {
           "200": {
-            "description": "User roles and permissions",
+            "description": "Current user roles",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/RolesResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessArrayResponse"
+                }
               }
             }
-          },
-          "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+          }
         }
       }
     },
     "/v1/auth/logout": {
       "post": {
-        "tags": ["identity"],
-        "summary": "Logout current session",
-        "operationId": "logout",
+        "tags": [
+          "identity"
+        ],
+        "summary": "Logout current authenticated user",
         "responses": {
-          "204": { "description": "Session terminated" },
-          "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+          "204": {
+            "description": "Logged out"
+          }
+        }
+      }
+    },
+    "/v1/auth/seed/users": {
+      "post": {
+        "tags": [
+          "identity"
+        ],
+        "summary": "Build role-aware dummy seed users for manual seeding",
+        "description": "Authenticated-user-driven seed endpoint. The request body is ignored; send `{}` only when you want an explicit empty-object contract in clients or Postman.",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SeedUsersRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Seed user actors for the current authenticated session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/SeedUsersData"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/seed/bootstrap": {
+      "post": {
+        "tags": [
+          "identity"
+        ],
+        "summary": "Seed buyer, supplier, and buyer-selection journey data",
+        "description": "Authenticated-user-driven seed endpoint. The request body is ignored; send `{}` only when you want an explicit empty-object contract in clients or Postman.",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SeedBootstrapRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Seed bootstrap completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/SeedBootstrapData"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/seed/cleanup": {
+      "post": {
+        "tags": [
+          "identity"
+        ],
+        "summary": "Cleanup seeded journey data and suffix-tagged E2E artifacts",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SeedCleanupInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Seed cleanup completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/v1/catalog/items": {
       "get": {
-        "tags": ["catalog"],
-        "summary": "List supplier catalog items",
-        "operationId": "listCatalogItems",
+        "tags": [
+          "catalog"
+        ],
+        "summary": "List catalog items",
         "parameters": [
-          { "name": "q", "in": "query", "schema": { "type": "string" }, "description": "Keyword/semantic search query" },
-          { "name": "region", "in": "query", "schema": { "type": "string" } },
-          { "name": "capability", "in": "query", "schema": { "type": "string" } },
-          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
-          { "name": "pageSize", "in": "query", "schema": { "type": "integer", "default": 20, "maximum": 100 } }
+          {
+            "$ref": "#/components/parameters/PageParam"
+          },
+          {
+            "$ref": "#/components/parameters/LimitParam"
+          },
+          {
+            "in": "query",
+            "name": "category",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
           "200": {
-            "description": "Paginated list of catalog items",
+            "description": "Catalog items",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/CatalogListResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "catalog"
+        ],
+        "summary": "Create a catalog item (admin)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CatalogItemCreateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Catalog item created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
               }
             }
           },
-          "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          }
         }
       }
     },
     "/v1/catalog/items/{id}": {
       "get": {
-        "tags": ["catalog"],
-        "summary": "Get a catalog item by ID",
-        "operationId": "getCatalogItem",
+        "tags": [
+          "catalog"
+        ],
+        "summary": "Get catalog item by id",
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
         ],
         "responses": {
           "200": {
-            "description": "Catalog item detail",
+            "description": "Catalog item",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/CatalogItem" }
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
               }
             }
           },
-          "404": { "description": "Not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          }
         }
-      }
-    },
-    "/v1/rfqs": {
-      "post": {
-        "tags": ["rfq"],
-        "summary": "Create a new RFQ",
-        "operationId": "createRFQ",
+      },
+      "put": {
+        "tags": [
+          "catalog"
+        ],
+        "summary": "Replace a catalog item (admin)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/RFQCreateRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/CatalogItemCreateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Catalog item updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "catalog"
+        ],
+        "summary": "Update a catalog item (admin)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CatalogItemUpdateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Catalog item updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "catalog"
+        ],
+        "summary": "Delete a catalog item (admin)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Catalog item deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          }
+        }
+      }
+    },
+    "/v1/catalog/seed": {
+      "post": {
+        "tags": [
+          "catalog"
+        ],
+        "summary": "Seed supplier catalog items for manual journeys",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "users": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Seed catalog items created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          }
+        }
+      }
+    },
+    "/v1/catalog/seed/cleanup": {
+      "post": {
+        "tags": [
+          "catalog"
+        ],
+        "summary": "Cleanup seeded catalog data and suffix-tagged catalog artifacts",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SeedCleanupInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Seed catalog cleanup completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rfqs": {
+      "get": {
+        "tags": [
+          "rfq"
+        ],
+        "summary": "List RFQs",
+        "responses": {
+          "200": {
+            "description": "RFQ list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessArrayResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "rfq"
+        ],
+        "summary": "Create an RFQ (buyer)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RfqCreateInput"
+              }
             }
           }
         },
@@ -470,281 +528,1750 @@
             "description": "RFQ created",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/RFQ" }
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
               }
             }
           },
-          "400": { "description": "Validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
-          "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
-        }
-      },
-      "get": {
-        "tags": ["rfq"],
-        "summary": "List RFQs for the current user",
-        "operationId": "listRFQs",
-        "parameters": [
-          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["draft", "open", "quoted", "accepted", "cancelled"] } },
-          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
-          { "name": "pageSize", "in": "query", "schema": { "type": "integer", "default": 20 } }
-        ],
-        "responses": {
-          "200": {
-            "description": "Paginated list of RFQs",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/RFQListResponse" }
-              }
-            }
-          },
-          "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          }
         }
       }
     },
     "/v1/rfqs/{id}": {
       "get": {
-        "tags": ["rfq"],
-        "summary": "Get RFQ by ID",
-        "operationId": "getRFQ",
+        "tags": [
+          "rfq"
+        ],
+        "summary": "Get RFQ by id",
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
         ],
         "responses": {
           "200": {
-            "description": "RFQ detail",
+            "description": "RFQ details",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/RFQ" }
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
               }
             }
           },
-          "404": { "description": "Not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          }
         }
-      }
-    },
-    "/v1/rfqs/{id}/quotes": {
-      "post": {
-        "tags": ["quoting"],
-        "summary": "Submit a quote for an RFQ (supplier only)",
-        "operationId": "createQuote",
+      },
+      "put": {
+        "tags": [
+          "rfq"
+        ],
+        "summary": "Replace an RFQ",
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "RFQ ID" }
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/QuoteCreateRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/RfqCreateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "RFQ updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "rfq"
+        ],
+        "summary": "Update an RFQ",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RfqUpdateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "RFQ updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "rfq"
+        ],
+        "summary": "Delete an RFQ",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RFQ deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          }
+        }
+      }
+    },
+    "/v1/rfqs/seed": {
+      "post": {
+        "tags": [
+          "rfq"
+        ],
+        "summary": "Seed buyer query, supplier inbox, and buyer selection RFQs",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "users": {
+                    "type": "object"
+                  }
+                }
+              }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Quote submitted",
+            "description": "Seed RFQs created",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Quote" }
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
               }
             }
           },
-          "400": { "description": "Validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
-          "403": { "description": "Forbidden — buyer role cannot submit quotes", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
-        }
-      },
-      "get": {
-        "tags": ["quoting"],
-        "summary": "List quotes for an RFQ",
-        "operationId": "listQuotes",
-        "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "RFQ ID" }
-        ],
-        "responses": {
-          "200": {
-            "description": "List of quotes",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/QuoteListResponse" }
-              }
-            }
-          },
-          "404": { "description": "RFQ not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          }
         }
       }
     },
-    "/v1/documents": {
+    "/v1/rfqs/seed/cleanup": {
       "post": {
-        "tags": ["documents"],
-        "summary": "Trigger document generation",
-        "operationId": "createDocument",
+        "tags": [
+          "rfq"
+        ],
+        "summary": "Cleanup seeded RFQs and suffix-tagged RFQ artifacts",
         "requestBody": {
-          "required": true,
+          "required": false,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/DocumentCreateRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/SeedCleanupInput"
+              }
             }
           }
         },
         "responses": {
-          "202": {
-            "description": "Document generation queued",
+          "200": {
+            "description": "Seed RFQ cleanup completed",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Document" }
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rfqs/{rfqId}/quotes": {
+      "get": {
+        "tags": [
+          "quoting"
+        ],
+        "summary": "List quotes for an RFQ",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RfqIdParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Quote list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessArrayResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "quoting"
+        ],
+        "summary": "Create quote for an RFQ (supplier)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RfqIdParam"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteCreateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Quote created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
               }
             }
           },
-          "400": { "description": "Validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          }
+        }
+      }
+    },
+    "/v1/rfqs/{rfqId}/quotes/{id}": {
+      "get": {
+        "tags": [
+          "quoting"
+        ],
+        "summary": "Get a quote by id for an RFQ",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RfqIdParam"
+          },
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Quote details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "quoting"
+        ],
+        "summary": "Replace a quote for an RFQ",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RfqIdParam"
+          },
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteCreateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Quote updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "quoting"
+        ],
+        "summary": "Update a quote for an RFQ",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RfqIdParam"
+          },
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteUpdateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Quote updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "quoting"
+        ],
+        "summary": "Delete a quote for an RFQ",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RfqIdParam"
+          },
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Quote deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          }
+        }
+      }
+    },
+    "/v1/quotes/seed": {
+      "post": {
+        "tags": [
+          "quoting"
+        ],
+        "summary": "Seed comparable supplier quotes for buyer selection",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "users": {
+                    "type": "object"
+                  },
+                  "rfqs": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Seed quotes created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          }
+        }
+      }
+    },
+    "/v1/quotes/seed/cleanup": {
+      "post": {
+        "tags": [
+          "quoting"
+        ],
+        "summary": "Cleanup seeded quotes and suffix-tagged quote artifacts",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SeedCleanupInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Seed quote cleanup completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/documents": {
+      "get": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "List documents visible to the caller",
+        "responses": {
+          "200": {
+            "description": "Document list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessArrayResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "Create upload request and receive presigned URL",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentUploadInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Upload request created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          }
+        }
+      }
+    },
+    "/v1/documents/{id}": {
+      "get": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "Get a document by id",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Document details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "Replace document metadata or status",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentUpdateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Document updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "Update document metadata or status",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentUpdateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Document updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "Cancel a document",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Document cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          }
         }
       }
     },
     "/v1/documents/{id}/status": {
       "get": {
-        "tags": ["documents"],
-        "summary": "Get document generation status",
-        "operationId": "getDocumentStatus",
+        "tags": [
+          "documents"
+        ],
+        "summary": "Get processing status for a document",
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
         ],
         "responses": {
           "200": {
-            "description": "Document status and download URL when ready",
+            "description": "Document status",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/DocumentStatusResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
               }
             }
           },
-          "404": { "description": "Not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          }
         }
       }
     },
     "/v1/analytics/dashboard": {
       "get": {
-        "tags": ["analytics"],
-        "summary": "Get admin analytics dashboard metrics",
-        "operationId": "getAnalyticsDashboard",
-        "parameters": [
-          { "name": "period", "in": "query", "schema": { "type": "string", "enum": ["last_7_days", "last_30_days", "last_90_days"], "default": "last_7_days" } }
+        "tags": [
+          "analytics"
         ],
+        "summary": "Get dashboard metrics",
         "responses": {
           "200": {
-            "description": "Dashboard metrics including AI-generated insight",
+            "description": "Dashboard metrics",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/AnalyticsDashboard" }
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
               }
             }
           },
-          "403": { "description": "Admin role required", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          }
         }
       }
     },
     "/v1/analytics/events": {
       "get": {
-        "tags": ["analytics"],
-        "summary": "Get domain events stream",
-        "operationId": "getAnalyticsEvents",
+        "tags": [
+          "analytics"
+        ],
+        "summary": "List analytics events (admin)",
         "parameters": [
-          { "name": "eventType", "in": "query", "schema": { "type": "string" } },
-          { "name": "actorRole", "in": "query", "schema": { "type": "string", "enum": ["buyer", "supplier", "admin"] } },
-          { "name": "from", "in": "query", "schema": { "type": "string", "format": "date-time" } },
-          { "name": "to", "in": "query", "schema": { "type": "string", "format": "date-time" } },
-          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
-          { "name": "pageSize", "in": "query", "schema": { "type": "integer", "default": 50 } }
+          {
+            "$ref": "#/components/parameters/PageParam"
+          },
+          {
+            "$ref": "#/components/parameters/LimitParam"
+          }
         ],
         "responses": {
           "200": {
-            "description": "Paginated analytics events",
+            "description": "Analytics events",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/AnalyticsEventsResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
               }
             }
           },
-          "403": { "description": "Admin role required", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          }
         }
       }
     },
     "/v1/ai/chat": {
       "post": {
-        "tags": ["ai-platform"],
-        "summary": "Send a message to the conversational intake agent",
-        "operationId": "aiChat",
+        "tags": [
+          "ai-platform"
+        ],
+        "summary": "Run AI chat completion",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/AIChatRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/AiChatInput"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Agent response, extracted spec and clarifying questions",
+            "description": "AI chat response",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/AIChatResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
               }
             }
           },
-          "429": { "description": "Rate limit exceeded", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          }
         }
       }
     },
     "/v1/ai/actions": {
       "post": {
-        "tags": ["ai-platform"],
-        "summary": "Trigger an AI orchestration action (match-suppliers, normalise-quotes, etc.)",
-        "operationId": "aiAction",
+        "tags": [
+          "ai-platform"
+        ],
+        "summary": "Run AI completion with tool/action definitions",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/AIActionRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/AiActionsInput"
+              }
             }
           }
         },
         "responses": {
-          "202": {
-            "description": "Action queued; use runId to poll status",
+          "200": {
+            "description": "AI action response",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/AIActionResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
               }
             }
           },
-          "400": { "description": "Validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          }
+        }
+      }
+    },
+    "/v1/ai/stream": {
+      "post": {
+        "tags": [
+          "ai-platform"
+        ],
+        "summary": "Stream AG-UI compatible SSE events for buyer AI interactions",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiChatInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "AG-UI compatible server-sent event stream",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          }
+        }
+      }
+    },
+    "/v1/ai/runs": {
+      "get": {
+        "tags": [
+          "ai-platform"
+        ],
+        "summary": "List AI runs for the current authenticated user",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/LimitParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "AI run list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessArrayResponse"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/v1/ai/runs/{id}": {
       "get": {
-        "tags": ["ai-platform"],
-        "summary": "Get agent run details and structured log",
-        "operationId": "getAIRun",
+        "tags": [
+          "ai-platform"
+        ],
+        "summary": "Get AI run by id",
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Run ID" }
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
         ],
         "responses": {
           "200": {
-            "description": "Full agent run log entry",
+            "description": "AI run",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/AIRunResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessObjectResponse"
+                }
               }
             }
           },
-          "404": { "description": "Run not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          }
         }
       }
     }
   },
-  "tags": [
-    { "name": "identity", "description": "User session, profile, and role bootstrap (Lambda: inkramp-identity)" },
-    { "name": "catalog", "description": "Supplier catalogue discovery with hybrid search (Lambda: inkramp-catalog)" },
-    { "name": "rfq", "description": "Request-for-Quote lifecycle — buyer facing (Lambda: inkramp-rfq)" },
-    { "name": "quoting", "description": "Quote submission and comparison — supplier facing (Lambda: inkramp-quoting)" },
-    { "name": "documents", "description": "Async PDF generation via Step Functions (Lambda: inkramp-documents)" },
-    { "name": "analytics", "description": "Admin metrics and AI-generated insights (Lambda: inkramp-analytics)" },
-    { "name": "ai-platform", "description": "Conversational agent, multi-step orchestration, and run logs (Lambda: inkramp-ai-platform)" }
-  ]
+  "x-websocket-routes": {
+    "basePath": "/v1",
+    "auth": {
+      "strategy": "token query param during $connect",
+      "queryParam": "token"
+    },
+    "routes": [
+      "$connect",
+      "$disconnect",
+      "$default"
+    ],
+    "messageContract": {
+      "inbound": {
+        "description": "JSON body with messages array, optional model and systemPrompt."
+      },
+      "outbound": {
+        "events": [
+          {
+            "type": "token",
+            "payload": {
+              "token": "string"
+            }
+          },
+          {
+            "type": "done",
+            "payload": {}
+          },
+          {
+            "type": "error",
+            "payload": {
+              "message": "string"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "x-ag-ui-sse": {
+    "path": "/v1/ai/stream",
+    "method": "POST",
+    "events": [
+      "RUN_STARTED",
+      "TEXT_MESSAGE_START",
+      "TEXT_MESSAGE_CONTENT",
+      "TEXT_MESSAGE_END",
+      "RUN_FINISHED",
+      "RUN_ERROR"
+    ]
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "parameters": {
+      "IdParam": {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "RfqIdParam": {
+        "in": "path",
+        "name": "rfqId",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "PageParam": {
+        "in": "query",
+        "name": "page",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        }
+      },
+      "LimitParam": {
+        "in": "query",
+        "name": "limit",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 20
+        }
+      }
+    },
+    "responses": {
+      "UnauthorizedResponse": {
+        "description": "Unauthorized",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "ForbiddenResponse": {
+        "description": "Forbidden",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "NotFoundResponse": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "ValidationErrorResponse": {
+        "description": "Validation error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "errors": {
+                  "oneOf": [
+                    {
+                      "type": "object"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "success",
+                "errors"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "SuccessObjectResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "SuccessArrayResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "CatalogListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/CatalogListData"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "error": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "success",
+          "error"
+        ]
+      },
+      "CatalogItemCreateInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "supplierId": {
+            "type": "string"
+          },
+          "unitPrice": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "category",
+          "unitPrice"
+        ]
+      },
+      "CatalogItemUpdateInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "supplierId": {
+            "type": "string"
+          },
+          "unitPrice": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ]
+          }
+        }
+      },
+      "CatalogListData": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "total": {
+            "type": "integer",
+            "example": 3
+          },
+          "page": {
+            "type": "integer",
+            "example": 1
+          },
+          "limit": {
+            "type": "integer",
+            "example": 20
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "RfqCreateInput": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "supplierIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "qty": {
+                  "type": "number"
+                },
+                "unit": {
+                  "type": "string"
+                },
+                "targetPrice": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "attachmentKeys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "open",
+              "closed",
+              "awarded"
+            ]
+          },
+          "deadlineAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "RfqUpdateInput": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "supplierIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "qty": {
+                  "type": "number"
+                },
+                "unit": {
+                  "type": "string"
+                },
+                "targetPrice": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "attachmentKeys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "open",
+              "closed",
+              "awarded"
+            ]
+          },
+          "deadlineAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "QuoteCreateInput": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "qty": {
+                  "type": "number"
+                },
+                "unit": {
+                  "type": "string"
+                },
+                "unitPrice": {
+                  "type": "number"
+                },
+                "totalPrice": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "totalPrice": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string",
+            "default": "USD"
+          },
+          "validUntil": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "totalPrice"
+        ]
+      },
+      "QuoteUpdateInput": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "qty": {
+                  "type": "number"
+                },
+                "unit": {
+                  "type": "string"
+                },
+                "unitPrice": {
+                  "type": "number"
+                },
+                "totalPrice": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "totalPrice": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string",
+            "default": "USD"
+          },
+          "validUntil": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "accepted",
+              "rejected"
+            ]
+          }
+        }
+      },
+      "SeedCleanupInput": {
+        "type": "object",
+        "properties": {
+          "seedSuffix": {
+            "type": "string",
+            "description": "Suffix used by E2E-created artifacts that should be deleted with the seeded data."
+          }
+        }
+      },
+      "SeedUsersRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Empty object only. The endpoint reads the authenticated user context and ignores request-body fields, so callers should omit the body or send `{}` for clarity.",
+        "example": {}
+      },
+      "SeedBootstrapRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Empty object only. The endpoint derives seed actors from the authenticated user context and ignores request-body fields, so callers should omit the body or send `{}` for clarity.",
+        "example": {}
+      },
+      "SeedActor": {
+        "type": "object",
+        "properties": {
+          "sub": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "currentUser": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "sub",
+          "email",
+          "name",
+          "roles"
+        ]
+      },
+      "SeedUsersData": {
+        "type": "object",
+        "properties": {
+          "buyer": {
+            "$ref": "#/components/schemas/SeedActor"
+          },
+          "supplier": {
+            "$ref": "#/components/schemas/SeedActor"
+          },
+          "supplierBackup": {
+            "$ref": "#/components/schemas/SeedActor"
+          },
+          "admin": {
+            "$ref": "#/components/schemas/SeedActor"
+          },
+          "all": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeedActor"
+            }
+          }
+        },
+        "required": [
+          "buyer",
+          "supplier",
+          "supplierBackup",
+          "admin",
+          "all"
+        ]
+      },
+      "SeedBootstrapData": {
+        "type": "object",
+        "properties": {
+          "users": {
+            "$ref": "#/components/schemas/SeedUsersData"
+          },
+          "catalog": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            },
+            "required": [
+              "items"
+            ]
+          },
+          "rfqs": {
+            "type": "object",
+            "properties": {
+              "buyerQuery": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "supplierInbox": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "buyerSelection": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "all": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            },
+            "required": [
+              "buyerQuery",
+              "supplierInbox",
+              "buyerSelection",
+              "all"
+            ]
+          },
+          "quotes": {
+            "type": "object",
+            "properties": {
+              "buyerSelection": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "all": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            },
+            "required": [
+              "buyerSelection",
+              "all"
+            ]
+          }
+        },
+        "required": [
+          "users",
+          "catalog",
+          "rfqs",
+          "quotes"
+        ]
+      },
+      "DocumentUploadInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "DocumentUpdateInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "processing",
+              "processed",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "processedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "errorMessage": {
+            "type": "string"
+          }
+        }
+      },
+      "AiMessage": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "system",
+              "user",
+              "assistant",
+              "tool"
+            ]
+          },
+          "content": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "content"
+        ]
+      },
+      "AiChatInput": {
+        "type": "object",
+        "properties": {
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AiMessage"
+            }
+          },
+          "model": {
+            "type": "string"
+          },
+          "systemPrompt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "messages"
+        ]
+      },
+      "AiActionsInput": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AiChatInput"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "tools": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            },
+            "required": [
+              "tools"
+            ]
+          }
+        ]
+      }
+    }
+  }
 }
