@@ -37,6 +37,7 @@
 | `documentsApiUrl` | `https://2rjdttem3f.execute-api.us-east-1.amazonaws.com/v1/documents` |
 | `analyticsApiUrl` | `https://2rjdttem3f.execute-api.us-east-1.amazonaws.com/v1/analytics` |
 | `aiPlatformApiUrl` | `https://2rjdttem3f.execute-api.us-east-1.amazonaws.com/v1/ai` |
+| `aiSseApiUrl` | `https://2rjdttem3f.execute-api.us-east-1.amazonaws.com/v1/ai/stream` |
 
 ## Lambda Function Names
 
@@ -87,6 +88,7 @@ Outputs:
         aiJobsQueueUrl      : "https://sqs.us-east-1.amazonaws.com/668918190458/inkramp-ai-jobs-queue-prod"
         aiPlatformApiUrl    : "https://2rjdttem3f.execute-api.us-east-1.amazonaws.com/v1/ai"
         aiPlatformLambdaName: "inkramp-ai-platform"
+        aiSseApiUrl         : "https://2rjdttem3f.execute-api.us-east-1.amazonaws.com/v1/ai/stream"
         aiStreamApiUrl      : "wss://8g4vpxfis8.execute-api.us-east-1.amazonaws.com/v1"
         analyticsApiUrl     : "https://2rjdttem3f.execute-api.us-east-1.amazonaws.com/v1/analytics"
         analyticsLambdaName : "inkramp-analytics"
