@@ -35,7 +35,7 @@
             "main": "src/main.ts",
             "extraWebpackConfig": "webpack.config.js",
             "commonChunk": false,
-            "baseHref": "./",
+            "baseHref": "/shell/",
             "stylePreprocessorOptions": {
               "includePaths": [
                 "src/styles"
